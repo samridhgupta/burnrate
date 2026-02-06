@@ -1,18 +1,26 @@
-# Burnrate Configuration File
+# Burnrate Configuration
 # Copy to ~/.config/burnrate/burnrate.conf and customize
 
 # ============================================================================
-# DISPLAY SETTINGS
+# DISPLAY
 # ============================================================================
+
+# Theme: glacial, ember, battery, hourglass, garden, ocean, space
+# Add your own themes to ~/.config/burnrate/themes/
+THEME=glacial
 
 # Enable colored output (true/false/auto)
 COLORS_ENABLED=auto
 
-# Theme: glacial, ember, battery, hourglass, garden, ocean, space
-THEME=glacial
-
 # Show emoji (true/false)
 EMOJI_ENABLED=true
+
+# Output format: detailed, compact, minimal, json
+OUTPUT_FORMAT=detailed
+
+# ============================================================================
+# ANIMATION SYSTEM (Global - applies to all themes)
+# ============================================================================
 
 # Enable animations (true/false)
 ANIMATIONS_ENABLED=true
@@ -20,26 +28,11 @@ ANIMATIONS_ENABLED=true
 # Animation speed: slow, normal, fast, instant
 ANIMATION_SPEED=normal
 
-# Output format: compact, detailed, minimal, json
-OUTPUT_FORMAT=detailed
-
-# Number format: commas, spaces, none
-NUMBER_FORMAT=commas
-
-# Currency decimal places (0-6)
-CURRENCY_DECIMALS=2
-
-# Date format: iso, us, eu, unix
-DATE_FORMAT=iso
-
-# Time format: 12h, 24h
-TIME_FORMAT=24h
-
-# Timezone: system, utc, or IANA (America/New_York)
-TIMEZONE=system
+# Animation style: standard, minimal, fancy
+ANIMATION_STYLE=standard
 
 # ============================================================================
-# PATHS & DATA
+# PATHS
 # ============================================================================
 
 # Claude directory
@@ -48,104 +41,34 @@ CLAUDE_DIR=$HOME/.claude
 # Stats cache file
 STATS_FILE=$CLAUDE_DIR/stats-cache.json
 
-# Burnrate data directory
+# Data directory
 DATA_DIR=$HOME/.local/share/burnrate
 
 # Cache directory
 CACHE_DIR=$HOME/.cache/burnrate
 
-# Log file (empty = no logging)
-LOG_FILE=
-
 # ============================================================================
-# MODEL PRICING (per 1M tokens)
+# BUDGET
 # ============================================================================
 
-# Claude Sonnet 4.5
-SONNET_INPUT_PRICE=3.00
-SONNET_OUTPUT_PRICE=15.00
-SONNET_CACHE_WRITE_PRICE=3.75
-SONNET_CACHE_READ_PRICE=0.30
-
-# Claude Opus 4
-OPUS_INPUT_PRICE=15.00
-OPUS_OUTPUT_PRICE=75.00
-OPUS_CACHE_WRITE_PRICE=18.75
-OPUS_CACHE_READ_PRICE=1.50
-
-# Claude Haiku 4
-HAIKU_INPUT_PRICE=0.25
-HAIKU_OUTPUT_PRICE=1.25
-HAIKU_CACHE_WRITE_PRICE=0.31
-HAIKU_CACHE_READ_PRICE=0.03
-
-# Currency
-CURRENCY_SYMBOL=$
-CURRENCY_RATE=1.0
-
-# ============================================================================
-# BUDGET SETTINGS
-# ============================================================================
-
-# Budget limits (0 = no limit)
+# Daily budget (0 = no limit)
 DAILY_BUDGET=0.00
-WEEKLY_BUDGET=0.00
+
+# Monthly budget (0 = no limit)
 MONTHLY_BUDGET=0.00
 
-# Alert thresholds (percentages)
-BUDGET_ALERT_THRESHOLDS=50,75,90,100
-
-# Alert method: none, console, desktop, email, webhook
-BUDGET_ALERT_METHOD=console
-
-# Cache hit warning threshold (%)
-CACHE_HIT_WARNING=80
+# Alert threshold percentage (0-100)
+BUDGET_ALERT=90
 
 # ============================================================================
-# NOTIFICATIONS
+# BEHAVIOR
 # ============================================================================
 
-# Desktop notifications
-DESKTOP_NOTIFICATIONS=false
-NOTIFICATION_TOOL=auto
-
-# Webhooks
-SLACK_WEBHOOK_URL=
-DISCORD_WEBHOOK_URL=
-CUSTOM_WEBHOOK_URL=
-
-# Email
-EMAIL_NOTIFICATIONS=false
-EMAIL_TO=
-EMAIL_FROM=burnrate@localhost
-EMAIL_SUBJECT_PREFIX=[burnrate]
-
-# ============================================================================
-# FEATURES & BEHAVIOR
-# ============================================================================
-
-AUTO_UPDATE_CHECK=true
-SHOW_TIPS=true
-CONFIRM_ACTIONS=true
+# Enable debug logging
 DEBUG=false
+
+# Quiet mode (minimal output)
 QUIET=false
-SHOW_TOKEN_DISCLAIMER=true
 
-# ============================================================================
-# EXPORT & REPORTING
-# ============================================================================
-
-DEFAULT_EXPORT_FORMAT=csv
-EXPORT_DIR=$HOME/Documents/burnrate-exports
-REPORT_INCLUDE_CHARTS=false
-REPORT_TEMPLATE=
-EXPORT_ARCHIVE_DAYS=30
-
-# ============================================================================
-# EXPERIMENTAL FEATURES
-# ============================================================================
-
-EXPERIMENTAL=false
-TUI_ENABLED=false
-PREDICTIONS_ENABLED=false
-PROJECT_TRACKING=false
+# Show "zero tokens used" disclaimer
+SHOW_DISCLAIMER=true

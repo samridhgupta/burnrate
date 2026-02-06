@@ -1,37 +1,30 @@
 #!/usr/bin/env bash
-# lib/config.sh - Configuration management for burnrate
-# Handles loading, parsing, validation, and defaults
+# lib/config.sh - Simple configuration management for burnrate
+# Minimal config with sensible defaults
 
 # Source core utilities
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/core.sh"
 
 # ============================================================================
-# Configuration Paths (Priority Order)
+# Configuration Paths
 # ============================================================================
 
 # Config file locations (checked in order)
 get_config_paths() {
     local paths=()
 
-    # 1. CLI argument (--config <file>)
-    if [[ -n "${BURNRATE_CONFIG_FILE:-}" ]]; then
-        paths+=("$BURNRATE_CONFIG_FILE")
-    fi
+    # 1. Environment variable
+    [[ -n "${BURNRATE_CONFIG:-}" ]] && paths+=("$BURNRATE_CONFIG")
 
-    # 2. Environment variable
-    if [[ -n "${BURNRATE_CONFIG:-}" ]]; then
-        paths+=("$BURNRATE_CONFIG")
-    fi
-
-    # 3. XDG config (preferred)
+    # 2. XDG config (preferred)
     local xdg_config="${XDG_CONFIG_HOME:-$HOME/.config}"
     paths+=("$xdg_config/burnrate/burnrate.conf")
 
-    # 4. Legacy home directory
+    # 3. Home directory
     paths+=("$HOME/.burnrate.conf")
 
-    # 5. System-wide config
+    # 4. System-wide
     paths+=("/etc/burnrate/burnrate.conf")
 
     printf '%s\n' "${paths[@]}"
@@ -41,98 +34,42 @@ get_config_paths() {
 find_config_file() {
     local path
     while IFS= read -r path; do
-        if [[ -f "$path" ]]; then
-            echo "$path"
-            return 0
-        fi
+        [[ -f "$path" ]] && echo "$path" && return 0
     done < <(get_config_paths)
-
     return 1
 }
 
 # ============================================================================
-# Default Configuration Values
+# Core Configuration Defaults (Minimal)
 # ============================================================================
 
 set_config_defaults() {
-    # Display settings
-    CONFIG_COLORS_ENABLED="${CONFIG_COLORS_ENABLED:-auto}"
+    # Display
     CONFIG_THEME="${CONFIG_THEME:-glacial}"
+    CONFIG_COLORS_ENABLED="${CONFIG_COLORS_ENABLED:-auto}"
     CONFIG_EMOJI_ENABLED="${CONFIG_EMOJI_ENABLED:-true}"
-    CONFIG_ANIMATIONS_ENABLED="${CONFIG_ANIMATIONS_ENABLED:-true}"
-    CONFIG_ANIMATION_SPEED="${CONFIG_ANIMATION_SPEED:-normal}"
-    CONFIG_OUTPUT_FORMAT="${CONFIG_OUTPUT_FORMAT:-detailed}"
-    CONFIG_NUMBER_FORMAT="${CONFIG_NUMBER_FORMAT:-commas}"
-    CONFIG_CURRENCY_DECIMALS="${CONFIG_CURRENCY_DECIMALS:-2}"
-    CONFIG_DATE_FORMAT="${CONFIG_DATE_FORMAT:-iso}"
-    CONFIG_TIME_FORMAT="${CONFIG_TIME_FORMAT:-24h}"
-    CONFIG_TIMEZONE="${CONFIG_TIMEZONE:-system}"
+    CONFIG_OUTPUT_FORMAT="${CONFIG_OUTPUT_FORMAT:-detailed}"  # detailed, compact, minimal, json
 
-    # Paths & data
+    # Animation System (Global - applies to all themes)
+    CONFIG_ANIMATIONS_ENABLED="${CONFIG_ANIMATIONS_ENABLED:-true}"
+    CONFIG_ANIMATION_SPEED="${CONFIG_ANIMATION_SPEED:-normal}"  # slow, normal, fast, instant
+    CONFIG_ANIMATION_STYLE="${CONFIG_ANIMATION_STYLE:-standard}"  # standard, minimal, fancy
+
+    # Paths
     CONFIG_CLAUDE_DIR="${CONFIG_CLAUDE_DIR:-$HOME/.claude}"
     CONFIG_STATS_FILE="${CONFIG_STATS_FILE:-$CONFIG_CLAUDE_DIR/stats-cache.json}"
-    CONFIG_DATA_DIR="${CONFIG_DATA_DIR:-$HOME/.local/share/burnrate}"
-    CONFIG_CACHE_DIR="${CONFIG_CACHE_DIR:-$HOME/.cache/burnrate}"
-    CONFIG_LOG_FILE="${CONFIG_LOG_FILE:-}"
+    CONFIG_DATA_DIR="${CONFIG_DATA_DIR:-${XDG_DATA_HOME:-$HOME/.local/share}/burnrate}"
+    CONFIG_CACHE_DIR="${CONFIG_CACHE_DIR:-${XDG_CACHE_HOME:-$HOME/.cache}/burnrate}"
 
-    # Model pricing (per 1M tokens)
-    CONFIG_SONNET_INPUT_PRICE="${CONFIG_SONNET_INPUT_PRICE:-3.00}"
-    CONFIG_SONNET_OUTPUT_PRICE="${CONFIG_SONNET_OUTPUT_PRICE:-15.00}"
-    CONFIG_SONNET_CACHE_WRITE_PRICE="${CONFIG_SONNET_CACHE_WRITE_PRICE:-3.75}"
-    CONFIG_SONNET_CACHE_READ_PRICE="${CONFIG_SONNET_CACHE_READ_PRICE:-0.30}"
-
-    CONFIG_OPUS_INPUT_PRICE="${CONFIG_OPUS_INPUT_PRICE:-15.00}"
-    CONFIG_OPUS_OUTPUT_PRICE="${CONFIG_OPUS_OUTPUT_PRICE:-75.00}"
-    CONFIG_OPUS_CACHE_WRITE_PRICE="${CONFIG_OPUS_CACHE_WRITE_PRICE:-18.75}"
-    CONFIG_OPUS_CACHE_READ_PRICE="${CONFIG_OPUS_CACHE_READ_PRICE:-1.50}"
-
-    CONFIG_HAIKU_INPUT_PRICE="${CONFIG_HAIKU_INPUT_PRICE:-0.25}"
-    CONFIG_HAIKU_OUTPUT_PRICE="${CONFIG_HAIKU_OUTPUT_PRICE:-1.25}"
-    CONFIG_HAIKU_CACHE_WRITE_PRICE="${CONFIG_HAIKU_CACHE_WRITE_PRICE:-0.31}"
-    CONFIG_HAIKU_CACHE_READ_PRICE="${CONFIG_HAIKU_CACHE_READ_PRICE:-0.03}"
-
-    CONFIG_CURRENCY_SYMBOL="${CONFIG_CURRENCY_SYMBOL:-\$}"
-    CONFIG_CURRENCY_RATE="${CONFIG_CURRENCY_RATE:-1.0}"
-
-    # Budget settings
+    # Budget (Simple)
     CONFIG_DAILY_BUDGET="${CONFIG_DAILY_BUDGET:-0.00}"
-    CONFIG_WEEKLY_BUDGET="${CONFIG_WEEKLY_BUDGET:-0.00}"
     CONFIG_MONTHLY_BUDGET="${CONFIG_MONTHLY_BUDGET:-0.00}"
-    CONFIG_BUDGET_ALERT_THRESHOLDS="${CONFIG_BUDGET_ALERT_THRESHOLDS:-50,75,90,100}"
-    CONFIG_BUDGET_ALERT_METHOD="${CONFIG_BUDGET_ALERT_METHOD:-console}"
-    CONFIG_CACHE_HIT_WARNING="${CONFIG_CACHE_HIT_WARNING:-80}"
+    CONFIG_BUDGET_ALERT="${CONFIG_BUDGET_ALERT:-90}"  # Single threshold percentage
 
-    # Notifications
-    CONFIG_DESKTOP_NOTIFICATIONS="${CONFIG_DESKTOP_NOTIFICATIONS:-false}"
-    CONFIG_NOTIFICATION_TOOL="${CONFIG_NOTIFICATION_TOOL:-auto}"
-    CONFIG_SLACK_WEBHOOK_URL="${CONFIG_SLACK_WEBHOOK_URL:-}"
-    CONFIG_DISCORD_WEBHOOK_URL="${CONFIG_DISCORD_WEBHOOK_URL:-}"
-    CONFIG_CUSTOM_WEBHOOK_URL="${CONFIG_CUSTOM_WEBHOOK_URL:-}"
-    CONFIG_EMAIL_NOTIFICATIONS="${CONFIG_EMAIL_NOTIFICATIONS:-false}"
-    CONFIG_EMAIL_TO="${CONFIG_EMAIL_TO:-}"
-    CONFIG_EMAIL_FROM="${CONFIG_EMAIL_FROM:-burnrate@localhost}"
-    CONFIG_EMAIL_SUBJECT_PREFIX="${CONFIG_EMAIL_SUBJECT_PREFIX:-[burnrate]}"
-
-    # Features & behavior
-    CONFIG_AUTO_UPDATE_CHECK="${CONFIG_AUTO_UPDATE_CHECK:-true}"
-    CONFIG_SHOW_TIPS="${CONFIG_SHOW_TIPS:-true}"
-    CONFIG_CONFIRM_ACTIONS="${CONFIG_CONFIRM_ACTIONS:-true}"
+    # Behavior
     CONFIG_DEBUG="${CONFIG_DEBUG:-false}"
     CONFIG_QUIET="${CONFIG_QUIET:-false}"
-    CONFIG_SHOW_TOKEN_DISCLAIMER="${CONFIG_SHOW_TOKEN_DISCLAIMER:-true}"
-
-    # Export & reporting
-    CONFIG_DEFAULT_EXPORT_FORMAT="${CONFIG_DEFAULT_EXPORT_FORMAT:-csv}"
-    CONFIG_EXPORT_DIR="${CONFIG_EXPORT_DIR:-$HOME/Documents/burnrate-exports}"
-    CONFIG_REPORT_INCLUDE_CHARTS="${CONFIG_REPORT_INCLUDE_CHARTS:-false}"
-    CONFIG_REPORT_TEMPLATE="${CONFIG_REPORT_TEMPLATE:-}"
-    CONFIG_EXPORT_ARCHIVE_DAYS="${CONFIG_EXPORT_ARCHIVE_DAYS:-30}"
-
-    # Experimental
-    CONFIG_EXPERIMENTAL="${CONFIG_EXPERIMENTAL:-false}"
-    CONFIG_TUI_ENABLED="${CONFIG_TUI_ENABLED:-false}"
-    CONFIG_PREDICTIONS_ENABLED="${CONFIG_PREDICTIONS_ENABLED:-false}"
-    CONFIG_PROJECT_TRACKING="${CONFIG_PROJECT_TRACKING:-false}"
+    CONFIG_SHOW_DISCLAIMER="${CONFIG_SHOW_DISCLAIMER:-true}"
 
     log_debug "Configuration defaults set"
 }
@@ -145,24 +82,19 @@ set_config_defaults() {
 parse_config_file() {
     local config_file="$1"
 
-    if [[ ! -f "$config_file" ]]; then
-        log_debug "Config file not found: $config_file"
-        return 1
-    fi
+    [[ ! -f "$config_file" ]] && return 1
 
     log_debug "Loading config from: $config_file"
 
-    # Source config file in subshell to avoid pollution
+    # Parse line by line
     while IFS='=' read -r key value; do
         # Skip comments and empty lines
         [[ "$key" =~ ^[[:space:]]*# ]] && continue
         [[ -z "$key" ]] && continue
 
-        # Trim whitespace
+        # Trim whitespace and quotes
         key=$(trim "$key")
         value=$(trim "$value")
-
-        # Remove quotes from value
         value="${value%\"}"
         value="${value#\"}"
         value="${value%\'}"
@@ -198,8 +130,7 @@ load_config() {
         log_debug "No config file found, using defaults"
     fi
 
-    # Step 3: Environment variables override
-    # (CONFIG_* vars from environment take precedence)
+    # Step 3: Environment variables override (CONFIG_* from env take precedence)
 
     log_debug "Configuration loaded successfully"
 }
@@ -212,40 +143,18 @@ load_config() {
 validate_config() {
     log_debug "Validating configuration..."
 
-    # Validate paths exist (create if needed)
-    if [[ ! -d "$CONFIG_CLAUDE_DIR" ]]; then
-        die_config "Claude directory not found: $CONFIG_CLAUDE_DIR\n  Run Claude Code at least once"
-    fi
-
-    if [[ ! -f "$CONFIG_STATS_FILE" ]]; then
-        die_config "Stats file not found: $CONFIG_STATS_FILE\n  Run Claude Code to generate stats"
-    fi
+    # Validate paths exist
+    [[ ! -d "$CONFIG_CLAUDE_DIR" ]] && die_config "Claude directory not found: $CONFIG_CLAUDE_DIR"
+    [[ ! -f "$CONFIG_STATS_FILE" ]] && die_config "Stats file not found: $CONFIG_STATS_FILE"
 
     # Create data directories if needed
-    mkdir -p "$CONFIG_DATA_DIR" 2>/dev/null || true
-    mkdir -p "$CONFIG_CACHE_DIR" 2>/dev/null || true
+    mkdir -p "$CONFIG_DATA_DIR" "$CONFIG_CACHE_DIR" 2>/dev/null || true
 
-    # Validate numeric values
-    validate_range "$CONFIG_CURRENCY_DECIMALS" 0 6 "CURRENCY_DECIMALS"
+    # Validate budgets are numbers
+    is_number "$CONFIG_DAILY_BUDGET" || die_config "DAILY_BUDGET must be a number"
+    is_number "$CONFIG_MONTHLY_BUDGET" || die_config "MONTHLY_BUDGET must be a number"
 
-    if ! is_number "$CONFIG_DAILY_BUDGET"; then
-        die_config "DAILY_BUDGET must be a number, got: $CONFIG_DAILY_BUDGET"
-    fi
-
-    if ! is_number "$CONFIG_WEEKLY_BUDGET"; then
-        die_config "WEEKLY_BUDGET must be a number, got: $CONFIG_WEEKLY_BUDGET"
-    fi
-
-    if ! is_number "$CONFIG_MONTHLY_BUDGET"; then
-        die_config "MONTHLY_BUDGET must be a number, got: $CONFIG_MONTHLY_BUDGET"
-    fi
-
-    # Validate enum values
-    case "$CONFIG_THEME" in
-        glacial|ember|battery|hourglass|garden|ocean|space) ;;
-        *) die_config "Invalid theme: $CONFIG_THEME" ;;
-    esac
-
+    # Validate enums
     case "$CONFIG_OUTPUT_FORMAT" in
         compact|detailed|minimal|json) ;;
         *) die_config "Invalid output format: $CONFIG_OUTPUT_FORMAT" ;;
@@ -254,6 +163,11 @@ validate_config() {
     case "$CONFIG_ANIMATION_SPEED" in
         slow|normal|fast|instant) ;;
         *) die_config "Invalid animation speed: $CONFIG_ANIMATION_SPEED" ;;
+    esac
+
+    case "$CONFIG_ANIMATION_STYLE" in
+        standard|minimal|fancy) ;;
+        *) die_config "Invalid animation style: $CONFIG_ANIMATION_STYLE" ;;
     esac
 
     log_debug "Configuration validated successfully"
@@ -266,21 +180,28 @@ validate_config() {
 # Generate example configuration file
 generate_config_example() {
     cat <<'EOF'
-# Burnrate Configuration File
-# Copy to ~/.config/burnrate/burnrate.conf and customize
+# Burnrate Configuration
+# ~/.config/burnrate/burnrate.conf
 
 # ============================================================================
-# DISPLAY SETTINGS
+# DISPLAY
 # ============================================================================
-
-# Enable colored output (true/false/auto)
-COLORS_ENABLED=auto
 
 # Theme: glacial, ember, battery, hourglass, garden, ocean, space
 THEME=glacial
 
+# Enable colored output (true/false/auto)
+COLORS_ENABLED=auto
+
 # Show emoji (true/false)
 EMOJI_ENABLED=true
+
+# Output format: detailed, compact, minimal, json
+OUTPUT_FORMAT=detailed
+
+# ============================================================================
+# ANIMATION SYSTEM (Global - applies to all themes)
+# ============================================================================
 
 # Enable animations (true/false)
 ANIMATIONS_ENABLED=true
@@ -288,26 +209,11 @@ ANIMATIONS_ENABLED=true
 # Animation speed: slow, normal, fast, instant
 ANIMATION_SPEED=normal
 
-# Output format: compact, detailed, minimal, json
-OUTPUT_FORMAT=detailed
-
-# Number format: commas, spaces, none
-NUMBER_FORMAT=commas
-
-# Currency decimal places (0-6)
-CURRENCY_DECIMALS=2
-
-# Date format: iso, us, eu, unix
-DATE_FORMAT=iso
-
-# Time format: 12h, 24h
-TIME_FORMAT=24h
-
-# Timezone: system, utc, or IANA (America/New_York)
-TIMEZONE=system
+# Animation style: standard, minimal, fancy
+ANIMATION_STYLE=standard
 
 # ============================================================================
-# PATHS & DATA
+# PATHS
 # ============================================================================
 
 # Claude directory
@@ -316,107 +222,37 @@ CLAUDE_DIR=$HOME/.claude
 # Stats cache file
 STATS_FILE=$CLAUDE_DIR/stats-cache.json
 
-# Burnrate data directory
+# Data directory
 DATA_DIR=$HOME/.local/share/burnrate
 
 # Cache directory
 CACHE_DIR=$HOME/.cache/burnrate
 
-# Log file (empty = no logging)
-LOG_FILE=
-
 # ============================================================================
-# MODEL PRICING (per 1M tokens)
+# BUDGET
 # ============================================================================
 
-# Claude Sonnet 4.5
-SONNET_INPUT_PRICE=3.00
-SONNET_OUTPUT_PRICE=15.00
-SONNET_CACHE_WRITE_PRICE=3.75
-SONNET_CACHE_READ_PRICE=0.30
-
-# Claude Opus 4
-OPUS_INPUT_PRICE=15.00
-OPUS_OUTPUT_PRICE=75.00
-OPUS_CACHE_WRITE_PRICE=18.75
-OPUS_CACHE_READ_PRICE=1.50
-
-# Claude Haiku 4
-HAIKU_INPUT_PRICE=0.25
-HAIKU_OUTPUT_PRICE=1.25
-HAIKU_CACHE_WRITE_PRICE=0.31
-HAIKU_CACHE_READ_PRICE=0.03
-
-# Currency
-CURRENCY_SYMBOL=$
-CURRENCY_RATE=1.0
-
-# ============================================================================
-# BUDGET SETTINGS
-# ============================================================================
-
-# Budget limits (0 = no limit)
+# Daily budget (0 = no limit)
 DAILY_BUDGET=0.00
-WEEKLY_BUDGET=0.00
+
+# Monthly budget (0 = no limit)
 MONTHLY_BUDGET=0.00
 
-# Alert thresholds (percentages)
-BUDGET_ALERT_THRESHOLDS=50,75,90,100
-
-# Alert method: none, console, desktop, email, webhook
-BUDGET_ALERT_METHOD=console
-
-# Cache hit warning threshold (%)
-CACHE_HIT_WARNING=80
+# Alert threshold percentage (0-100)
+BUDGET_ALERT=90
 
 # ============================================================================
-# NOTIFICATIONS
+# BEHAVIOR
 # ============================================================================
 
-# Desktop notifications
-DESKTOP_NOTIFICATIONS=false
-NOTIFICATION_TOOL=auto
-
-# Webhooks
-SLACK_WEBHOOK_URL=
-DISCORD_WEBHOOK_URL=
-CUSTOM_WEBHOOK_URL=
-
-# Email
-EMAIL_NOTIFICATIONS=false
-EMAIL_TO=
-EMAIL_FROM=burnrate@localhost
-EMAIL_SUBJECT_PREFIX=[burnrate]
-
-# ============================================================================
-# FEATURES & BEHAVIOR
-# ============================================================================
-
-AUTO_UPDATE_CHECK=true
-SHOW_TIPS=true
-CONFIRM_ACTIONS=true
+# Enable debug logging
 DEBUG=false
+
+# Quiet mode (minimal output)
 QUIET=false
-SHOW_TOKEN_DISCLAIMER=true
 
-# ============================================================================
-# EXPORT & REPORTING
-# ============================================================================
-
-DEFAULT_EXPORT_FORMAT=csv
-EXPORT_DIR=$HOME/Documents/burnrate-exports
-REPORT_INCLUDE_CHARTS=false
-REPORT_TEMPLATE=
-EXPORT_ARCHIVE_DAYS=30
-
-# ============================================================================
-# EXPERIMENTAL FEATURES
-# ============================================================================
-
-EXPERIMENTAL=false
-TUI_ENABLED=false
-PREDICTIONS_ENABLED=false
-PROJECT_TRACKING=false
+# Show "zero tokens used" disclaimer
+SHOW_DISCLAIMER=true
 EOF
 }
 
@@ -449,8 +285,12 @@ show_config() {
     echo "  Theme:      $CONFIG_THEME"
     echo "  Colors:     $CONFIG_COLORS_ENABLED"
     echo "  Emoji:      $CONFIG_EMOJI_ENABLED"
-    echo "  Animations: $CONFIG_ANIMATIONS_ENABLED"
     echo "  Format:     $CONFIG_OUTPUT_FORMAT"
+    echo ""
+    echo "Animation:"
+    echo "  Enabled:    $CONFIG_ANIMATIONS_ENABLED"
+    echo "  Speed:      $CONFIG_ANIMATION_SPEED"
+    echo "  Style:      $CONFIG_ANIMATION_STYLE"
     echo ""
     echo "Paths:"
     echo "  Claude:     $CONFIG_CLAUDE_DIR"
@@ -458,9 +298,9 @@ show_config() {
     echo "  Data:       $CONFIG_DATA_DIR"
     echo ""
     echo "Budget:"
-    echo "  Daily:      $(format_currency "$CONFIG_DAILY_BUDGET")"
-    echo "  Weekly:     $(format_currency "$CONFIG_WEEKLY_BUDGET")"
-    echo "  Monthly:    $(format_currency "$CONFIG_MONTHLY_BUDGET")"
+    echo "  Daily:      \$$CONFIG_DAILY_BUDGET"
+    echo "  Monthly:    \$$CONFIG_MONTHLY_BUDGET"
+    echo "  Alert:      ${CONFIG_BUDGET_ALERT}%"
     echo ""
     echo "Config file:"
     local config_file
@@ -470,3 +310,5 @@ show_config() {
         echo "  (using defaults)"
     fi
 }
+
+log_debug "Config system loaded (15 core options)"

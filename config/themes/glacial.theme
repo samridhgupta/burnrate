@@ -1,0 +1,106 @@
+#!/usr/bin/env bash
+# Glacial Theme - Environmental Impact
+# "Every token melts the ice. Cache to save the Arctic!"
+
+# ============================================================================
+# THEME METADATA
+# ============================================================================
+
+THEME_NAME="glacial"
+THEME_DISPLAY_NAME="Glacial"
+THEME_EMOJI="❄️"
+THEME_DESCRIPTION="Environmental impact - every token melts the ice"
+THEME_AUTHOR="burnrate"
+THEME_VERSION="1.0.0"
+
+# ============================================================================
+# COLORS (Ice & Water Palette)
+# ============================================================================
+
+# Semantic colors
+THEME_PRIMARY='\033[1;36m'       # Bright cyan (ice)
+THEME_SUCCESS='\033[0;36m'       # Cyan (frozen)
+THEME_WARNING='\033[0;33m'       # Yellow (melting)
+THEME_ERROR='\033[0;31m'         # Red (danger)
+THEME_INFO='\033[0;34m'          # Blue (water)
+THEME_DIM='\033[2;36m'           # Dim cyan
+
+# ============================================================================
+# STATUS INDICATORS (Unique Unicode for Each Level)
+# ============================================================================
+
+# Efficiency status (cache hit ratio, budget remaining)
+# Each status has DISTINCT character - no duplicates
+THEME_STATUS_EXCELLENT="❄️ "    # 90-100% - Frozen solid (snowflake)
+THEME_STATUS_GOOD="🧊"          # 75-89%  - Ice cube
+THEME_STATUS_WARNING="💧"       # 50-74%  - Water droplet
+THEME_STATUS_CRITICAL="🌊"      # 25-49%  - Wave
+THEME_STATUS_DANGER="♨️ "        # 0-24%   - Hot springs
+
+# Budget status (polar bear on ice)
+THEME_BUDGET_SAFE="🐻‍❄️ "        # Safe - bear on ice
+THEME_BUDGET_WARNING="⚠️ "      # Warning
+THEME_BUDGET_CRITICAL="🚨"      # Critical
+THEME_BUDGET_EXCEEDED="💥"      # Exceeded
+
+# Cache efficiency
+THEME_CACHE_EXCELLENT="❄️ "     # Frozen solid
+THEME_CACHE_GOOD="🧊"           # Ice preserved
+THEME_CACHE_POOR="🔥"           # Melting fast
+
+# ============================================================================
+# ICONS (Themed)
+# ============================================================================
+
+THEME_ICON_LOADING="❄"          # Snowflake (loading)
+THEME_ICON_SUCCESS="✨"         # Sparkles (success)
+THEME_ICON_ERROR="🌊"           # Wave (flood/error)
+THEME_ICON_WARNING="⚠️"         # Warning sign
+THEME_ICON_INFO="ℹ️"            # Info
+THEME_ICON_COST="🌡️"           # Thermometer (temperature/cost)
+THEME_ICON_TOKENS="🔥"          # Fire (burning tokens)
+THEME_ICON_CACHE="❄️"           # Snowflake (cache)
+THEME_ICON_BUDGET="🐻‍❄️"        # Polar bear (budget)
+
+# ============================================================================
+# MESSAGES (Environmental Framing)
+# ============================================================================
+
+# Status messages
+THEME_MSG_EXCELLENT="Arctic conditions - excellent!"
+THEME_MSG_GOOD="Ice holding steady"
+THEME_MSG_WARNING="Ice sheets thinning..."
+THEME_MSG_CRITICAL="Glaciers retreating!"
+THEME_MSG_DANGER="Ice caps melted!"
+
+# Cache messages
+THEME_CACHE_MSG_EXCELLENT="Frozen solid - perfect caching! ❄️"
+THEME_CACHE_MSG_GOOD="Ice preserved 🧊"
+THEME_CACHE_MSG_POOR="Critical melt! 🔥"
+
+# Budget messages
+THEME_BUDGET_MSG_OK="Polar bear habitat stable 🐻‍❄️"
+THEME_BUDGET_MSG_WARNING="Ice sheet warning ⚠️"
+THEME_BUDGET_MSG_CRITICAL="Glacier retreat! 🚨"
+THEME_BUDGET_MSG_EXCEEDED="Ice cap collapsed! 💥"
+
+# Footer
+THEME_FOOTER="Remember: Every token melts the ice. Cache to save the Arctic! 🐻‍❄️"
+
+# ============================================================================
+# LABELS (Environmental Terminology)
+# ============================================================================
+
+THEME_LABEL_COST="Carbon Cost"
+THEME_LABEL_SAVINGS="Planet Saved"
+THEME_LABEL_TOKENS="Token Burn"
+THEME_LABEL_CACHE_READ="ICE PRESERVED!"
+THEME_LABEL_STATUS="Ice Status"
+
+# ============================================================================
+# TIPS
+# ============================================================================
+
+THEME_TIP_1="💡 High cache hit ratio saves the Arctic!"
+THEME_TIP_2="💡 Every uncached token melts more ice"
+THEME_TIP_3="💡 Keep that polar bear on solid ice 🐻‍❄️"
