@@ -1,0 +1,30 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Linux
+*~
+.directory
+
+# Editor
+*.swp
+*.swo
+*.swn
+.vscode/
+.idea/
+
+# Logs
+*.log
+logs/
+
+# Local config (user should copy from example)
+config/burnrate.conf
+
+# Test outputs
+test-output/
+coverage/
+
+# Temp files
+tmp/
+*.tmp
