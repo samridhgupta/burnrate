@@ -151,18 +151,8 @@ cmd_config() {
 
 # Run setup wizard
 cmd_setup() {
-    echo "🔧 Burnrate Setup Wizard"
-    echo ""
-    echo "⚠️  ZERO TOKENS USED - Pure script, reads local files only"
-    echo ""
-    echo "TODO: Implement interactive setup"
-    echo "  - Welcome message"
-    echo "  - Check prerequisites (Claude Code installed)"
-    echo "  - Configure theme"
-    echo "  - Configure budgets"
-    echo "  - Configure animations"
-    echo "  - Generate config file"
-    echo "  - Test configuration"
+    source "$SCRIPT_DIR/lib/setup.sh"
+    run_setup
 }
 
 # ============================================================================
