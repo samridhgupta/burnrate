@@ -18,6 +18,8 @@ source "$SCRIPT_DIR/lib/colors.sh"
 source "$SCRIPT_DIR/lib/layout.sh"
 source "$SCRIPT_DIR/lib/animations.sh"
 source "$SCRIPT_DIR/lib/themes.sh"
+source "$SCRIPT_DIR/lib/pricing.sh"
+source "$SCRIPT_DIR/lib/stats.sh"
 
 # ============================================================================
 # Help & Usage
@@ -86,30 +88,40 @@ show_version() {
 
 # Show today's summary (default command)
 cmd_summary() {
-    echo "📊 Today's Token Burn Summary"
+    if [[ "$CONFIG_SHOW_DISCLAIMER" == "true" ]]; then
+        echo "⚠️  ZERO TOKENS USED - Pure script, reads local files only"
+        echo ""
+    fi
+
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "  📊 Token Burn Summary"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
-    echo "⚠️  ZERO TOKENS USED - Pure script, reads local files only"
+
+    show_summary "$CONFIG_STATS_FILE"
+
     echo ""
-    echo "TODO: Implement summary display"
-    echo "  - Today's cost"
-    echo "  - Token counts (input/output/cache)"
-    echo "  - Cache hit ratio"
-    echo "  - Budget status"
-    echo "  - Theme-appropriate visualization"
+    if [[ "$CONFIG_SHOW_DISCLAIMER" == "true" ]]; then
+        echo "${THEME_FOOTER}"
+    fi
 }
 
 # Show detailed report
 cmd_show() {
-    echo "📈 Detailed Cost Report"
+    if [[ "$CONFIG_SHOW_DISCLAIMER" == "true" ]]; then
+        echo "⚠️  ZERO TOKENS USED - Pure script, reads local files only"
+        echo ""
+    fi
+
+    show_detailed_breakdown "$CONFIG_STATS_FILE"
+
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
-    echo "⚠️  ZERO TOKENS USED - Pure script, reads local files only"
-    echo ""
-    echo "TODO: Implement detailed report"
-    echo "  - Cost breakdown by token type"
-    echo "  - Historical data (7 days, 30 days)"
-    echo "  - Cache efficiency metrics"
-    echo "  - Model breakdown"
-    echo "  - Visualizations"
+
+    if [[ "$CONFIG_SHOW_DISCLAIMER" == "true" ]]; then
+        echo "${THEME_FOOTER}"
+        echo ""
+    fi
 }
 
 # Check budget status
