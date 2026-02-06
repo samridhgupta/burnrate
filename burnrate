@@ -26,6 +26,7 @@ source "$SCRIPT_DIR/lib/animations.sh"
 source "$SCRIPT_DIR/lib/themes.sh"
 source "$SCRIPT_DIR/lib/pricing.sh"
 source "$SCRIPT_DIR/lib/stats.sh"
+source "$SCRIPT_DIR/lib/budget.sh"
 
 # ============================================================================
 # Help & Usage
@@ -132,16 +133,17 @@ cmd_show() {
 
 # Check budget status
 cmd_budget() {
-    echo "💰 Budget Status"
-    echo ""
-    echo "⚠️  ZERO TOKENS USED - Pure script, reads local files only"
-    echo ""
-    echo "TODO: Implement budget tracking"
-    echo "  - Daily budget: \$${CONFIG_DAILY_BUDGET}"
-    echo "  - Monthly budget: \$${CONFIG_MONTHLY_BUDGET}"
-    echo "  - Alert threshold: ${CONFIG_BUDGET_ALERT}%"
-    echo "  - Current spending vs budget"
-    echo "  - Projection"
+    if [[ "$CONFIG_SHOW_DISCLAIMER" == "true" ]]; then
+        echo "⚠️  ZERO TOKENS USED - Pure script, reads local files only"
+        echo ""
+    fi
+
+    show_budget_summary
+
+    if [[ "$CONFIG_SHOW_DISCLAIMER" == "true" ]]; then
+        echo ""
+        echo "${THEME_FOOTER}"
+    fi
 }
 
 # List themes
