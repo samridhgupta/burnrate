@@ -284,12 +284,12 @@ show_detailed_breakdown() {
     echo ""
     printf "%-20s %15s %12s\n" "Type" "Tokens" "Cost"
     printf "%-20s %15s %12s\n" "────" "──────" "────"
-    printf "%-20s %15s \$%11.2f\n" "Input" "$(format_number $input_tokens)" "$input_cost"
-    printf "%-20s %15s \$%11.2f\n" "Output" "$(format_number $output_tokens)" "$output_cost"
-    printf "%-20s %15s \$%11.2f\n" "Cache Write" "$(format_number $cache_write)" "$cache_write_cost"
-    printf "%-20s %15s \$%11.2f\n" "Cache Read" "$(format_number $cache_read)" "$cache_read_cost"
+    printf "%-20s %15s \$%11s\n" "Input" "$(format_number $input_tokens)" "$(format_cost $input_cost)"
+    printf "%-20s %15s \$%11s\n" "Output" "$(format_number $output_tokens)" "$(format_cost $output_cost)"
+    printf "%-20s %15s \$%11s\n" "Cache Write" "$(format_number $cache_write)" "$(format_cost $cache_write_cost)"
+    printf "%-20s %15s \$%11s\n" "Cache Read" "$(format_number $cache_read)" "$(format_cost $cache_read_cost)"
     printf "%-20s %15s %12s\n" "────" "──────" "────────"
-    printf "%-20s %15s \$%11.2f\n" "TOTAL" "$(format_number $((input_tokens + output_tokens + cache_write + cache_read)))" "$total_cost"
+    printf "%-20s %15s \$%11s\n" "TOTAL" "$(format_number $((input_tokens + output_tokens + cache_write + cache_read)))" "$(format_cost $total_cost)"
     echo ""
 
     # Cache efficiency

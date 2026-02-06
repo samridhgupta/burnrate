@@ -55,11 +55,11 @@ export_summary_csv() {
 
     # CSV output
     echo "type,tokens,cost"
-    echo "Input,$input,$input_cost"
-    echo "Output,$output,$output_cost"
-    echo "Cache Write,$cache_write,$cache_write_cost"
-    echo "Cache Read,$cache_read,$cache_read_cost"
-    echo "Total,$((input + output + cache_write + cache_read)),$total_cost"
+    echo "Input,$input,$(format_cost $input_cost)"
+    echo "Output,$output,$(format_cost $output_cost)"
+    echo "Cache Write,$cache_write,$(format_cost $cache_write_cost)"
+    echo "Cache Read,$cache_read,$(format_cost $cache_read_cost)"
+    echo "Total,$((input + output + cache_write + cache_read)),$(format_cost $total_cost)"
     echo ""
     echo "Cache Efficiency,$cache_efficiency%"
 }
@@ -91,6 +91,14 @@ export_summary_markdown() {
 
     cache_efficiency=$(get_cache_efficiency "$CONFIG_STATS_FILE")
 
+    # Format costs with $ prefix
+    local fmt_input_cost fmt_output_cost fmt_cache_write_cost fmt_cache_read_cost fmt_total_cost
+    fmt_input_cost='$'"$(format_cost $input_cost)"
+    fmt_output_cost='$'"$(format_cost $output_cost)"
+    fmt_cache_write_cost='$'"$(format_cost $cache_write_cost)"
+    fmt_cache_read_cost='$'"$(format_cost $cache_read_cost)"
+    fmt_total_cost='$'"$(format_cost $total_cost)"
+
     # Markdown output
     cat <<EOF
 # Claude Token Usage Report
@@ -102,11 +110,11 @@ export_summary_markdown() {
 
 | Type | Tokens | Cost |
 |------|--------|------|
-| Input | $(printf "%'d" "$input" 2>/dev/null || echo "$input") | \$$input_cost |
-| Output | $(printf "%'d" "$output" 2>/dev/null || echo "$output") | \$$output_cost |
-| Cache Write | $(printf "%'d" "$cache_write" 2>/dev/null || echo "$cache_write") | \$$cache_write_cost |
-| Cache Read | $(printf "%'d" "$cache_read" 2>/dev/null || echo "$cache_read") | \$$cache_read_cost |
-| **Total** | **$(printf "%'d" "$((input + output + cache_write + cache_read))" 2>/dev/null || echo "$((input + output + cache_write + cache_read))")** | **\$$total_cost** |
+| Input | $(printf "%'d" "$input" 2>/dev/null || echo "$input") | $fmt_input_cost |
+| Output | $(printf "%'d" "$output" 2>/dev/null || echo "$output") | $fmt_output_cost |
+| Cache Write | $(printf "%'d" "$cache_write" 2>/dev/null || echo "$cache_write") | $fmt_cache_write_cost |
+| Cache Read | $(printf "%'d" "$cache_read" 2>/dev/null || echo "$cache_read") | $fmt_cache_read_cost |
+| **Total** | **$(printf "%'d" "$((input + output + cache_write + cache_read))" 2>/dev/null || echo "$((input + output + cache_write + cache_read))")** | **$fmt_total_cost** |
 
 ## Cache Performance
 
@@ -206,7 +214,10 @@ EOF
         local short_model
         short_model=$(echo "$model" | sed 's/claude-//; s/-20[0-9]*$//')
 
-        echo "| $date | $short_model | $(printf "%'d" "$tokens" 2>/dev/null || echo "$tokens") | \$$cost |"
+        local fmt_cost
+        fmt_cost='$'"$(format_cost $cost)"
+
+        echo "| $date | $short_model | $(printf "%'d" "$tokens" 2>/dev/null || echo "$tokens") | $fmt_cost |"
     done <<< "$breakdown"
 
     echo ""

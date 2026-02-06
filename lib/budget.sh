@@ -369,8 +369,8 @@ trigger_alert() {
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
     echo "Budget Type: $(echo "$budget_type" | tr '[:lower:]' '[:upper:]')"
-    printf "Spent: \$%.2f\n" "$(clean_number "$spent")"
-    printf "Budget: \$%.2f\n" "$(clean_number "$budget")"
+    printf "Spent: \$%s\n" "$(format_cost $(clean_number "$spent"))"
+    printf "Budget: \$%s\n" "$(format_cost $(clean_number "$budget"))"
     printf "Used: %.1f%%\n" "$(clean_number "$percentage")"
     echo ""
     echo "$(get_budget_message "$percentage")"
@@ -411,7 +411,7 @@ project_budget() {
         local hours_remaining=$((24 - hours_elapsed))
 
         if (( hours_elapsed == 0 )); then
-            printf "Projected: \$%.2f (just started)" "$spent"
+            printf "Projected: \$%s (just started)" "$(format_cost $spent)"
             return 0
         fi
 
@@ -424,9 +424,9 @@ project_budget() {
         if compare_float "$projected_total" ">" "$budget"; then
             local excess
             excess=$(safe_bc "scale=2; $projected_total - $budget")
-            printf "⚠️  Projected: \$%.2f (will exceed by \$%.2f)" "$projected_total" "$excess"
+            printf "⚠️  Projected: \$%s (will exceed by \$%s)" "$(format_cost $projected_total)" "$(format_cost $excess)"
         else
-            printf "✓ Projected: \$%.2f (under budget)" "$projected_total"
+            printf "✓ Projected: \$%s (under budget)" "$(format_cost $projected_total)"
         fi
     else
         # Project to end of month
@@ -440,7 +440,7 @@ project_budget() {
         local days_elapsed=$((10#$current_day))
 
         if (( days_elapsed == 0 )); then
-            printf "Projected: \$%.2f (just started)" "$spent"
+            printf "Projected: \$%s (just started)" "$(format_cost $spent)"
             return 0
         fi
 
@@ -453,9 +453,9 @@ project_budget() {
         if compare_float "$projected_total" ">" "$budget"; then
             local excess
             excess=$(safe_bc "scale=2; $projected_total - $budget")
-            printf "⚠️  Projected: \$%.2f (will exceed by \$%.2f)" "$projected_total" "$excess"
+            printf "⚠️  Projected: \$%s (will exceed by \$%s)" "$(format_cost $projected_total)" "$(format_cost $excess)"
         else
-            printf "✓ Projected: \$%.2f (under budget)" "$projected_total"
+            printf "✓ Projected: \$%s (under budget)" "$(format_cost $projected_total)"
         fi
     fi
 }
@@ -488,7 +488,7 @@ show_budget_summary() {
         local indicator
         indicator=$(get_budget_indicator "$percentage")
 
-        printf "  %s Spent: \$%.2f / \$%.2f (%.1f%%)\n" "$indicator" "$spent" "$budget" "$percentage"
+        printf "  %s Spent: \$%s / \$%s (%.1f%%)\n" "$indicator" "$(format_cost $spent)" "$(format_cost $budget)" "$percentage"
 
         # Progress bar
         local bar_width=30
@@ -537,7 +537,7 @@ show_budget_summary() {
         local indicator
         indicator=$(get_budget_indicator "$percentage")
 
-        printf "  %s Spent: \$%.2f / \$%.2f (%.1f%%)\n" "$indicator" "$spent" "$budget" "$percentage"
+        printf "  %s Spent: \$%s / \$%s (%.1f%%)\n" "$indicator" "$(format_cost $spent)" "$(format_cost $budget)" "$percentage"
 
         # Progress bar
         local bar_width=30

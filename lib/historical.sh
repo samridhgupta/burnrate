@@ -106,8 +106,8 @@ calculate_daily_cost() {
     cost=$(echo "$cost_json" | grep '"total"' | grep -o '[0-9.]*' | head -1)
     cost=${cost:-0.00}
 
-    # Format to 2 decimal places
-    printf "%.2f" "$cost" 2>/dev/null || echo "0.00"
+    # Format to configured decimal places
+    format_cost "$cost"
 }
 
 # Get daily breakdown with dates, tokens, and costs

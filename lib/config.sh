@@ -71,6 +71,9 @@ set_config_defaults() {
     CONFIG_QUIET="${CONFIG_QUIET:-false}"
     CONFIG_SHOW_DISCLAIMER="${CONFIG_SHOW_DISCLAIMER:-true}"
 
+    # Formatting
+    CONFIG_COST_DECIMALS="${CONFIG_COST_DECIMALS:-2}"  # Number of decimal places for cost display
+
     log_debug "Configuration defaults set"
 }
 

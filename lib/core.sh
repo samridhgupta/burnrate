@@ -200,6 +200,27 @@ require_directory() {
 }
 
 # ============================================================================
+# Formatting Utilities
+# ============================================================================
+
+# Format cost to configured decimal places
+# Usage: format_cost "123.456789"
+# Output: "123.46" (if CONFIG_COST_DECIMALS=2)
+format_cost() {
+    local cost="$1"
+    local decimals="${CONFIG_COST_DECIMALS:-2}"
+
+    # Handle empty or invalid input
+    if [[ -z "$cost" ]] || [[ ! "$cost" =~ ^-?[0-9]*\.?[0-9]+$ ]]; then
+        printf "0.%0${decimals}d" 0
+        return 0
+    fi
+
+    # Use printf to format to specified decimal places
+    printf "%.${decimals}f" "$cost" 2>/dev/null || echo "0.00"
+}
+
+# ============================================================================
 # System Detection
 # ============================================================================
 
