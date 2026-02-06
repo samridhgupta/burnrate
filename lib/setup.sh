@@ -15,6 +15,7 @@ source "$LIB_DIR/integrations.sh"
 # Setup State
 # ============================================================================
 
+SETUP_QUICK_MODE=false
 SETUP_CONFIG=()
 SETUP_THEME="glacial"
 SETUP_ANIMATIONS="true"
@@ -134,6 +135,17 @@ EOF
     echo "⚠️  ZERO TOKENS USED - Pure script, reads local files only"
     echo ""
 
+    if ask_yn "Quick setup with defaults?" "y"; then
+        echo ""
+        info "Using smart defaults..."
+        SETUP_QUICK_MODE=true
+    else
+        echo ""
+        info "Custom setup - you'll be asked about each option"
+        SETUP_QUICK_MODE=false
+    fi
+
+    echo ""
     read -p "Press Enter to continue..."
 }
 
@@ -179,6 +191,11 @@ setup_prerequisites() {
 
 # Step 2: Choose theme
 setup_theme() {
+    # Skip in quick mode
+    if [[ "$SETUP_QUICK_MODE" == "true" ]]; then
+        return 0
+    fi
+
     setup_header
     setup_step 2 7 "Choose Your Theme"
 
@@ -186,7 +203,7 @@ setup_theme() {
 Themes give burnrate personality and style!
 
 Available themes:
-  1) ❄️  Glacial - Environmental impact (ice melting)
+  1) ❄️  Glacial - Environmental impact (ice melting) [DEFAULT]
   2) 🔥 Ember - Token burning (fire & heat)
   3) 🔋 Battery - Power consumption
   4) ⏳ Hourglass - Time & resources
@@ -205,7 +222,7 @@ EOF
     echo "Selected: ${themes[$choice]}"
     echo ""
 
-    if ask_yn "Preview this theme?" "y"; then
+    if ask_yn "Preview this theme?" "n"; then
         echo ""
         echo "Preview: ${themes[$choice]}"
         echo "(Theme preview would show here - TODO: fix theme loading)"
@@ -216,11 +233,17 @@ EOF
 
 # Step 3: Configure animations
 setup_animations() {
+    # Skip in quick mode (use defaults: enabled, normal speed, standard style)
+    if [[ "$SETUP_QUICK_MODE" == "true" ]]; then
+        return 0
+    fi
+
     setup_header
     setup_step 3 7 "Configure Animations"
 
     cat <<'EOF'
 Burnrate can show ASCII animations for a fun experience!
+Default: Enabled, Normal speed, Standard style
 
 EOF
 
@@ -228,7 +251,7 @@ EOF
         SETUP_ANIMATIONS="true"
         echo ""
         echo "Animation speed:"
-        local speed=$(ask_menu "Choose speed:" "Instant (no delay)" "Fast (50ms)" "Normal (100ms)" "Slow (200ms)")
+        local speed=$(ask_menu "Choose speed:" "Instant (no delay)" "Fast (50ms)" "Normal (100ms) [DEFAULT]" "Slow (200ms)")
         case $speed in
             0) SETUP_ANIMATION_SPEED="instant" ;;
             1) SETUP_ANIMATION_SPEED="fast" ;;
@@ -238,7 +261,7 @@ EOF
 
         echo ""
         echo "Animation style:"
-        local style=$(ask_menu "Choose style:" "Standard (balanced)" "Minimal (simple)" "Fancy (elaborate)")
+        local style=$(ask_menu "Choose style:" "Standard (balanced) [DEFAULT]" "Minimal (simple)" "Fancy (elaborate)")
         case $style in
             0) SETUP_ANIMATION_STYLE="standard" ;;
             1) SETUP_ANIMATION_STYLE="minimal" ;;
@@ -254,11 +277,17 @@ EOF
 
 # Step 4: Configure emoji
 setup_emoji() {
+    # Skip in quick mode (use default: enabled)
+    if [[ "$SETUP_QUICK_MODE" == "true" ]]; then
+        return 0
+    fi
+
     setup_header
     setup_step 4 7 "Configure Emoji"
 
     cat <<'EOF'
 Burnrate uses emoji to make output more visual and fun!
+Default: Enabled
 
 Examples:
   ❄️  Ice status indicators
@@ -280,12 +309,17 @@ EOF
 
 # Step 5: Configure budgets
 setup_budgets() {
+    # Skip in quick mode (use defaults: no budgets)
+    if [[ "$SETUP_QUICK_MODE" == "true" ]]; then
+        return 0
+    fi
+
     setup_header
     setup_step 5 7 "Configure Budgets (Optional)"
 
     cat <<'EOF'
 Set budget limits to get alerts when spending approaches your limits.
-Leave as 0.00 for no limit.
+Default: No budgets (0.00 = unlimited)
 
 EOF
 
