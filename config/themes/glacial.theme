@@ -98,9 +98,45 @@ THEME_LABEL_CACHE_READ="ICE PRESERVED!"
 THEME_LABEL_STATUS="Ice Status"
 
 # ============================================================================
-# TIPS
+# TIPS (Fun & Educational)
 # ============================================================================
 
 THEME_TIP_1="💡 High cache hit ratio saves the Arctic!"
 THEME_TIP_2="💡 Every uncached token melts more ice"
 THEME_TIP_3="💡 Keep that polar bear on solid ice 🐻‍❄️"
+THEME_TIP_4="💡 Cache misses make penguins sad 🐧"
+THEME_TIP_5="💡 Be cool, cache your tokens ❄️"
+THEME_TIP_6="💡 Hot AI = melted glaciers 🌊"
+THEME_TIP_7="💡 Your caching game is ice cold! (good thing)"
+
+# ============================================================================
+# FUN MESSAGES (Random variety)
+# ============================================================================
+
+# Token burn reactions
+THEME_BURN_LOW="Just a snowflake ❄️"
+THEME_BURN_MEDIUM="Ice cube melting... 🧊"
+THEME_BURN_HIGH="That's a hot token! 🔥"
+THEME_BURN_MASSIVE="GLACIER ALERT! 🚨"
+
+# Cache hit celebrations
+THEME_CACHE_HIT_1="Chill! That was cached ❄️"
+THEME_CACHE_HIT_2="Frozen in time, no tokens burned! 🧊"
+THEME_CACHE_HIT_3="Arctic efficiency! 🐻‍❄️"
+THEME_CACHE_HIT_4="Cool move! Ice preserved 💎"
+
+# Cache miss warnings
+THEME_CACHE_MISS_1="Oops, ice crack detected! 💧"
+THEME_CACHE_MISS_2="That token just melted the permafrost 🌊"
+THEME_CACHE_MISS_3="Global warming alert! 🌡️"
+
+# Daily summary messages
+THEME_SUMMARY_EFFICIENT="You're an Arctic hero today! 🦸"
+THEME_SUMMARY_AVERAGE="Not bad, but the ice is thinning... 🧊"
+THEME_SUMMARY_WASTEFUL="The polar bears are swimming! 🐻‍❄️💧"
+THEME_SUMMARY_DISASTER="Someone call Al Gore! 🌍🔥"
+
+# Startup messages
+THEME_STARTUP_1="Loading glacial theme... stay frosty! ❄️"
+THEME_STARTUP_2="Initializing Arctic monitoring system 🐻‍❄️"
+THEME_STARTUP_3="Ready to track the ice caps! 🗻"

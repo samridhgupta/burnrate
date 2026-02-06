@@ -215,9 +215,16 @@ preview_theme() {
 # ============================================================================
 
 # Validate theme file has required variables
+# Note: Themes can have MANY more variables than required!
+# Only validates minimum required fields - themes are encouraged to add:
+# - Fun messages (THEME_CACHE_HIT_1, THEME_CACHE_HIT_2, etc.)
+# - Tips (THEME_TIP_1, THEME_TIP_2, etc.)
+# - Custom reactions (THEME_BURN_LOW, THEME_BURN_HIGH, etc.)
+# - Anything creative!
 validate_theme() {
     local theme_file="$1"
 
+    # Minimum required variables (just the essentials)
     local required_vars=(
         "THEME_NAME"
         "THEME_DISPLAY_NAME"
@@ -252,6 +259,7 @@ validate_theme() {
         return 1
     fi
 
+    log_debug "Theme validated (required fields present, optional fields allowed)"
     return 0
 }
 
@@ -342,6 +350,35 @@ THEME_LABEL_COST="Cost"
 THEME_LABEL_SAVINGS="Savings"
 THEME_LABEL_TOKENS="Tokens"
 THEME_LABEL_STATUS="Status"
+
+# ============================================================================
+# OPTIONAL: Add as many fun messages as you want!
+# ============================================================================
+
+# Tips
+THEME_TIP_1="💡 Your first tip"
+THEME_TIP_2="💡 Your second tip"
+# Add THEME_TIP_3, THEME_TIP_4, etc...
+
+# Fun reactions to token burns
+# THEME_BURN_LOW="Small burn reaction"
+# THEME_BURN_HIGH="Big burn reaction"
+
+# Cache hit celebrations
+# THEME_CACHE_HIT_1="Yay, cached!"
+# THEME_CACHE_HIT_2="Another cache hit!"
+
+# Cache miss warnings
+# THEME_CACHE_MISS_1="Oh no, cache miss"
+
+# Daily summary messages
+# THEME_SUMMARY_EFFICIENT="You're doing great!"
+# THEME_SUMMARY_WASTEFUL="Try to cache more!"
+
+# Startup messages
+# THEME_STARTUP_1="Loading your theme..."
+
+# Get creative! The library handles any THEME_* variables you add
 EOF
 }
 
