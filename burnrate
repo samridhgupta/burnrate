@@ -27,6 +27,7 @@ source "$SCRIPT_DIR/lib/themes.sh"
 source "$SCRIPT_DIR/lib/pricing.sh"
 source "$SCRIPT_DIR/lib/stats.sh"
 source "$SCRIPT_DIR/lib/budget.sh"
+source "$SCRIPT_DIR/lib/historical.sh"
 
 # ============================================================================
 # Help & Usage
@@ -42,6 +43,10 @@ USAGE:
 COMMANDS:
     (no command)     Show today's summary (default)
     show             Show detailed cost report
+    history          Show daily usage history
+    week             Show this week's aggregate
+    month            Show this month's aggregate
+    trends           Show spending trends
     budget           Check budget status and alerts
     themes           List available themes
     preview <theme>  Preview a theme
@@ -146,6 +151,91 @@ cmd_budget() {
     fi
 }
 
+# Show daily history
+cmd_history() {
+    local format="${1:-table}"
+
+    if [[ "$CONFIG_SHOW_DISCLAIMER" == "true" ]]; then
+        echo "⚠️  ZERO TOKENS USED - Pure script, reads local files only"
+        echo ""
+    fi
+
+    echo "📅 Daily Token Usage History"
+    echo ""
+
+    format_daily_breakdown "$format"
+
+    if [[ "$CONFIG_SHOW_DISCLAIMER" == "true" ]]; then
+        echo ""
+        echo "${THEME_FOOTER}"
+    fi
+}
+
+# Show weekly aggregate
+cmd_week() {
+    if [[ "$CONFIG_SHOW_DISCLAIMER" == "true" ]]; then
+        echo "⚠️  ZERO TOKENS USED - Pure script, reads local files only"
+        echo ""
+    fi
+
+    echo "📅 This Week's Usage"
+    echo ""
+
+    local week_data
+    week_data=$(get_week_aggregate)
+    local tokens cost
+    tokens=$(echo "$week_data" | cut -d'|' -f1)
+    cost=$(echo "$week_data" | cut -d'|' -f2)
+
+    printf "Tokens:  %15s\n" "$(printf "%'d" "$tokens" 2>/dev/null || echo "$tokens")"
+    printf "Cost:    %15s\n" "\$$cost"
+
+    if [[ "$CONFIG_SHOW_DISCLAIMER" == "true" ]]; then
+        echo ""
+        echo "${THEME_FOOTER}"
+    fi
+}
+
+# Show monthly aggregate
+cmd_month() {
+    if [[ "$CONFIG_SHOW_DISCLAIMER" == "true" ]]; then
+        echo "⚠️  ZERO TOKENS USED - Pure script, reads local files only"
+        echo ""
+    fi
+
+    echo "📅 This Month's Usage"
+    echo ""
+
+    local month_data
+    month_data=$(get_month_aggregate)
+    local tokens cost
+    tokens=$(echo "$month_data" | cut -d'|' -f1)
+    cost=$(echo "$month_data" | cut -d'|' -f2)
+
+    printf "Tokens:  %15s\n" "$(printf "%'d" "$tokens" 2>/dev/null || echo "$tokens")"
+    printf "Cost:    %15s\n" "\$$cost"
+
+    if [[ "$CONFIG_SHOW_DISCLAIMER" == "true" ]]; then
+        echo ""
+        echo "${THEME_FOOTER}"
+    fi
+}
+
+# Show spending trends
+cmd_trends() {
+    if [[ "$CONFIG_SHOW_DISCLAIMER" == "true" ]]; then
+        echo "⚠️  ZERO TOKENS USED - Pure script, reads local files only"
+        echo ""
+    fi
+
+    show_historical_summary
+
+    if [[ "$CONFIG_SHOW_DISCLAIMER" == "true" ]]; then
+        echo ""
+        echo "${THEME_FOOTER}"
+    fi
+}
+
 # List themes
 cmd_themes() {
     echo "🎨 Available Themes"
@@ -195,7 +285,7 @@ parse_args() {
                 show_version
                 exit 0
                 ;;
-            show|budget|themes|preview|config|setup)
+            show|budget|history|week|month|trends|themes|preview|config|setup)
                 command="$1"
                 shift
                 args=("$@")
@@ -243,6 +333,18 @@ parse_args() {
             ;;
         budget)
             cmd_budget "${args[@]+"${args[@]}"}"
+            ;;
+        history)
+            cmd_history "${args[@]+"${args[@]}"}"
+            ;;
+        week)
+            cmd_week "${args[@]+"${args[@]}"}"
+            ;;
+        month)
+            cmd_month "${args[@]+"${args[@]}"}"
+            ;;
+        trends)
+            cmd_trends "${args[@]+"${args[@]}"}"
             ;;
         themes)
             cmd_themes "${args[@]+"${args[@]}"}"
