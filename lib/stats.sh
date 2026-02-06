@@ -69,18 +69,30 @@ get_total_tokens() {
     local content
     content=$(cat "$stats_file")
 
-    # Extract token counts
+    # Extract token counts (try both field name formats)
     local input_tokens
-    input_tokens=$(echo "$content" | grep -o '"input_tokens"[[:space:]]*:[[:space:]]*[0-9]*' | grep -o '[0-9]*$' || echo "0")
+    input_tokens=$(echo "$content" | grep -o '"inputTokens"[[:space:]]*:[[:space:]]*[0-9]*' | grep -o '[0-9]*$' || echo "0")
+    if [[ "$input_tokens" == "0" ]]; then
+        input_tokens=$(echo "$content" | grep -o '"input_tokens"[[:space:]]*:[[:space:]]*[0-9]*' | grep -o '[0-9]*$' || echo "0")
+    fi
 
     local output_tokens
-    output_tokens=$(echo "$content" | grep -o '"output_tokens"[[:space:]]*:[[:space:]]*[0-9]*' | grep -o '[0-9]*$' || echo "0")
+    output_tokens=$(echo "$content" | grep -o '"outputTokens"[[:space:]]*:[[:space:]]*[0-9]*' | grep -o '[0-9]*$' || echo "0")
+    if [[ "$output_tokens" == "0" ]]; then
+        output_tokens=$(echo "$content" | grep -o '"output_tokens"[[:space:]]*:[[:space:]]*[0-9]*' | grep -o '[0-9]*$' || echo "0")
+    fi
 
     local cache_creation_tokens
-    cache_creation_tokens=$(echo "$content" | grep -o '"cache_creation_input_tokens"[[:space:]]*:[[:space:]]*[0-9]*' | grep -o '[0-9]*$' || echo "0")
+    cache_creation_tokens=$(echo "$content" | grep -o '"cacheCreationInputTokens"[[:space:]]*:[[:space:]]*[0-9]*' | grep -o '[0-9]*$' || echo "0")
+    if [[ "$cache_creation_tokens" == "0" ]]; then
+        cache_creation_tokens=$(echo "$content" | grep -o '"cache_creation_input_tokens"[[:space:]]*:[[:space:]]*[0-9]*' | grep -o '[0-9]*$' || echo "0")
+    fi
 
     local cache_read_tokens
-    cache_read_tokens=$(echo "$content" | grep -o '"cache_read_input_tokens"[[:space:]]*:[[:space:]]*[0-9]*' | grep -o '[0-9]*$' || echo "0")
+    cache_read_tokens=$(echo "$content" | grep -o '"cacheReadInputTokens"[[:space:]]*:[[:space:]]*[0-9]*' | grep -o '[0-9]*$' || echo "0")
+    if [[ "$cache_read_tokens" == "0" ]]; then
+        cache_read_tokens=$(echo "$content" | grep -o '"cache_read_input_tokens"[[:space:]]*:[[:space:]]*[0-9]*' | grep -o '[0-9]*$' || echo "0")
+    fi
 
     echo "$input_tokens $output_tokens $cache_creation_tokens $cache_read_tokens"
 }
@@ -253,11 +265,16 @@ show_detailed_breakdown() {
     cache_read=$(echo "$breakdown" | grep '"cache_read"' | head -1 | grep -o '[0-9]*')
 
     local input_cost output_cost cache_write_cost cache_read_cost total_cost
-    input_cost=$(echo "$breakdown" | grep '"input"' | tail -1 | cut -d: -f2 | tr -d ' ,')
-    output_cost=$(echo "$breakdown" | grep '"output"' | tail -1 | cut -d: -f2 | tr -d ' ,')
-    cache_write_cost=$(echo "$breakdown" | grep '"cache_write"' | tail -1 | cut -d: -f2 | tr -d ' ,')
-    cache_read_cost=$(echo "$breakdown" | grep '"cache_read"' | tail -1 | cut -d: -f2 | tr -d ' ,')
-    total_cost=$(echo "$breakdown" | grep '"total"' | head -1 | cut -d: -f2 | tr -d ' ,')
+
+    # Extract from costs section (after "costs":)
+    local costs_section
+    costs_section=$(echo "$breakdown" | sed -n '/"costs":/,/}/p')
+
+    input_cost=$(echo "$costs_section" | grep '"input"' | cut -d: -f2 | tr -d ' ,')
+    output_cost=$(echo "$costs_section" | grep '"output"' | cut -d: -f2 | tr -d ' ,')
+    cache_write_cost=$(echo "$costs_section" | grep '"cache_write"' | cut -d: -f2 | tr -d ' ,')
+    cache_read_cost=$(echo "$costs_section" | grep '"cache_read"' | cut -d: -f2 | tr -d ' ,')
+    total_cost=$(echo "$costs_section" | grep '"total"' | cut -d: -f2 | tr -d ' ,')
 
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo "Token Usage & Cost Breakdown"
@@ -267,12 +284,12 @@ show_detailed_breakdown() {
     echo ""
     printf "%-20s %15s %12s\n" "Type" "Tokens" "Cost"
     printf "%-20s %15s %12s\n" "────" "──────" "────"
-    printf "%-20s %15s \$%11.4f\n" "Input" "$(format_number $input_tokens)" "$input_cost"
-    printf "%-20s %15s \$%11.4f\n" "Output" "$(format_number $output_tokens)" "$output_cost"
-    printf "%-20s %15s \$%11.4f\n" "Cache Write" "$(format_number $cache_write)" "$cache_write_cost"
-    printf "%-20s %15s \$%11.4f\n" "Cache Read" "$(format_number $cache_read)" "$cache_read_cost"
-    printf "%-20s %15s %12s\n" "────" "──────" "────"
-    printf "%-20s %15s \$%11.4f\n" "TOTAL" "$(format_number $((input_tokens + output_tokens + cache_write + cache_read)))" "$total_cost"
+    printf "%-20s %15s \$%11.2f\n" "Input" "$(format_number $input_tokens)" "$input_cost"
+    printf "%-20s %15s \$%11.2f\n" "Output" "$(format_number $output_tokens)" "$output_cost"
+    printf "%-20s %15s \$%11.2f\n" "Cache Write" "$(format_number $cache_write)" "$cache_write_cost"
+    printf "%-20s %15s \$%11.2f\n" "Cache Read" "$(format_number $cache_read)" "$cache_read_cost"
+    printf "%-20s %15s %12s\n" "────" "──────" "────────"
+    printf "%-20s %15s \$%11.2f\n" "TOTAL" "$(format_number $((input_tokens + output_tokens + cache_write + cache_read)))" "$total_cost"
     echo ""
 
     # Cache efficiency
