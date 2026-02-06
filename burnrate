@@ -28,6 +28,7 @@ source "$SCRIPT_DIR/lib/pricing.sh"
 source "$SCRIPT_DIR/lib/stats.sh"
 source "$SCRIPT_DIR/lib/budget.sh"
 source "$SCRIPT_DIR/lib/historical.sh"
+source "$SCRIPT_DIR/lib/export.sh"
 
 # ============================================================================
 # Help & Usage
@@ -48,12 +49,22 @@ COMMANDS:
     month            Show this month's aggregate
     trends           Show spending trends
     budget           Check budget status and alerts
+    export           Export data (json/csv/markdown)
     themes           List available themes
     preview <theme>  Preview a theme
     setup            Run interactive setup wizard
     config           Show current configuration
     version          Show version information
     help             Show this help message
+
+EXPORT:
+    burnrate export summary [format] [file]
+    burnrate export history [format] [file] [start] [end]
+    burnrate export budget [format] [file]
+    burnrate export full [format] [file]
+
+    Formats: json, csv, markdown (default: json)
+    Example: burnrate export summary markdown report.md
 
 OPTIONS:
     --theme <name>   Use specific theme
@@ -236,6 +247,22 @@ cmd_trends() {
     fi
 }
 
+# Export data
+cmd_export() {
+    local data_type="${1:-summary}"  # summary, history, budget, full
+    local format="${2:-json}"         # json, csv, markdown
+    local output_file="${3:-}"        # optional output file
+    local start_date="${4:-}"         # for history
+    local end_date="${5:-}"           # for history
+
+    if [[ "$CONFIG_SHOW_DISCLAIMER" == "true" && -z "$output_file" ]]; then
+        echo "⚠️  ZERO TOKENS USED - Pure script, reads local files only" >&2
+        echo "" >&2
+    fi
+
+    export_data "$data_type" "$format" "$output_file" "$start_date" "$end_date"
+}
+
 # List themes
 cmd_themes() {
     echo "🎨 Available Themes"
@@ -285,7 +312,7 @@ parse_args() {
                 show_version
                 exit 0
                 ;;
-            show|budget|history|week|month|trends|themes|preview|config|setup)
+            show|budget|history|week|month|trends|export|themes|preview|config|setup)
                 command="$1"
                 shift
                 args=("$@")
@@ -345,6 +372,9 @@ parse_args() {
             ;;
         trends)
             cmd_trends "${args[@]+"${args[@]}"}"
+            ;;
+        export)
+            cmd_export "${args[@]+"${args[@]}"}"
             ;;
         themes)
             cmd_themes "${args[@]+"${args[@]}"}"
