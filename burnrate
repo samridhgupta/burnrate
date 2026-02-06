@@ -1,0 +1,280 @@
+#!/usr/bin/env bash
+# burnrate - Claude token cost tracker
+# Zero tokens used - reads local stats only
+
+set -euo pipefail
+
+# ============================================================================
+# Bootstrap
+# ============================================================================
+
+# Get script directory
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Source libraries
+source "$SCRIPT_DIR/lib/core.sh"
+source "$SCRIPT_DIR/lib/config.sh"
+source "$SCRIPT_DIR/lib/colors.sh"
+source "$SCRIPT_DIR/lib/layout.sh"
+source "$SCRIPT_DIR/lib/animations.sh"
+source "$SCRIPT_DIR/lib/themes.sh"
+
+# ============================================================================
+# Help & Usage
+# ============================================================================
+
+show_help() {
+    cat <<'EOF'
+burnrate - Track Claude Code token costs with zero API calls
+
+USAGE:
+    burnrate [COMMAND] [OPTIONS]
+
+COMMANDS:
+    (no command)     Show today's summary (default)
+    show             Show detailed cost report
+    budget           Check budget status and alerts
+    themes           List available themes
+    preview <theme>  Preview a theme
+    setup            Run interactive setup wizard
+    config           Show current configuration
+    version          Show version information
+    help             Show this help message
+
+OPTIONS:
+    --theme <name>   Use specific theme
+    --format <fmt>   Output format (detailed|compact|minimal|json)
+    --no-color       Disable colors
+    --no-emoji       Disable emoji
+    --no-anim        Disable animations
+    --debug          Enable debug logging
+    --quiet          Minimal output
+
+EXAMPLES:
+    burnrate                    # Today's summary
+    burnrate show               # Detailed report
+    burnrate budget             # Budget status
+    burnrate themes             # List themes
+    burnrate preview ember      # Preview ember theme
+    burnrate --theme ember      # Use ember theme
+    burnrate --format json      # JSON output
+
+CONFIGURATION:
+    Config file: ~/.config/burnrate/burnrate.conf
+    See: burnrate config
+
+THEMES:
+    Bundled themes: glacial, ember, battery, hourglass, garden, ocean, space
+    User themes: ~/.config/burnrate/themes/
+    Create: copy example from config/themes/ and customize
+
+MORE INFO:
+    GitHub: https://github.com/yourusername/burnrate
+    Issues: https://github.com/yourusername/burnrate/issues
+
+EOF
+}
+
+show_version() {
+    echo "burnrate version $BURNRATE_VERSION"
+    echo "Zero tokens used - reads local files only"
+}
+
+# ============================================================================
+# Main Commands
+# ============================================================================
+
+# Show today's summary (default command)
+cmd_summary() {
+    echo "📊 Today's Token Burn Summary"
+    echo ""
+    echo "⚠️  ZERO TOKENS USED - Pure script, reads local files only"
+    echo ""
+    echo "TODO: Implement summary display"
+    echo "  - Today's cost"
+    echo "  - Token counts (input/output/cache)"
+    echo "  - Cache hit ratio"
+    echo "  - Budget status"
+    echo "  - Theme-appropriate visualization"
+}
+
+# Show detailed report
+cmd_show() {
+    echo "📈 Detailed Cost Report"
+    echo ""
+    echo "⚠️  ZERO TOKENS USED - Pure script, reads local files only"
+    echo ""
+    echo "TODO: Implement detailed report"
+    echo "  - Cost breakdown by token type"
+    echo "  - Historical data (7 days, 30 days)"
+    echo "  - Cache efficiency metrics"
+    echo "  - Model breakdown"
+    echo "  - Visualizations"
+}
+
+# Check budget status
+cmd_budget() {
+    echo "💰 Budget Status"
+    echo ""
+    echo "⚠️  ZERO TOKENS USED - Pure script, reads local files only"
+    echo ""
+    echo "TODO: Implement budget tracking"
+    echo "  - Daily budget: \$${CONFIG_DAILY_BUDGET}"
+    echo "  - Monthly budget: \$${CONFIG_MONTHLY_BUDGET}"
+    echo "  - Alert threshold: ${CONFIG_BUDGET_ALERT}%"
+    echo "  - Current spending vs budget"
+    echo "  - Projection"
+}
+
+# List themes
+cmd_themes() {
+    echo "🎨 Available Themes"
+    echo ""
+    list_themes detailed
+}
+
+# Preview theme
+cmd_preview() {
+    local theme_name="${1:-}"
+
+    if [[ -z "$theme_name" ]]; then
+        die_usage "Theme name required\nUsage: burnrate preview <theme>"
+    fi
+
+    preview_theme "$theme_name"
+}
+
+# Show configuration
+cmd_config() {
+    show_config
+}
+
+# Run setup wizard
+cmd_setup() {
+    echo "🔧 Burnrate Setup Wizard"
+    echo ""
+    echo "⚠️  ZERO TOKENS USED - Pure script, reads local files only"
+    echo ""
+    echo "TODO: Implement interactive setup"
+    echo "  - Welcome message"
+    echo "  - Check prerequisites (Claude Code installed)"
+    echo "  - Configure theme"
+    echo "  - Configure budgets"
+    echo "  - Configure animations"
+    echo "  - Generate config file"
+    echo "  - Test configuration"
+}
+
+# ============================================================================
+# Argument Parsing
+# ============================================================================
+
+# Parse command line arguments
+parse_args() {
+    local command=""
+    local args=()
+
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            # Commands
+            help|--help|-h)
+                show_help
+                exit 0
+                ;;
+            version|--version|-v)
+                show_version
+                exit 0
+                ;;
+            show|budget|themes|preview|config|setup)
+                command="$1"
+                shift
+                args=("$@")
+                break
+                ;;
+            # Options
+            --theme)
+                CONFIG_THEME="$2"
+                shift 2
+                ;;
+            --format)
+                CONFIG_OUTPUT_FORMAT="$2"
+                shift 2
+                ;;
+            --no-color|--no-colour)
+                CONFIG_COLORS_ENABLED=false
+                shift
+                ;;
+            --no-emoji)
+                CONFIG_EMOJI_ENABLED=false
+                shift
+                ;;
+            --no-anim|--no-animations)
+                CONFIG_ANIMATIONS_ENABLED=false
+                shift
+                ;;
+            --debug)
+                CONFIG_DEBUG=true
+                shift
+                ;;
+            --quiet|-q)
+                CONFIG_QUIET=true
+                shift
+                ;;
+            *)
+                die_usage "Unknown option: $1\nRun 'burnrate help' for usage"
+                ;;
+        esac
+    done
+
+    # Execute command
+    case "$command" in
+        show)
+            cmd_show "${args[@]+"${args[@]}"}"
+            ;;
+        budget)
+            cmd_budget "${args[@]+"${args[@]}"}"
+            ;;
+        themes)
+            cmd_themes "${args[@]+"${args[@]}"}"
+            ;;
+        preview)
+            cmd_preview "${args[@]+"${args[@]}"}"
+            ;;
+        config)
+            cmd_config "${args[@]+"${args[@]}"}"
+            ;;
+        setup)
+            cmd_setup "${args[@]+"${args[@]}"}"
+            ;;
+        "")
+            # Default: show summary
+            cmd_summary
+            ;;
+        *)
+            die_usage "Unknown command: $command\nRun 'burnrate help' for usage"
+            ;;
+    esac
+}
+
+# ============================================================================
+# Main
+# ============================================================================
+
+main() {
+    # Load configuration
+    load_config
+
+    # Validate configuration
+    validate_config
+
+    # Load theme
+    load_theme "$CONFIG_THEME"
+
+    # Parse arguments and run command
+    parse_args "$@"
+}
+
+# Run main if not sourced
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    main "$@"
+fi

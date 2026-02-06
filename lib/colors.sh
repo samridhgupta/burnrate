@@ -3,8 +3,8 @@
 # Provides color utilities and base theme system
 
 # Source dependencies
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "$SCRIPT_DIR/core.sh"
+_LIB_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$_LIB_DIR/core.sh"
 
 # ============================================================================
 # ANSI Color Codes

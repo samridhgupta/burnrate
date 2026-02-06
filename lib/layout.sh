@@ -3,8 +3,8 @@
 # Keeps it minimal - terminal does most of the work
 
 # Source dependencies
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "$SCRIPT_DIR/core.sh"
+LIB_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$LIB_DIR/core.sh"
 
 # ============================================================================
 # Terminal Size (Simple)

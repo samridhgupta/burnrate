@@ -2,6 +2,10 @@
 # lib/core.sh - Core utilities for burnrate
 # Robust, composable functions for logging, error handling, and system info
 
+# Source guard (prevent double-sourcing)
+[[ -n "${BURNRATE_CORE_LOADED:-}" ]] && return 0
+readonly BURNRATE_CORE_LOADED=1
+
 set -euo pipefail
 
 # Version and metadata

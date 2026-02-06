@@ -3,8 +3,8 @@
 # Minimal config with sensible defaults
 
 # Source core utilities
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "$SCRIPT_DIR/core.sh"
+LIB_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$LIB_DIR/core.sh"
 
 # ============================================================================
 # Configuration Paths

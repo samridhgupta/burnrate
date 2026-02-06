@@ -3,9 +3,9 @@
 # Simple, composable animations that adapt to config
 
 # Source dependencies
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "$SCRIPT_DIR/core.sh"
-source "$SCRIPT_DIR/config.sh"
+LIB_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$LIB_DIR/core.sh"
+source "$LIB_DIR/config.sh"
 
 # ============================================================================
 # Animation Configuration

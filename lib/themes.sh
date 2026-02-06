@@ -3,9 +3,9 @@
 # Supports crowdsourced themes with TUI preview
 
 # Source dependencies
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "$SCRIPT_DIR/core.sh"
-source "$SCRIPT_DIR/config.sh"
+LIB_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$LIB_DIR/core.sh"
+source "$LIB_DIR/config.sh"
 
 # ============================================================================
 # Theme Paths
@@ -16,7 +16,7 @@ get_theme_paths() {
     local theme_dirs=(
         "${XDG_CONFIG_HOME:-$HOME/.config}/burnrate/themes"  # User themes
         "$HOME/.burnrate/themes"                              # Legacy user themes
-        "$SCRIPT_DIR/../config/themes"                        # Bundled themes
+        "$LIB_DIR/../config/themes"                        # Bundled themes
     )
     printf '%s\n' "${theme_dirs[@]}"
 }
@@ -84,7 +84,7 @@ list_themes() {
             local theme_name=$(basename "$theme_file" .theme)
 
             # Skip if already seen (priority: first found wins)
-            [[ " ${seen[@]} " =~ " ${theme_name} " ]] && continue
+            [[ " ${seen[@]+"${seen[@]}"} " =~ " ${theme_name} " ]] && continue
             seen+=("$theme_name")
 
             # Load theme metadata
@@ -109,6 +109,12 @@ list_themes() {
             }
         done < <(find "$dir" -maxdepth 1 -name "*.theme" 2>/dev/null)
     done < <(get_theme_paths)
+
+    # Check if any themes found
+    if (( ${#themes[@]} == 0 )); then
+        echo "No themes found"
+        return 1
+    fi
 
     # Output based on format
     case "$format" in
