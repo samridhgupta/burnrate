@@ -14,7 +14,7 @@
 
 ---
 
-**→** [What is this](#what-is-this) · [Install](#install) · [Examples](#examples) · [Hook & Automate](#hook--automate) · [Permissions](#permissions) · [Commands](#commands) · [Configuration](#configuration) · [Themes](#themes) · [What it reveals](#what-burnrate-reveals) · [For agents](#for-agents-reading-this) · [Performance](#performance) · [How it works](#how-it-works) · [Limitations](#limitations) · [Troubleshooting](#troubleshooting) · [Security](#security) · [📖 INSTALL.md](INSTALL.md)
+**→** [What is this](#what-is-this) · [Install](#install) · [Examples](#examples) · [Hook & Automate](#hook--automate) · [Permissions](#permissions) · [Commands](#commands) · [Configuration](#configuration) · [Themes](#themes) · [What it reveals](#what-burnrate-reveals) · [For agents](#for-agents-reading-this) · [Performance](#performance) · [How it works](#how-it-works) · [Limitations](#limitations) · [Troubleshooting](#troubleshooting) · [Security](#security) · [📖 INSTALL.md](INSTALL.md) · [⌨️ CLI.md](CLI.md)
 
 ---
 
@@ -385,7 +385,7 @@ burnrate export full markdown report.md
 
 ## Configuration
 
-`~/.config/burnrate/burnrate.conf` — edit directly or via `burnrate config edit`. Or set `CONFIG_*` env vars for one-off overrides. → [Full config reference in INSTALL.md](INSTALL.md#all-config-options)
+`~/.config/burnrate/burnrate.conf` — edit directly or via `burnrate config edit`. Or set `CONFIG_*` env vars for one-off overrides. → [Full config + CLI reference in CLI.md](CLI.md) · [Setup presets in INSTALL.md](INSTALL.md#all-config-options)
 
 ```bash
 CONFIG_THEME="glacial"                # glacial | ember | battery | hourglass | garden | ocean | space
