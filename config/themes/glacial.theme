@@ -84,6 +84,11 @@ THEME_BUDGET_MSG_WARNING="Ice sheet warning ⚠️"
 THEME_BUDGET_MSG_CRITICAL="Glacier retreat! 🚨"
 THEME_BUDGET_MSG_EXCEEDED="Ice cap collapsed! 💥"
 
+# Unlimited / no budget messages (funny)
+THEME_BUDGET_UNLIMITED_DAILY="🌊 Unlimited daily — the ocean is your budget!"
+THEME_BUDGET_UNLIMITED_MONTHLY="🌍 Unlimited monthly — living like the arctic wind!"
+THEME_BUDGET_UNLIMITED_BOTH="♾️  No limits set — you're an ice age unto yourself! (set limits with: burnrate config)"
+
 # Footer
 THEME_FOOTER="Remember: Every token melts the ice. Cache to save the Arctic! 🐻‍❄️"
 

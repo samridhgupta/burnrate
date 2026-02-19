@@ -127,7 +127,7 @@ load_config() {
     # Step 2: Load from file if exists
     local config_file
     if config_file=$(find_config_file); then
-        log_info "Using config: $config_file"
+        log_debug "Using config: $config_file"
         parse_config_file "$config_file" || log_warn "Failed to parse config file"
     else
         log_debug "No config file found, using defaults"
@@ -271,7 +271,7 @@ create_default_config() {
 
     mkdir -p "$config_dir"
     generate_config_example > "$config_file"
-    log_info "Created config file: $config_file"
+    log_debug "Created config file: $config_file"
     return 0
 }
 

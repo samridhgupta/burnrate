@@ -241,14 +241,125 @@ show_summary() {
     local costs_section
     costs_section=$(echo "$breakdown" | sed -n '/"costs":/,/}/p')
     total_cost=$(echo "$costs_section" | grep '"total"' | grep -o '[0-9.]*' | head -1)
+    total_cost=$(clean_number "${total_cost:-0}")
 
     local cache_efficiency
     cache_efficiency=$(get_cache_efficiency "$stats_file")
 
-    echo "Model: $model"
+    # Color-code cache efficiency using theme levels
+    local cache_icon cache_color cache_label reset="\033[0m"
+    local ce_int
+    ce_int=$(echo "$cache_efficiency" | cut -d. -f1)
+    if [[ "$ce_int" -ge 90 ]]; then
+        cache_icon="${THEME_CACHE_EXCELLENT:-❄️ }"
+        cache_color="${THEME_SUCCESS:-\033[0;36m}"
+        cache_label="excellent"
+    elif [[ "$ce_int" -ge 75 ]]; then
+        cache_icon="${THEME_CACHE_GOOD:-🧊}"
+        cache_color="${THEME_SUCCESS:-\033[0;36m}"
+        cache_label="good"
+    elif [[ "$ce_int" -ge 50 ]]; then
+        cache_icon="${THEME_STATUS_WARNING:-💧}"
+        cache_color="${THEME_WARNING:-\033[0;33m}"
+        cache_label="ok"
+    elif [[ "$ce_int" -ge 25 ]]; then
+        cache_icon="${THEME_STATUS_CRITICAL:-🌊}"
+        cache_color="${THEME_WARNING:-\033[0;33m}"
+        cache_label="low"
+    else
+        cache_icon="${THEME_CACHE_POOR:-🔥}"
+        cache_color="${THEME_ERROR:-\033[0;31m}"
+        cache_label="poor — consider caching more!"
+    fi
+
+    echo "Model:  $model"
     echo "Tokens: $(format_number $total_tokens)"
-    echo "Cost: \$$(format_cost $total_cost)"
-    echo "Cache Hit: ${cache_efficiency}%"
+    echo "Cost:   \$$(format_cost $total_cost)"
+    echo -e "Cache:  ${cache_color}${cache_icon} ${cache_efficiency}% hit rate (${cache_label})${reset}"
+
+    # Budget remaining — only show if budgets are configured
+    local daily_budget monthly_budget
+    daily_budget=$(echo "${CONFIG_DAILY_BUDGET:-0}" | tr -d '$, ')
+    monthly_budget=$(echo "${CONFIG_MONTHLY_BUDGET:-0}" | tr -d '$, ')
+    local alert_pct="${CONFIG_BUDGET_ALERT:-90}"
+
+    # Budget display helper — uses loaded theme variables when available
+    _budget_line() {
+        local label="$1" budget="$2" spent="$3"
+        [[ $(echo "$budget > 0" | bc 2>/dev/null) != "1" ]] && return
+
+        local remaining pct
+        remaining=$(printf "%.2f" "$(echo "scale=2; $budget - $spent" | bc 2>/dev/null || echo "0")")
+        pct=$(printf "%.1f" "$(echo "scale=1; $spent / $budget * 100" | bc 2>/dev/null || echo "0")")
+        local pct_int
+        pct_int=$(echo "$pct" | cut -d. -f1)
+
+        local reset="\033[0m"
+
+        # Pick icon + color + message from theme (with plain fallbacks)
+        local icon color msg
+        if [[ "$pct_int" -ge 100 ]]; then
+            icon="${THEME_BUDGET_EXCEEDED:-💥}"
+            color="${THEME_ERROR:-\033[0;31m}"
+            msg="${THEME_BUDGET_MSG_EXCEEDED:-Over budget!}"
+        elif [[ "$pct_int" -ge "${alert_pct%.*}" ]]; then
+            icon="${THEME_BUDGET_CRITICAL:-🚨}"
+            color="${THEME_WARNING:-\033[0;33m}"
+            msg="${THEME_BUDGET_MSG_CRITICAL:-Approaching limit}"
+        elif [[ "$pct_int" -ge 50 ]]; then
+            icon="${THEME_BUDGET_WARNING:-⚠️ }"
+            color="${THEME_WARNING:-\033[0;33m}"
+            msg="${THEME_BUDGET_MSG_WARNING:-Halfway there}"
+        else
+            icon="${THEME_BUDGET_SAFE:-🐻‍❄️ }"
+            color="${THEME_SUCCESS:-\033[0;32m}"
+            msg="${THEME_BUDGET_MSG_OK:-On track}"
+        fi
+
+        # Ice-level bar (30 chars wide): filled = spent, empty = remaining
+        local bar_width=20
+        local filled=0
+        if [[ "$pct_int" -ge 100 ]]; then
+            filled=$bar_width
+        else
+            filled=$(echo "$pct_int * $bar_width / 100" | bc 2>/dev/null || echo "0")
+        fi
+        local empty=$(( bar_width - filled ))
+
+        local fill_char="${THEME_PROGRESS_CHAR:-█}"
+        local empty_char="${THEME_EMPTY_CHAR:-░}"
+        local bar=""
+        local i=0
+        while [[ $i -lt $filled ]]; do bar="${bar}${fill_char}"; i=$((i+1)); done
+        i=0
+        while [[ $i -lt $empty  ]]; do bar="${bar}${empty_char}"; i=$((i+1)); done
+
+        local abs_remaining="${remaining#-}"
+        local amount_str
+        if [[ $(echo "$remaining < 0" | bc 2>/dev/null) == "1" ]]; then
+            amount_str="OVER \$$(format_cost $abs_remaining)"
+        else
+            amount_str="\$$(format_cost $remaining) left"
+        fi
+
+        echo -e "  ${icon} ${label} ${color}[${bar}]${reset} ${color}${amount_str} (${pct}%)${reset}"
+        echo -e "         ${color}${msg}${reset}"
+    }
+
+    local has_daily=false has_monthly=false
+    [[ $(echo "$daily_budget > 0"   | bc 2>/dev/null) == "1" ]] && has_daily=true
+    [[ $(echo "$monthly_budget > 0" | bc 2>/dev/null) == "1" ]] && has_monthly=true
+
+    if [[ "$has_daily" == "true" || "$has_monthly" == "true" ]]; then
+        echo ""
+        _budget_line "Daily  " "$daily_budget"   "$total_cost"
+        _budget_line "Monthly" "$monthly_budget" "$total_cost"
+    else
+        # No budgets — show funny unlimited message from theme
+        local unlimited_msg="${THEME_BUDGET_UNLIMITED_BOTH:-♾️  No limits set — you\'re living dangerously! (burnrate config to set budgets)}"
+        echo ""
+        echo -e "  ${unlimited_msg}"
+    fi
 }
 
 # Show detailed breakdown
