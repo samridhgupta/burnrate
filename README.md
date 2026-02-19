@@ -206,11 +206,39 @@ burnrate history      # Daily table (responsive, drops columns on narrow termina
 burnrate week         # This week's aggregate
 burnrate month        # This month's aggregate
 burnrate budget       # Budget status + spend projection
+burnrate query <m>    # Single raw metric — for scripts and agents
 burnrate config       # Current configuration
 burnrate themes       # List themes
 burnrate preview <t>  # Preview a theme
 burnrate doctor       # Full health check (28 assertions)
 burnrate setup        # Interactive setup wizard
+```
+
+**`burnrate query`** — machine-readable single values, no formatting, no color:
+
+```bash
+burnrate query cost           # 449.97
+burnrate query tokens         # 740107049
+burnrate query cache_rate     # 91.77
+burnrate query cache_savings  # 1830.37
+burnrate query trend          # -50.0  (negative = less than last week)
+burnrate query weekly_cost    # 2.11
+burnrate query monthly_cost   # 14.67
+burnrate query last7_cost     # 3.28
+burnrate query model          # Sonnet
+```
+
+Pipe it anywhere:
+```bash
+# Is cache rate below 70%? Warn me.
+rate=$(burnrate query cache_rate)
+(( $(echo "$rate < 70" | bc) )) && echo "Cache health degraded: ${rate}%"
+
+# Log daily cost to a file
+echo "$(date +%F),$(burnrate query cost)" >> ~/token-log.csv
+
+# Feed into another tool or agent context
+echo "Current token spend: \$$(burnrate query monthly_cost) this month"
 ```
 
 **Export**
@@ -371,13 +399,24 @@ Things that should make you wince:
 
 If you're Claude (or another agent) and this output has been piped into your context — hello. This is the token cost report for the current session or system.
 
-A few things worth knowing:
+**Quick metric checks** — use `burnrate query` to pull a single number without parsing anything:
 
-- **High cache write cost isn't bad** — it means context is being cached for reuse. The cache read savings shown in `burnrate show` tell you whether it paid off.
-- **The cache hit rate is the single most useful signal.** Above 85% means the user's workflow is cache-friendly. Below 60% means each turn is paying full input price.
-- **Cost trend direction matters more than the absolute number.** A ▼ on the TOTAL row means efficiency is improving.
-- **You can suggest the user run `burnrate trends`** to see whether recent sessions are getting more or less expensive over time — useful context before a long task.
-- **If the monthly cost is near the user's budget threshold**, it's worth being token-conscious: prefer targeted reads over broad file scans, avoid re-summarising large context blocks unnecessarily.
+```bash
+burnrate query cost          # total spend so far
+burnrate query cache_rate    # cache efficiency %
+burnrate query trend         # week-over-week % change (negative = improving)
+burnrate query monthly_cost  # spend this calendar month
+```
+
+These return raw values: no color, no formatting, no banner. Safe to capture in `$(...)` and act on directly.
+
+**How to read what you see:**
+
+- **High cache write cost isn't bad** — it means context is being cached for reuse. The savings line in `burnrate show` tells you whether it paid off.
+- **Cache hit rate is the single most useful signal.** Above 85% = workflow is cache-friendly. Below 60% = each turn paying full input price.
+- **▼ on the TOTAL row** means this week costs less than last. ▲ means it's climbing.
+- **Suggest `burnrate trends`** before a long task — gives the user a quick picture of whether spend is growing.
+- **If monthly cost is near budget**, be token-conscious: targeted file reads over broad scans, avoid re-summarising large context blocks already in cache.
 
 The user hooked burnrate here so both of you stay informed. Use it.
 

@@ -67,6 +67,8 @@ COMMANDS:
     preview <theme>  Preview a theme
     setup            Run interactive setup wizard
     config           Show current configuration
+    query <metric>   Single raw metric — for scripting/agents (no formatting)
+    doctor           Full health check (28 assertions)
     version          Show version information
     help             Show this help message
 
@@ -319,6 +321,89 @@ cmd_doctor() {
     run_doctor "$@"
 }
 
+# Query a single metric — raw output, no formatting, no color
+# Designed for scripting, hooks, and agents
+cmd_query() {
+    local metric="${1:-}"
+
+    if [[ -z "$metric" ]]; then
+        cat >&2 <<'EOF'
+Usage: burnrate query <metric>
+
+Metrics:
+  cost           Total cost (e.g. 4.21)
+  tokens         Total token count (e.g. 2847392)
+  cache_rate     Cache hit rate 0-100 (e.g. 87.30)
+  cache_savings  Dollar savings from caching (e.g. 29.14)
+  trend          Weekly % change, signed (e.g. -31.4 or N/A)
+  weekly_cost    This week's spend (e.g. 2.11)
+  monthly_cost   This month's spend (e.g. 14.67)
+  last7_cost     Last 7 days spend (e.g. 3.28)
+  model          Current model name (e.g. sonnet)
+EOF
+        exit 1
+    fi
+
+    # Helper: ensure leading zero on bare decimals (.01 → 0.01)
+    _q_norm() { echo "$1" | awk '{printf "%g\n", $1+0}'; }
+
+    local breakdown tokens model
+    breakdown=$(get_usage_breakdown "$CONFIG_STATS_FILE" 2>/dev/null) || {
+        echo "error: could not read stats" >&2; exit 1
+    }
+
+    case "$metric" in
+        cost|total_cost)
+            # Extract from the costs block (not the tokens block which also has "total")
+            local v
+            v=$(echo "$breakdown" | sed -n '/"costs":/,/^}/p' | grep '"total"' | grep -o '[0-9.]*')
+            _q_norm "$v"
+            ;;
+        tokens|total_tokens)
+            tokens=$(get_total_tokens "$CONFIG_STATS_FILE" 2>/dev/null)
+            read -r inp out cw cr <<< "$tokens"
+            echo $(( inp + out + cw + cr ))
+            ;;
+        cache_rate)
+            get_cache_efficiency "$CONFIG_STATS_FILE" 2>/dev/null
+            ;;
+        cache_savings)
+            model=$(echo "$breakdown" | grep '"model"' | tail -1 | cut -d'"' -f4)
+            local sv
+            sv=$(get_cache_savings "$CONFIG_STATS_FILE" "$model" 2>/dev/null)
+            _q_norm "$sv"
+            ;;
+        trend)
+            local t
+            t=$(get_spending_trend 2>/dev/null)
+            echo "$t" | cut -d'|' -f3
+            ;;
+        weekly_cost)
+            local wv
+            wv=$(get_week_aggregate 2>/dev/null | cut -d'|' -f2)
+            _q_norm "$wv"
+            ;;
+        monthly_cost)
+            local mv
+            mv=$(get_month_aggregate 2>/dev/null | cut -d'|' -f2)
+            _q_norm "$mv"
+            ;;
+        last7_cost)
+            local lv
+            lv=$(get_last_n_days_aggregate 7 2>/dev/null | cut -d'|' -f2)
+            _q_norm "$lv"
+            ;;
+        model)
+            echo "$breakdown" | grep '"model_friendly"' | cut -d'"' -f4
+            ;;
+        *)
+            echo "error: unknown metric '$metric'" >&2
+            echo "Run 'burnrate query' to see available metrics." >&2
+            exit 1
+            ;;
+    esac
+}
+
 # ============================================================================
 # Argument Parsing
 # ============================================================================
@@ -339,7 +424,7 @@ parse_args() {
                 show_version
                 exit 0
                 ;;
-            show|budget|history|week|month|trends|export|themes|preview|config|setup|doctor)
+            show|budget|history|week|month|trends|export|themes|preview|config|setup|doctor|query)
                 command="$1"
                 shift
                 args=("$@")
@@ -417,6 +502,9 @@ parse_args() {
             ;;
         doctor)
             cmd_doctor "${args[@]+"${args[@]}"}"
+            ;;
+        query)
+            cmd_query "${args[@]+"${args[@]}"}"
             ;;
         "")
             # Default: show summary
