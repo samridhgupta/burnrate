@@ -295,10 +295,47 @@ burnrate preview space          # try before you commit
         ↓
    dailyModelTokens  →  sparkline  →  trend %
         ↓
-   your terminal in ~50ms
+   your terminal in ~0.6–33s (see Performance)
 ```
 
 Pure bash 3.2+. One external dep (`bc` for decimal math). Zero startup overhead. The entire thing is readable shell — no magic, no build step, no node_modules abyss.
+
+---
+
+## Performance
+
+Measured on macOS with a large stats file (~740M cumulative tokens, ~45 daily entries). Times scale with history size — a fresh install will be faster.
+
+| Command | Wall time | Memory | Context tokens† | Hook-safe | Bottleneck |
+|---------|-----------|--------|-----------------|-----------|------------|
+| `burnrate` | ~0.7s | ~3.6 MB | ~210 | ✓ | Stats parse + bc |
+| `burnrate query <m>` | ~0.6s | ~3.6 MB | 1–10 | ✓ | Stats parse + bc |
+| `burnrate budget` | ~0.6s | ~3.7 MB | ~240 | ✓ | Stats parse + 2 date lookups |
+| `burnrate export summary json` | ~0.6s | ~3.7 MB | ~90 | ✓ | Same as summary |
+| `burnrate history` | ~6s | ~3.7 MB | ~460 | ⚠️ slow | Iterates all daily entries |
+| `burnrate show` | ~11s | ~3.7 MB | ~410 | ⚠️ slow | Summary + 2 aggregation passes |
+| `burnrate export full json` | ~6s | ~3.7 MB | ~450 | ⚠️ slow | summary + history + budget |
+| `burnrate trends` | ~33s | ~3.7 MB | ~325 | ✗ avoid | 3 aggregation windows + sparkline |
+
+† Approximate LLM context tokens when output is piped into an agent (ANSI stripped, ~4 chars/token).
+
+**For Claude Code Stop hooks** — use `burnrate` or `burnrate query` only. `trends` and `show` do multiple aggregation passes and will noticeably slow down your prompt loop.
+
+**Why memory is flat** — burnrate loads ~12 shell source files at startup (~3.6 MB baseline). Each command then does its work in subshells. Peak RSS barely moves because bash itself is the process; data never lives in heap.
+
+**Why `trends` is slow** — three separate aggregation windows (last-7, this-week, this-month) each iterate the full daily history in serial bash loops with `bc` math per entry. With a large history file, this compounds. A future awk rewrite would cut it to a single pass.
+
+---
+
+## Limitations
+
+- **Cumulative totals only.** `stats-cache.json` stores lifetime token counts, not per-session. Burnrate can break these down by day (from `dailyModelTokens`) but not by project, branch, or conversation.
+- **Daily granularity.** The finest resolution is one row per model per day. There's no intra-day breakdown.
+- **Single-model pricing.** Costs are calculated at the current detected model's rate. If you've switched models over time, historical costs for old entries are estimated at the current price.
+- **No concurrent-write safety.** If multiple Claude sessions run simultaneously, burnrate may read a partially-written stats file. Run `burnrate doctor` if numbers look wrong.
+- **bc required.** Decimal math needs `bc`. It ships on every macOS and most Linux distros. Missing? `sudo apt-get install bc`.
+- **Stats file format coupling.** If Anthropic changes the structure of `stats-cache.json`, parsing breaks. `burnrate doctor` will tell you loudly.
+- **bash 3.2 compatibility tradeoff.** No associative arrays means awk workarounds in several hot paths — contributing to the slower commands above.
 
 ---
 
