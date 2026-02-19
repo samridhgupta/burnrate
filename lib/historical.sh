@@ -328,7 +328,7 @@ show_historical_summary() {
 
     printf "Last 7 days:  %15s tokens    \$%s\n" \
         "$(printf "%'d" "$last_7_tokens" 2>/dev/null || echo "$last_7_tokens")" \
-        "$last_7_cost"
+        "$(format_cost "$last_7_cost")"
 
     # This week
     local this_week
@@ -339,7 +339,7 @@ show_historical_summary() {
 
     printf "This week:    %15s tokens    \$%s\n" \
         "$(printf "%'d" "$week_tokens" 2>/dev/null || echo "$week_tokens")" \
-        "$week_cost"
+        "$(format_cost "$week_cost")"
 
     # This month
     local this_month
@@ -350,7 +350,7 @@ show_historical_summary() {
 
     printf "This month:   %15s tokens    \$%s\n" \
         "$(printf "%'d" "$month_tokens" 2>/dev/null || echo "$month_tokens")" \
-        "$month_cost"
+        "$(format_cost "$month_cost")"
 
     # Trend
     local trend
@@ -362,8 +362,8 @@ show_historical_summary() {
 
     echo ""
     echo "📈 Weekly Trend"
-    printf "Last week:    \$%s\n" "$last_w"
-    printf "This week:    \$%s" "$this_w"
+    printf "Last week:    \$%s\n" "$(format_cost "$last_w")"
+    printf "This week:    \$%s" "$(format_cost "$this_w")"
 
     if [[ "$change" != "N/A" ]]; then
         local sign=""

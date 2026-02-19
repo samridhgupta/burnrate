@@ -8,6 +8,7 @@ source "$LIB_DIR/core.sh"
 source "$LIB_DIR/config.sh"
 source "$LIB_DIR/pricing.sh"
 source "$LIB_DIR/stats.sh"
+source "$LIB_DIR/layout.sh"
 
 # ============================================================================
 # Helper Functions
@@ -364,9 +365,9 @@ trigger_alert() {
     local budget="$4"
 
     echo ""
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    _themed_hr
     echo "  🚨 BUDGET ALERT"
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    _themed_hr
     echo ""
     echo "Budget Type: $(echo "$budget_type" | tr '[:lower:]' '[:upper:]')"
     printf "Spent: \$%s\n" "$(format_cost $(clean_number "$spent"))"
@@ -375,7 +376,7 @@ trigger_alert() {
     echo ""
     echo "$(get_budget_message "$percentage")"
     echo ""
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    _themed_hr
 }
 
 # ============================================================================
@@ -466,9 +467,9 @@ project_budget() {
 
 # Show budget summary
 show_budget_summary() {
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    _themed_hr
     echo "  💰 Budget Status"
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    _themed_hr
     echo ""
 
     # Daily budget
@@ -569,7 +570,7 @@ show_budget_summary() {
         echo ""
     fi
 
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    _themed_hr
 }
 
 log_debug "Budget tracking loaded"
