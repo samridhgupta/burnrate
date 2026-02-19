@@ -1,0 +1,40 @@
+{
+  "name": "@burnrate/claude-plugin",
+  "version": "0.1.0",
+  "description": "Claude plugin for burnrate - Track Claude Code token costs with zero API calls",
+  "main": "dist/index.js",
+  "type": "module",
+  "bin": {
+    "burnrate-mcp": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "prepare": "npm run build"
+  },
+  "keywords": [
+    "claude",
+    "mcp",
+    "tokens",
+    "cost-tracking",
+    "burnrate",
+    "claude-code"
+  ],
+  "author": "Burnrate Contributors",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/burnrate.git",
+    "directory": "plugin"
+  }
+}

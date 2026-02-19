@@ -292,6 +292,11 @@ cmd_setup() {
     run_setup
 }
 
+cmd_doctor() {
+    source "$SCRIPT_DIR/lib/doctor.sh"
+    run_doctor "$@"
+}
+
 # ============================================================================
 # Argument Parsing
 # ============================================================================
@@ -312,7 +317,7 @@ parse_args() {
                 show_version
                 exit 0
                 ;;
-            show|budget|history|week|month|trends|export|themes|preview|config|setup)
+            show|budget|history|week|month|trends|export|themes|preview|config|setup|doctor)
                 command="$1"
                 shift
                 args=("$@")
@@ -387,6 +392,9 @@ parse_args() {
             ;;
         setup)
             cmd_setup "${args[@]+"${args[@]}"}"
+            ;;
+        doctor)
+            cmd_doctor "${args[@]+"${args[@]}"}"
             ;;
         "")
             # Default: show summary

@@ -22,6 +22,25 @@
 
 **🤖 Agents:** Yes, even AI agents can install and use burnrate! See [Agent Guide](#-for-claude-agents) below.
 
+## 🔌 Claude Plugin Available!
+
+Use burnrate directly from Claude conversations with our official MCP plugin:
+
+- **Track costs** while chatting with Claude
+- **Get summaries** without leaving your conversation
+- **Check budgets** in real-time
+- **Export data** on demand
+- **Zero tokens used** - completely offline!
+
+👉 **[Install the Plugin](plugin/README.md)** | [Quick Start](plugin/QUICKSTART.md)
+
+```
+You: "Check my token usage with burnrate"
+Claude: Uses burnrate_summary tool
+        📊 Token Burn Summary
+        Tokens: 592M | Cost: $346.79 | Cache: 92.4% ✅
+```
+
 ## 🌍 What Is This?
 
 Burnrate tracks your [Claude Code](https://claude.com/claude-code) token usage and calculates costs in real-time. With a unique **environmental theme system**, it makes token usage tangible and meaningful - all without using a single token!

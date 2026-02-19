@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
-# Burnrate One-Line Installer
+# Burnrate Installer
 # curl -fsSL https://raw.githubusercontent.com/user/burnrate/main/install.sh | bash
+# Or locally: ./install.sh [--reinstall] [--skip-setup]
 
-set -euo pipefail
+set -uo pipefail
 
 # ============================================================================
 # Configuration
@@ -11,21 +12,22 @@ set -euo pipefail
 readonly REPO_URL="https://github.com/yourusername/burnrate"
 readonly INSTALL_DIR="${BURNRATE_INSTALL_DIR:-$HOME/.local/bin}"
 readonly SOURCE_DIR="$HOME/.local/share/burnrate"
+readonly CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/burnrate"
 
 # ============================================================================
 # Colors
 # ============================================================================
 
-COLOR_RESET='\033[0m'
-COLOR_CYAN='\033[1;36m'
-COLOR_GREEN='\033[0;32m'
-COLOR_YELLOW='\033[0;33m'
-COLOR_RED='\033[0;31m'
+_IC='\033[0m'
+_ICY='\033[1;36m'
+_IGN='\033[0;32m'
+_IYL='\033[0;33m'
+_IRD='\033[0;31m'
 
-info() { echo -e "${COLOR_CYAN}❄️  $*${COLOR_RESET}"; }
-success() { echo -e "${COLOR_GREEN}✓ $*${COLOR_RESET}"; }
-warn() { echo -e "${COLOR_YELLOW}⚠ $*${COLOR_RESET}"; }
-error() { echo -e "${COLOR_RED}✗ $*${COLOR_RESET}"; exit 1; }
+info() { echo -e "${_ICY}❄️  $*${_IC}"; }
+success() { echo -e "${_IGN}✓ $*${_IC}"; }
+warn() { echo -e "${_IYL}⚠ $*${_IC}"; }
+error() { echo -e "${_IRD}✗ $*${_IC}"; exit 1; }
 
 # ============================================================================
 # System Detection
@@ -53,31 +55,43 @@ detect_shell() {
 
 check_prerequisites() {
     info "Checking prerequisites..."
+    local ok=true
 
     # Check bash version
-    if [[ "${BASH_VERSINFO[0]}" -lt 4 ]]; then
-        warn "Bash 4+ recommended (you have $BASH_VERSION)"
+    local bash_major
+    bash_major=$(echo "$BASH_VERSION" | cut -d. -f1)
+    if [[ "$bash_major" -lt 4 ]]; then
+        warn "Bash 4+ recommended (you have $BASH_VERSION) - will still work on 3.2+"
+    else
+        success "Bash $BASH_VERSION"
     fi
 
     # Check Claude directory
     if [[ ! -d "$HOME/.claude" ]]; then
-        error "Claude Code not found. Install Claude Code first:\n  https://claude.ai/download"
+        error "Claude Code not found. Install Claude Code first: https://claude.ai/download"
     fi
     success "Claude Code installed"
 
     # Check stats file
     if [[ ! -f "$HOME/.claude/stats-cache.json" ]]; then
-        warn "Stats file not found. Run Claude Code at least once."
+        warn "Stats file not found - run Claude Code at least once to generate it"
     else
         success "Stats file found"
     fi
 
-    # Check for git (optional, for git install)
+    # Check bc
+    if command -v bc >/dev/null 2>&1; then
+        success "bc calculator installed"
+    else
+        error "bc not found. Install it: apt-get install bc / brew install bc"
+    fi
+
+    # Check for git (optional, for remote install)
     if command -v git >/dev/null 2>&1; then
         success "Git installed"
         return 0
     else
-        warn "Git not found (will use curl download)"
+        warn "Git not found (will use curl for remote install)"
         return 1
     fi
 }
@@ -86,14 +100,25 @@ check_prerequisites() {
 # Installation
 # ============================================================================
 
+install_from_local() {
+    local src_dir="$1"
+    info "Installing from local directory: $src_dir"
+
+    # Copy to source dir
+    rm -rf "$SOURCE_DIR"
+    mkdir -p "$(dirname "$SOURCE_DIR")"
+    cp -r "$src_dir" "$SOURCE_DIR" || error "Failed to copy files"
+
+    success "Installed to $SOURCE_DIR"
+}
+
 install_from_git() {
     info "Installing from git..."
 
     # Clone or update
     if [[ -d "$SOURCE_DIR/.git" ]]; then
         info "Updating existing installation..."
-        cd "$SOURCE_DIR"
-        git pull origin main || error "Failed to update"
+        (cd "$SOURCE_DIR" && git pull origin main) || error "Failed to update"
     else
         info "Cloning repository..."
         rm -rf "$SOURCE_DIR"
@@ -188,7 +213,7 @@ run_setup_wizard() {
 show_completion_message() {
     echo ""
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo -e "${COLOR_CYAN}  ✨ Burnrate installed successfully! ✨${COLOR_RESET}"
+    echo -e "${_ICY}  ✨ Burnrate installed successfully! ✨${_IC}"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
     echo "Quick start:"
@@ -222,7 +247,7 @@ ask_yn() {
     while true; do
         read -p "$question $prompt " answer
         answer="${answer:-$default}"
-        case "${answer,,}" in
+        case "$(echo "$answer" | tr '[:upper:]' '[:lower:]')" in
             y|yes) return 0 ;;
             n|no) return 1 ;;
             *) echo "Please answer yes or no." ;;
@@ -234,10 +259,31 @@ ask_yn() {
 # Main Installation Flow
 # ============================================================================
 
+detect_existing_install() {
+    [[ -L "$INSTALL_DIR/burnrate" || -f "$INSTALL_DIR/burnrate" ]]
+}
+
 main() {
+    local reinstall=false
+    local skip_setup=false
+
+    # Parse args
+    for arg in "$@"; do
+        case "$arg" in
+            --reinstall|-r) reinstall=true ;;
+            --skip-setup|-s) skip_setup=true ;;
+            --help|-h)
+                echo "Usage: $0 [--reinstall] [--skip-setup]"
+                echo "  --reinstall   Force reinstall even if already installed"
+                echo "  --skip-setup  Skip the setup wizard prompt"
+                exit 0
+                ;;
+        esac
+    done
+
     echo ""
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo -e "${COLOR_CYAN}  🔥 Burnrate Installer${COLOR_RESET}"
+    echo -e "${_ICY}  🔥 Burnrate Installer${_IC}"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
     echo "Track Claude Code token costs with zero API calls!"
@@ -248,19 +294,36 @@ main() {
     os=$(detect_os)
     info "OS: $os"
 
-    local shell
-    shell=$(detect_shell)
-    info "Shell: $shell"
+    local detected_shell
+    detected_shell=$(detect_shell)
+    info "Shell: $detected_shell"
     echo ""
+
+    # Check if already installed
+    if detect_existing_install && [[ "$reinstall" == "false" ]]; then
+        local installed_ver
+        installed_ver=$("$INSTALL_DIR/burnrate" --version 2>/dev/null | head -1 || echo "unknown")
+        info "Existing install detected: $installed_ver"
+        if ask_yn "Update existing installation?" "y"; then
+            reinstall=true
+        else
+            info "Keeping existing install. Use --reinstall to force update."
+            exit 0
+        fi
+        echo ""
+    fi
 
     # Check prerequisites
-    if ! check_prerequisites; then
-        error "Prerequisites not met"
-    fi
+    check_prerequisites
     echo ""
 
-    # Install
-    if command -v git >/dev/null 2>&1; then
+    # Install - prefer local if running from repo directory
+    local script_dir
+    script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+    if [[ -f "$script_dir/burnrate" && -d "$script_dir/lib" ]]; then
+        install_from_local "$script_dir"
+    elif command -v git >/dev/null 2>&1; then
         install_from_git
     else
         install_from_curl
@@ -275,8 +338,15 @@ main() {
     add_to_path
     echo ""
 
-    # Run setup wizard
-    run_setup_wizard
+    # Run setup wizard (skip on reinstall unless explicitly wanted)
+    if [[ "$skip_setup" == "false" ]]; then
+        if [[ "$reinstall" == "true" ]]; then
+            info "Reinstall complete. Config preserved at: $CONFIG_DIR"
+            info "Run 'burnrate setup' to reconfigure."
+        else
+            run_setup_wizard
+        fi
+    fi
     echo ""
 
     # Show completion

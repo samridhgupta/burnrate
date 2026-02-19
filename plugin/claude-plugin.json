@@ -1,0 +1,97 @@
+{
+  "schema_version": "1.0",
+  "name": "burnrate",
+  "display_name": "Burnrate - Token Cost Tracker",
+  "version": "0.1.0",
+  "description": "Track Claude Code token costs with zero API calls. Get real-time usage reports, set budgets, and analyze spending trends - all from local stats.",
+  "icon": "🔥❄️",
+  "author": {
+    "name": "Burnrate Contributors",
+    "url": "https://github.com/yourusername/burnrate"
+  },
+  "categories": [
+    "productivity",
+    "development",
+    "analytics"
+  ],
+  "keywords": [
+    "tokens",
+    "cost",
+    "tracking",
+    "budget",
+    "analytics",
+    "claude-code",
+    "usage",
+    "monitoring"
+  ],
+  "homepage": "https://github.com/yourusername/burnrate",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/burnrate"
+  },
+  "license": "MIT",
+  "mcp_server": {
+    "command": "node",
+    "args": [
+      "dist/index.js"
+    ],
+    "env": {
+      "BURNRATE_PATH": "burnrate"
+    }
+  },
+  "permissions": {
+    "filesystem": {
+      "read": [
+        "~/.claude/stats-cache.json",
+        "~/.config/burnrate/"
+      ],
+      "write": [
+        "~/.config/burnrate/"
+      ]
+    },
+    "network": false
+  },
+  "requirements": {
+    "burnrate_cli": {
+      "description": "Burnrate CLI must be installed",
+      "installation": "See https://github.com/yourusername/burnrate#installation"
+    },
+    "node": ">=18.0.0"
+  },
+  "features": [
+    {
+      "name": "Real-time Cost Tracking",
+      "description": "Monitor token usage and costs without making any API calls"
+    },
+    {
+      "name": "Budget Management",
+      "description": "Set daily, weekly, or monthly budgets with automatic alerts"
+    },
+    {
+      "name": "Historical Analysis",
+      "description": "View usage trends and patterns over time"
+    },
+    {
+      "name": "Cache Efficiency",
+      "description": "Track cache hit rates and optimize your costs"
+    },
+    {
+      "name": "Multiple Export Formats",
+      "description": "Export data as JSON, CSV, or Markdown for analysis"
+    },
+    {
+      "name": "Zero Token Usage",
+      "description": "Completely offline - reads local stats only"
+    }
+  ],
+  "screenshots": [
+    {
+      "url": "https://example.com/screenshots/summary.png",
+      "caption": "Token usage summary with cost breakdown"
+    },
+    {
+      "url": "https://example.com/screenshots/history.png",
+      "caption": "Daily usage history with trends"
+    }
+  ]
+}

@@ -169,13 +169,13 @@ EOF
 # Cost Formatting
 # ============================================================================
 
-# Format cost as currency
-format_cost() {
+# Format cost as currency string with $ prefix (for display use only)
+format_cost_str() {
     local amount="$1"
-    local decimals="${2:-2}"
+    local decimals="${2:-${CONFIG_COST_DECIMALS:-2}}"
 
-    # Format with proper decimal places
-    printf "$%.${decimals}f" "$amount"
+    # Format with proper decimal places and $ prefix
+    printf "\$%.${decimals}f" "$amount"
 }
 
 # Format cost with color based on amount
@@ -185,7 +185,7 @@ format_cost_colored() {
     local threshold_high="${3:-1.00}"
 
     local formatted
-    formatted=$(format_cost "$amount" 2)
+    formatted=$(format_cost_str "$amount" 2)
 
     # Color based on thresholds
     if (( $(echo "$amount < $threshold_low" | bc -l) )); then
