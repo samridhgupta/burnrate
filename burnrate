@@ -40,6 +40,7 @@ source "$LIB_DIR/pricing.sh"
 source "$LIB_DIR/stats.sh"
 source "$LIB_DIR/budget.sh"
 source "$LIB_DIR/historical.sh"
+source "$LIB_DIR/charts.sh"
 source "$LIB_DIR/export.sh"
 
 # ============================================================================
@@ -155,6 +156,14 @@ cmd_show() {
     fi
 
     show_detailed_breakdown "$CONFIG_STATS_FILE"
+
+    # Inline weekly cost trend badge
+    local _trend _change _d="\033[2m" _r="\033[0m"
+    _trend=$(get_spending_trend)
+    _change=$(echo "$_trend" | cut -d'|' -f3)
+    printf "  Weekly trend:  "
+    trend_inline "$_change"; echo ""
+    echo ""
 
     _themed_hr
 

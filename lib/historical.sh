@@ -12,6 +12,7 @@ source "$LIB_DIR/config.sh"
 source "$LIB_DIR/stats.sh"
 source "$LIB_DIR/pricing.sh"
 source "$LIB_DIR/date-utils.sh"
+source "$LIB_DIR/charts.sh"
 
 # Get daily token history from stats file
 # Returns: Array of "date:model:tokens" entries
@@ -123,6 +124,28 @@ get_daily_breakdown() {
         cost=$(calculate_daily_cost "$tokens" "$model")
         echo "$date|$model|$tokens|$cost"
     done <<< "$history"
+}
+
+# Get per-day token totals summed across all models, last N active days
+# Returns: "date|total_tokens" lines sorted by date
+get_daily_totals() {
+    local n_days="${1:-20}"
+
+    local history
+    history=$(get_daily_history) || return 1
+    [[ -z "$history" ]] && return 1
+
+    local cutoff today
+    cutoff=$(get_date_days_ago "$n_days")
+    today=$(get_current_date)
+
+    echo "$history" | awk -F: -v cutoff="$cutoff" -v today="$today" '
+    {
+        d = $1; t = $3 + 0
+        if (d >= cutoff && d <= today) day_tokens[d] += t
+    }
+    END { for (d in day_tokens) print d "|" day_tokens[d] }
+    ' | sort
 }
 
 # Get aggregate for a date range
@@ -314,67 +337,119 @@ get_spending_trend() {
     echo "$last_week_cost|$this_week_cost|$change_percent"
 }
 
-# Show historical summary
+# Show historical summary with sparkline and inline trend badges
 show_historical_summary() {
-    echo "📅 Historical Token Usage"
+    _themed_hr
+    echo "  📊 Spending Trends"
+    _themed_hr
     echo ""
 
-    # Last 7 days
-    local last_7
+    # ── Sparkline of active days ────────────────────────────────────────────
+    local tw daily_totals
+    tw=$(term_width)
+    local max_days=20
+    (( tw < 60 )) && max_days=14
+
+    daily_totals=$(get_daily_totals "$max_days")
+
+    if [[ -n "$daily_totals" ]]; then
+        local values n_days
+        values=$(echo "$daily_totals" | cut -d'|' -f2)
+        n_days=$(echo "$daily_totals" | wc -l | tr -d ' ')
+
+        local spark
+        spark=$(sparkline "$values")
+
+        local d="\033[2m" r="\033[0m"
+        echo -e "  ${d}Token volume  ·  last ${n_days} active days${r}"
+        echo "  ▕${spark}▏"
+        echo ""
+    fi
+
+    # ── Period table with inline trend badges ───────────────────────────────
+
+    # Compute weekly trend (this vs last week)
+    local trend last_w this_w week_change
+    trend=$(get_spending_trend)
+    last_w=$(echo "$trend" | cut -d'|' -f1)
+    this_w=$(echo "$trend" | cut -d'|' -f2)
+    week_change=$(echo "$trend" | cut -d'|' -f3)
+
+    # Compute 7-day vs prev-7-day trend
+    local last_7 prev_7 last_7_tokens last_7_cost prev_7_cost trend_7
     last_7=$(get_last_n_days_aggregate 7)
-    local last_7_tokens last_7_cost
+    prev_7=$(get_date_range_aggregate "$(get_date_days_ago 14)" "$(get_date_days_ago 7)")
     last_7_tokens=$(echo "$last_7" | cut -d'|' -f1)
     last_7_cost=$(echo "$last_7" | cut -d'|' -f2)
+    prev_7_cost=$(echo "$prev_7" | cut -d'|' -f2)
 
-    printf "Last 7 days:  %15s tokens    \$%s\n" \
-        "$(printf "%'d" "$last_7_tokens" 2>/dev/null || echo "$last_7_tokens")" \
-        "$(format_cost "$last_7_cost")"
+    if [[ "$prev_7_cost" == "0" || "$prev_7_cost" == "0.00" ]]; then
+        trend_7="N/A"
+    else
+        trend_7=$(echo "scale=1; ($last_7_cost - $prev_7_cost) / $prev_7_cost * 100" | bc 2>/dev/null || echo "N/A")
+    fi
 
     # This week
-    local this_week
+    local this_week week_tokens week_cost
     this_week=$(get_week_aggregate)
-    local week_tokens week_cost
     week_tokens=$(echo "$this_week" | cut -d'|' -f1)
     week_cost=$(echo "$this_week" | cut -d'|' -f2)
 
-    printf "This week:    %15s tokens    \$%s\n" \
-        "$(printf "%'d" "$week_tokens" 2>/dev/null || echo "$week_tokens")" \
-        "$(format_cost "$week_cost")"
-
     # This month
-    local this_month
+    local this_month month_tokens month_cost
     this_month=$(get_month_aggregate)
-    local month_tokens month_cost
     month_tokens=$(echo "$this_month" | cut -d'|' -f1)
     month_cost=$(echo "$this_month" | cut -d'|' -f2)
 
-    printf "This month:   %15s tokens    \$%s\n" \
+    local d="\033[2m" r="\033[0m"
+    # Header
+    printf "${d}  %-14s  %15s  %8s${r}\n" "PERIOD" "TOKENS" "COST"
+    printf "${d}  %-14s  %15s  %8s${r}\n" "──────────────" "───────────────" "────────"
+
+    # Last 7 days row — trend vs prev 7 days
+    printf "  %-14s  %15s  %8s  " \
+        "Last 7 days" \
+        "$(printf "%'d" "$last_7_tokens" 2>/dev/null || echo "$last_7_tokens")" \
+        "\$$(format_cost "$last_7_cost")"
+    trend_inline "$trend_7"; echo ""
+
+    # This week row — trend vs last week
+    printf "  %-14s  %15s  %8s  " \
+        "This week" \
+        "$(printf "%'d" "$week_tokens" 2>/dev/null || echo "$week_tokens")" \
+        "\$$(format_cost "$week_cost")"
+    trend_inline "$week_change"; echo ""
+
+    # This month row — no comparison period
+    printf "  %-14s  %15s  %8s\n" \
+        "This month" \
         "$(printf "%'d" "$month_tokens" 2>/dev/null || echo "$month_tokens")" \
-        "$(format_cost "$month_cost")"
-
-    # Trend
-    local trend
-    trend=$(get_spending_trend)
-    local last_w this_w change
-    last_w=$(echo "$trend" | cut -d'|' -f1)
-    this_w=$(echo "$trend" | cut -d'|' -f2)
-    change=$(echo "$trend" | cut -d'|' -f3)
-
+        "\$$(format_cost "$month_cost")"
     echo ""
-    echo "📈 Weekly Trend"
-    printf "Last week:    \$%s\n" "$(format_cost "$last_w")"
-    printf "This week:    \$%s" "$(format_cost "$this_w")"
 
-    if [[ "$change" != "N/A" ]]; then
-        local sign=""
-        if echo "$change" | grep -q "^-"; then
-            sign=""  # Already has minus
-            echo " (${change}% 📉)"
-        else
-            sign="+"
-            echo " (${sign}${change}% 📈)"
+    # ── Cache health (one line) ─────────────────────────────────────────────
+    local cache_eff cache_savings model
+    cache_eff=$(get_cache_efficiency "$CONFIG_STATS_FILE" 2>/dev/null)
+    model=$(get_model_from_stats "$CONFIG_STATS_FILE" 2>/dev/null)
+    cache_savings=$(get_cache_savings "$CONFIG_STATS_FILE" "$model" 2>/dev/null)
+
+    if [[ -n "$cache_eff" && "$cache_eff" != "0" ]]; then
+        local ce_int cache_color cache_label cache_icon reset="\033[0m"
+        ce_int=$(echo "$cache_eff" | cut -d. -f1)
+        if   [[ "$ce_int" -ge 90 ]]; then cache_color="${THEME_SUCCESS:-\033[0;36m}"; cache_label="excellent"; cache_icon="${THEME_CACHE_EXCELLENT:-❄️ }"
+        elif [[ "$ce_int" -ge 75 ]]; then cache_color="${THEME_SUCCESS:-\033[0;36m}"; cache_label="good";      cache_icon="${THEME_CACHE_GOOD:-🧊}"
+        elif [[ "$ce_int" -ge 50 ]]; then cache_color="${THEME_WARNING:-\033[0;33m}"; cache_label="ok";        cache_icon="💧"
+        else                               cache_color="${THEME_ERROR:-\033[0;31m}";   cache_label="low";       cache_icon="🔥"
         fi
-    else
-        echo " (first week)"
+
+        printf "${d}  %-14s  %15s  %8s${r}\n" "CACHE" "" ""
+        printf "${d}  %-14s  %15s  %8s${r}\n" "──────────────" "───────────────" "────────"
+        printf "  %-14s  " "Hit rate"
+        echo -e "${cache_color}${cache_icon} ${cache_eff}%  ${cache_label}${reset}"
+        if [[ -n "$cache_savings" && "$cache_savings" != "0" ]]; then
+            printf "  %-14s  " "Savings"
+            echo -e "${cache_color}\$$(format_cost "$cache_savings") vs no caching${reset}"
+        fi
+        echo ""
     fi
 }
