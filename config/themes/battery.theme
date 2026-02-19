@@ -1,0 +1,140 @@
+#!/usr/bin/env bash
+# Battery Theme - Power Consumption
+# "Your tokens are charge. Your wallet is the outlet. Cache is power-saving mode."
+
+# ============================================================================
+# THEME METADATA
+# ============================================================================
+
+THEME_NAME="battery"
+THEME_DISPLAY_NAME="Battery"
+THEME_EMOJI="🔋"
+THEME_DESCRIPTION="Device battery draining — cache = power-saving mode"
+THEME_AUTHOR="burnrate"
+THEME_VERSION="1.0.0"
+
+# ============================================================================
+# COLORS (Battery Indicator Palette)
+# ============================================================================
+
+THEME_PRIMARY='\033[1;32m'       # Bright green (full charge)
+THEME_SUCCESS='\033[0;32m'       # Green (healthy)
+THEME_WARNING='\033[0;33m'       # Yellow (medium charge)
+THEME_ERROR='\033[0;31m'         # Red (critical)
+THEME_INFO='\033[0;36m'          # Cyan (info)
+THEME_DIM='\033[2;32m'           # Dim green (standby)
+
+# ============================================================================
+# STATUS INDICATORS (Charge levels)
+# ============================================================================
+
+THEME_STATUS_EXCELLENT="🔋"      # 90-100% - Full charge
+THEME_STATUS_GOOD="🪫"           # 75-89%  - Charged (above half)
+THEME_STATUS_WARNING="⚡"        # 50-74%  - Half charge (feeling it)
+THEME_STATUS_CRITICAL="🔌"       # 25-49%  - Find a charger
+THEME_STATUS_DANGER="💀"         # 0-24%   - Dead battery
+
+# Budget status
+THEME_BUDGET_SAFE="🔋"           # Safe — full tank
+THEME_BUDGET_WARNING="⚡"        # Warning — check the meter
+THEME_BUDGET_CRITICAL="🔌"       # Critical — plug in NOW
+THEME_BUDGET_EXCEEDED="💀"       # Exceeded — battery dead
+
+# Cache efficiency
+THEME_CACHE_EXCELLENT="🔋"       # Cache = fully charged
+THEME_CACHE_GOOD="⚡"            # Cache = charging
+THEME_CACHE_POOR="🪫"            # Cache = draining fast
+
+# ============================================================================
+# ICONS
+# ============================================================================
+
+THEME_ICON_LOADING="⚡"
+THEME_ICON_SUCCESS="🔋"
+THEME_ICON_ERROR="💀"
+THEME_ICON_WARNING="⚠️"
+THEME_ICON_INFO="ℹ️"
+THEME_ICON_COST="⚡"
+THEME_ICON_TOKENS="🪫"
+THEME_ICON_CACHE="🔋"
+THEME_ICON_BUDGET="🔌"
+
+# ============================================================================
+# MESSAGES
+# ============================================================================
+
+THEME_MSG_EXCELLENT="100% — fully charged and efficient 🔋"
+THEME_MSG_GOOD="Good charge — running well above half 🪫"
+THEME_MSG_WARNING="Half charge and dropping. Enable power-saving mode. ⚡"
+THEME_MSG_CRITICAL="Low battery! Find a charger (cache your context) 🔌"
+THEME_MSG_DANGER="Dead. The battery is dead. You did this. 💀"
+
+THEME_CACHE_MSG_EXCELLENT="Power-saving mode ON — max battery life 🔋"
+THEME_CACHE_MSG_GOOD="Battery optimized — charging through cache ⚡"
+THEME_CACHE_MSG_POOR="Battery saver disabled! Draining at full rate 🪫"
+
+THEME_BUDGET_MSG_OK="Charge levels stable — budget holding 🔋"
+THEME_BUDGET_MSG_WARNING="Charge dropping faster than expected ⚡"
+THEME_BUDGET_MSG_CRITICAL="Low battery warning — budget nearly depleted 🔌"
+THEME_BUDGET_MSG_EXCEEDED="Battery dead. Budget flatlined. 💀"
+
+THEME_BUDGET_UNLIMITED_DAILY="⚡ Unlimited daily — an infinite power source? (set limits: burnrate config)"
+THEME_BUDGET_UNLIMITED_MONTHLY="🔌 Unlimited monthly — plugged into the grid, someone else's grid!"
+THEME_BUDGET_UNLIMITED_BOTH="🔋 No limits set — living off the grid with someone else's electricity. (burnrate config)"
+
+THEME_FOOTER="Every token drains the battery. Cache = power-saving mode. 🔋"
+
+# Context window messages
+THEME_CTX_OK="Plenty of charge left — context is full 🔋"
+THEME_CTX_HALF="Context at half charge. Consider /compact to top up. ⚡"
+THEME_CTX_WARNING="Low battery on context! Run /compact before it cuts out. 🔌"
+THEME_CTX_CRITICAL="Context battery critical! /compact now or plug in a new session. 💀"
+
+# ============================================================================
+# LABELS
+# ============================================================================
+
+THEME_LABEL_COST="Power Draw"
+THEME_LABEL_SAVINGS="Energy Saved"
+THEME_LABEL_TOKENS="Charge Used"
+THEME_LABEL_CACHE_READ="POWER SAVED!"
+THEME_LABEL_STATUS="Battery Level"
+
+# ============================================================================
+# TIPS
+# ============================================================================
+
+THEME_TIP_1="💡 Cache = power-saving mode. Enable it, save money."
+THEME_TIP_2="💡 High cache rate = longer battery life per session"
+THEME_TIP_3="💡 Short focused prompts use less charge"
+THEME_TIP_4="💡 Output tokens cost 5x — use concise response requests"
+THEME_TIP_5="💡 Cached context = free re-read. Your phone wishes it could do this."
+THEME_TIP_6="💡 Set a monthly budget: that's your power bill limit"
+THEME_TIP_7="💡 A dead battery can be recharged. A depleted wallet, less so. 🔌"
+
+# ============================================================================
+# FUN MESSAGES
+# ============================================================================
+
+THEME_BURN_LOW="Barely a screen wake ⚡"
+THEME_BURN_MEDIUM="Normal usage day 🔋"
+THEME_BURN_HIGH="Screen at full brightness, all apps open 🔌"
+THEME_BURN_MASSIVE="BATTERY CRITICAL — CONNECT TO POWER NOW 💀"
+
+THEME_CACHE_HIT_1="Power saved — cache did the heavy lifting 🔋"
+THEME_CACHE_HIT_2="Running on reserves! 0 new tokens burned ⚡"
+THEME_CACHE_HIT_3="Power-saving mode: activated 🪫"
+THEME_CACHE_HIT_4="Battery efficiency: excellent 💡"
+
+THEME_CACHE_MISS_1="Oops, full brightness mode activated 🔌"
+THEME_CACHE_MISS_2="That drained a good chunk ⚡"
+THEME_CACHE_MISS_3="Cache miss! Someone's paying the power bill 💀"
+
+THEME_SUMMARY_EFFICIENT="Running on minimal charge today — efficiency hero 🔋"
+THEME_SUMMARY_AVERAGE="Normal power consumption. Not great, not terrible. ⚡"
+THEME_SUMMARY_WASTEFUL="Phone on full brightness, all notifications on, screen always on. Classic. 🔌"
+THEME_SUMMARY_DISASTER="You are the reason power bills exist. 💀"
+
+THEME_STARTUP_1="Charging the cost tracker... ⚡"
+THEME_STARTUP_2="Battery analysis system online 🔋"
+THEME_STARTUP_3="Power consumption report incoming — check your charge levels 🪫"

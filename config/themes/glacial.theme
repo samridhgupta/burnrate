@@ -92,6 +92,12 @@ THEME_BUDGET_UNLIMITED_BOTH="♾️  No limits set — you're an ice age unto yo
 # Footer
 THEME_FOOTER="Remember: Every token melts the ice. Cache to save the Arctic! 🐻‍❄️"
 
+# Context window messages
+THEME_CTX_OK="Ice field clear — plenty of context left. ❄️"
+THEME_CTX_HALF="Context half frozen. Run /compact before the next long haul. 💧"
+THEME_CTX_WARNING="Context melting fast! Run /compact before the glacier cracks. ⚠️"
+THEME_CTX_CRITICAL="Context cap near collapse! /compact now or start a fresh session. 🚨"
+
 # ============================================================================
 # LABELS (Environmental Terminology)
 # ============================================================================

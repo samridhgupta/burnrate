@@ -317,7 +317,7 @@ Burnrate needs exactly two things:
 | **Write** | `~/.config/burnrate/` | Config + budget state. Your Claude files untouched. |
 | **Write** | `~/.claude/settings.json` | Only if you opt-in during `burnrate setup` to add a Stop hook. |
 
-No network. No API keys. No root. No surprises.
+No network. No API keys. No root. No surprises. Just a calculator with opinions about ice.
 
 ---
 
@@ -420,7 +420,12 @@ Seven built-in metaphors for your token burn:
 ```bash
 burnrate --theme ember          # one-off
 burnrate preview space          # try before you commit
+burnrate themes                 # list all available themes
 ```
+
+Custom themes go in `~/.config/burnrate/themes/`. burnrate finds them automatically.
+
+> Want to build your own? **[📖 THEMES.md](THEMES.md)** has the full variable spec, a blank template, and instructions for cloning from an existing theme. It's mostly just writing messages — the structure is already there.
 
 ---
 
@@ -508,7 +513,7 @@ Pure bash 3.2+. One external dep (`bc` for decimal math). Zero startup overhead.
 
 ## Performance
 
-Measured on macOS with a large stats file (~740M cumulative tokens, ~45 daily entries). Times scale with history size — a fresh install will be faster.
+Measured on macOS with a large stats file (~740M cumulative tokens, ~45 daily entries). Times scale with history size — a fresh install will be faster. Yes, `trends` is slow. We know. It knows. You'll survive.
 
 **Cost & cache commands** (reads `stats-cache.json`):
 
@@ -551,9 +556,9 @@ Measured on macOS with a large stats file (~740M cumulative tokens, ~45 daily en
 - **Daily granularity.** The finest resolution is one row per model per day. There's no intra-day breakdown.
 - **Single-model pricing.** Costs are calculated at the current detected model's rate. If you've switched models over time, historical costs for old entries are estimated at the current price.
 - **No concurrent-write safety.** If multiple Claude sessions run simultaneously, burnrate may read a partially-written stats file. Run `burnrate doctor` if numbers look wrong.
-- **bc required.** Decimal math needs `bc`. It ships on every macOS and most Linux distros. Missing? `sudo apt-get install bc`.
+- **bc required.** Decimal math needs `bc`. Ships on every macOS and most Linux distros. If it's missing, your system has other problems too — `sudo apt-get install bc`.
 - **Stats file format coupling.** If Anthropic changes the structure of `stats-cache.json`, parsing breaks. `burnrate doctor` will tell you loudly.
-- **bash 3.2 compatibility tradeoff.** No associative arrays means awk workarounds in several hot paths — contributing to the slower commands above.
+- **bash 3.2 compatibility tradeoff.** No associative arrays means awk workarounds in several hot paths — contributing to the slower commands above. macOS ships bash 3.2 from 2007. We could require bash 5. We chose not to. You're welcome.
 - **Context window is last-message only.** `burnrate context` reads the last assistant message in the most recently modified session JSONL. It reflects the state at the end of the previous turn, not mid-turn. Accuracy is ~1 turn behind.
 - **Context data requires an active session.** Returns `N/A` if no JSONL session files are found in `~/.claude/projects/` — e.g. on first run, or outside of a Claude Code session.
 

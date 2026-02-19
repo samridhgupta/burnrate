@@ -31,14 +31,14 @@ ln -s /mnt/c/Users/$WINDOWS_USER/.claude ~/.claude
 **Verify**
 ```bash
 burnrate          # Today's summary
-burnrate doctor   # Full health check
+burnrate doctor   # Full health check (prepare for humbling)
 ```
 
 ---
 
 ## Setup presets
 
-After install, run `burnrate setup` to configure. Use a preset to skip all prompts:
+After install, run `burnrate setup` to configure. Use a preset to skip all prompts — or use the interactive wizard if you enjoy making decisions at install time:
 
 ```bash
 burnrate setup                # interactive wizard (recommended for first install)
@@ -114,7 +114,7 @@ burnrate setup --context-warn=80 --context-display=visual
 
 ## Claude Code Hook
 
-The Stop hook shows your token summary after every Claude response. It's the single most useful thing you can do with burnrate — you'll always know your burn rate.
+The Stop hook shows your token summary after every Claude response. It's the single most useful thing you can do with burnrate — you'll always know your burn rate. Ignorance was cheaper. But now you know.
 
 **Setup automatically:**
 ```bash
@@ -179,6 +179,8 @@ burnrate setup --budget-only             # update just the budget values
 ---
 
 ## All config options
+
+Every knob. Every dial. All of them with sensible defaults you'll probably never change, except `THEME` and `MONTHLY_BUDGET`, which you'll change immediately.
 
 ```bash
 # ~/.config/burnrate/burnrate.conf
@@ -250,6 +252,8 @@ Then use `burnrate query <metric>` for single values.
 ---
 
 ## Uninstall
+
+Parting is such sweet sorrow. The Arctic will miss you.
 
 **Standard** (keeps config and budget data):
 ```bash
