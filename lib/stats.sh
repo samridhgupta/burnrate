@@ -233,10 +233,14 @@ show_summary() {
     model=$(echo "$breakdown" | grep '"model_friendly"' | cut -d'"' -f4)
 
     local total_tokens
-    total_tokens=$(echo "$breakdown" | grep '"total"' | tail -1 | grep -o '[0-9]*')
+    local tokens_section
+    tokens_section=$(echo "$breakdown" | sed -n '/"tokens":/,/}/p')
+    total_tokens=$(echo "$tokens_section" | grep '"total"' | grep -o '[0-9]*' | head -1)
 
     local total_cost
-    total_cost=$(echo "$breakdown" | grep '"total"' | head -1 | cut -d: -f2 | tr -d ' ,')
+    local costs_section
+    costs_section=$(echo "$breakdown" | sed -n '/"costs":/,/}/p')
+    total_cost=$(echo "$costs_section" | grep '"total"' | grep -o '[0-9.]*' | head -1)
 
     local cache_efficiency
     cache_efficiency=$(get_cache_efficiency "$stats_file")
