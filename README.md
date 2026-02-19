@@ -14,6 +14,10 @@
 
 ---
 
+**→** [What is this](#what-is-this) · [Install](#install) · [Examples](#examples) · [Hook & Automate](#hook--automate) · [Permissions](#permissions) · [Commands](#commands) · [Configuration](#configuration) · [Themes](#themes) · [What it reveals](#what-burnrate-reveals) · [For agents](#for-agents-reading-this) · [Performance](#performance) · [How it works](#how-it-works) · [Limitations](#limitations) · [Troubleshooting](#troubleshooting) · [Security](#security)
+
+---
+
 ## What is this?
 
 Burnrate reads `~/.claude/stats-cache.json` — the local file Claude Code writes after every session — and turns raw token counts into costs, trends, and sparklines. No API call. No token spent. No Claude-ception.
@@ -23,6 +27,36 @@ Burnrate reads `~/.claude/stats-cache.json` — the local file Claude Code write
   Tokens: 740,107,049
   Cost:   $449.97
   Cache:  ❄️  91.77% hit rate (excellent)
+```
+
+---
+
+## Install
+
+**Homebrew** (macOS / Linux — recommended)
+```bash
+brew tap samridhgupta/burnrate https://github.com/samridhgupta/burnrate && brew install burnrate
+```
+
+**curl one-liner**
+```bash
+curl -fsSL https://raw.githubusercontent.com/samridhgupta/burnrate/main/install.sh | bash
+```
+
+**git (manual)**
+```bash
+git clone https://github.com/samridhgupta/burnrate && cd burnrate && ./install.sh
+```
+
+**WSL2** — run the curl one-liner inside your WSL2 terminal. If Claude Code runs on Windows, symlink its stats file in:
+```bash
+ln -s /mnt/c/Users/$WINDOWS_USER/.claude ~/.claude
+```
+
+**Verify**
+```bash
+burnrate          # Today's summary
+burnrate doctor   # Health check
 ```
 
 ---
@@ -126,39 +160,11 @@ Burnrate reads `~/.claude/stats-cache.json` — the local file Claude Code write
 
 ---
 
-## Install
+## Hook & Automate
 
-**Homebrew** (macOS / Linux — recommended)
-```bash
-brew tap samridhgupta/burnrate https://github.com/samridhgupta/burnrate && brew install burnrate
-```
+### After every Claude response (Stop hook)
 
-**curl one-liner**
-```bash
-curl -fsSL https://raw.githubusercontent.com/samridhgupta/burnrate/main/install.sh | bash
-```
-
-**git (manual)**
-```bash
-git clone https://github.com/samridhgupta/burnrate && cd burnrate && ./install.sh
-```
-
-**WSL2** — run the curl one-liner inside your WSL2 terminal. If Claude Code runs on Windows, symlink its stats file in:
-```bash
-ln -s /mnt/c/Users/$WINDOWS_USER/.claude ~/.claude
-```
-
-**Verify**
-```bash
-burnrate          # Today's summary
-burnrate doctor   # Health check
-```
-
----
-
-## Hook into Claude Code sessions
-
-Run burnrate automatically after every Claude response. Add this to `~/.claude/settings.json`:
+Run burnrate automatically after each Claude Code response. Add to `~/.claude/settings.json`:
 
 ```json
 {
@@ -174,11 +180,65 @@ Run burnrate automatically after every Claude response. Add this to `~/.claude/s
 }
 ```
 
-After each session: your token burn flashes up before the next prompt. You'll feel every melting ice shard.
+After each response: your token burn flashes up before the next prompt. You'll feel every melting ice shard.
 
-Want just the cost delta (quieter)?
+Want just the raw cost number (quieter)?
 ```json
-{ "type": "command", "command": "burnrate trends --quiet" }
+{ "type": "command", "command": "burnrate query cost" }
+```
+
+Budget guard — alert only when monthly spend is over 80%:
+```json
+{
+  "type": "command",
+  "command": "bash -c 'spent=$(burnrate query monthly_cost); limit=150; pct=$(echo \"scale=0; $spent * 100 / $limit\" | bc); (( pct > 80 )) && echo \"⚠️  Budget ${pct}% used (\$$spent / \$$limit)\" || true'"
+}
+```
+
+### Nightly cost log (cron)
+
+Append daily spend to a CSV — silent, automatic, useful:
+```bash
+# crontab -e
+0 23 * * * echo "$(date +%F),$(burnrate query cost),$(burnrate query cache_rate)" >> ~/claude-cost-log.csv
+```
+
+### Pre-session context (shell wrapper)
+
+See your burn before you start coding. Add to `~/.zshrc` or `~/.bashrc`:
+```bash
+claude() {
+  burnrate       # show current spend before session starts
+  command claude "$@"
+}
+```
+
+### Budget gate in scripts / CI
+
+Abort if monthly spend is over limit — useful for automated agent pipelines:
+```bash
+monthly=$(burnrate query monthly_cost)
+limit=100
+if (( $(echo "$monthly > $limit" | bc) )); then
+  echo "Monthly budget exceeded (\$$monthly / \$$limit). Aborting." >&2
+  exit 1
+fi
+```
+
+### Weekly export (cron)
+
+Dump history every Sunday for spreadsheet tracking:
+```bash
+# crontab -e
+0 9 * * 0 burnrate export history csv ~/claude-history-$(date +%Y-%W).csv
+```
+
+### Agent self-check before a long task
+
+Have the agent check burn before starting something expensive:
+```bash
+echo "Pre-task status: \$$(burnrate query monthly_cost) this month, $(burnrate query cache_rate)% cache"
+# → agent can decide to be more concise if cost is climbing
 ```
 
 ---
@@ -283,6 +343,51 @@ Seven built-in metaphors for your token burn:
 burnrate --theme ember          # one-off
 burnrate preview space          # try before you commit
 ```
+
+---
+
+## What burnrate reveals
+
+Things you'll feel good about seeing:
+
+- **Cache hit rate above 80%** — you're reusing context well. Claude isn't re-reading the same files every turn.
+- **Cost trending down week-over-week** — your prompts are getting tighter. Good instinct.
+- **Output tokens staying small relative to cache reads** — Claude is thinking efficiently, not rambling.
+- **Stable daily spend** — no surprise spikes. You're in control.
+
+Things that should make you wince:
+
+- **Cache hit rate below 50%** — Claude is reading fresh context every turn. Expensive and slow. Consider more focused sessions.
+- **Output tokens dominating cost** — long verbose responses. Try asking for concise output.
+- **A sudden cost spike** — usually one session where something went deeply recursive, or you pasted in a 10,000-line file and asked "what does this do?"
+- **Costs growing every week with no ceiling** — time to set a budget.
+
+---
+
+## For agents reading this
+
+If you're Claude (or another agent) and this output has been piped into your context — hello. This is the token cost report for the current session or system.
+
+**Quick metric checks** — use `burnrate query` to pull a single number without parsing anything:
+
+```bash
+burnrate query cost          # total spend so far
+burnrate query cache_rate    # cache efficiency %
+burnrate query trend         # week-over-week % change (negative = improving)
+burnrate query monthly_cost  # spend this calendar month
+```
+
+These return raw values: no color, no formatting, no banner. Safe to capture in `$(...)` and act on directly.
+
+**How to read what you see:**
+
+- **High cache write cost isn't bad** — it means context is being cached for reuse. The savings line in `burnrate show` tells you whether it paid off.
+- **Cache hit rate is the single most useful signal.** Above 85% = workflow is cache-friendly. Below 60% = each turn paying full input price.
+- **▼ on the TOTAL row** means this week costs less than last. ▲ means it's climbing.
+- **Suggest `burnrate trends`** before a long task — gives the user a quick picture of whether spend is growing.
+- **If monthly cost is near budget**, be token-conscious: targeted file reads over broad scans, avoid re-summarising large context blocks already in cache.
+
+The user hooked burnrate here so both of you stay informed. Use it.
 
 ---
 
@@ -411,51 +516,6 @@ burnrate doctor 2>&1 | grep "Write\|write\|config"
 # Inspect any release tarball
 tar -tzf burnrate-*.tar.gz | head -20
 ```
-
----
-
-## What burnrate reveals
-
-Things you'll feel good about seeing:
-
-- **Cache hit rate above 80%** — you're reusing context well. Claude isn't re-reading the same files every turn.
-- **Cost trending down week-over-week** — your prompts are getting tighter. Good instinct.
-- **Output tokens staying small relative to cache reads** — Claude is thinking efficiently, not rambling.
-- **Stable daily spend** — no surprise spikes. You're in control.
-
-Things that should make you wince:
-
-- **Cache hit rate below 50%** — Claude is reading fresh context every turn. Expensive and slow. Consider more focused sessions.
-- **Output tokens dominating cost** — long verbose responses. Try asking for concise output.
-- **A sudden cost spike** — usually one session where something went deeply recursive, or you pasted in a 10,000-line file and asked "what does this do?"
-- **Costs growing every week with no ceiling** — time to set a budget.
-
----
-
-## For agents reading this
-
-If you're Claude (or another agent) and this output has been piped into your context — hello. This is the token cost report for the current session or system.
-
-**Quick metric checks** — use `burnrate query` to pull a single number without parsing anything:
-
-```bash
-burnrate query cost          # total spend so far
-burnrate query cache_rate    # cache efficiency %
-burnrate query trend         # week-over-week % change (negative = improving)
-burnrate query monthly_cost  # spend this calendar month
-```
-
-These return raw values: no color, no formatting, no banner. Safe to capture in `$(...)` and act on directly.
-
-**How to read what you see:**
-
-- **High cache write cost isn't bad** — it means context is being cached for reuse. The savings line in `burnrate show` tells you whether it paid off.
-- **Cache hit rate is the single most useful signal.** Above 85% = workflow is cache-friendly. Below 60% = each turn paying full input price.
-- **▼ on the TOTAL row** means this week costs less than last. ▲ means it's climbing.
-- **Suggest `burnrate trends`** before a long task — gives the user a quick picture of whether spend is growing.
-- **If monthly cost is near budget**, be token-conscious: targeted file reads over broad scans, avoid re-summarising large context blocks already in cache.
-
-The user hooked burnrate here so both of you stay informed. Use it.
 
 ---
 
