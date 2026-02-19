@@ -27,6 +27,105 @@ Burnrate reads `~/.claude/stats-cache.json` — the local file Claude Code write
 
 ---
 
+## Examples
+
+**`burnrate`** — the daily sanity check
+```
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  📊 Token Burn Summary
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Model:  Sonnet
+  Tokens: 2,847,392
+  Cost:   $4.21
+  Cache:  ❄️  87.3% hit rate (excellent)
+```
+> $4 spent. $29 saved by caching. The Arctic lives another day.
+
+---
+
+**`burnrate show`** — full token breakdown with weekly trend
+```
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Token Usage & Cost Breakdown
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Model: Sonnet
+
+  Type                    Tokens          Cost
+  ──────────────  ──────────────  ────────────
+  Input                  48,210         $0.14
+  Output                192,880         $2.89
+  Cache Write          1,204,600         $4.52
+  Cache Read           1,401,702         $0.42
+  ──────────────  ──────────────  ────────────
+  TOTAL                2,847,392         $7.97   ▼ 31.4%
+
+  Cache:   ❄️  87.3% hit rate (excellent)
+  Savings: $29.14 saved vs no caching
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+> ▼ 31.4% — you burned less than last week. The polar bears approve.
+
+---
+
+**`burnrate trends`** — sparkline + period table + cache health
+```
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  📊 Spending Trends
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Token volume  ·  last 14 active days
+  ▕ ▁▁▃▃▅▇█▅▃▂▁▂▏
+
+  PERIOD             TOKENS      COST
+  ─────────────  ──────────  ────────
+  Last 7 days     1,203,441     $3.28   ▼ 31.4%
+  This week         847,210     $2.11   ▼ 18.2%
+  This month      4,918,004    $14.67
+
+  CACHE
+  ─────────────  ──────────  ────────
+  Hit rate        ❄️  87.3%  excellent
+  Savings         $29.14 vs no caching
+```
+> Sparkline shows activity by day. A spike in the middle? Big refactor. We don't talk about it.
+
+---
+
+**`burnrate budget`** — where you stand against your limits
+```
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  💰 Budget Status
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Daily Budget:   $10.00
+  Spent today:     $3.28  [████░░░░░░░░░░░░░░░]  32.8%
+
+  Monthly Budget: $150.00
+  Spent:          $14.67  [█░░░░░░░░░░░░░░░░░░]   9.8%
+
+  Projection:     ~$44 by month end  (on track ✓)
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+> Set budgets with `burnrate setup`. Hit the threshold and burnrate screams at you — before Claude does.
+
+---
+
+**`burnrate history`** — daily table, responsive to terminal width
+```
+  DATE         TOKENS       COST   CACHE
+  ──────────   ─────────   ──────  ──────
+  2025-01-19     847,210    $2.11   89.1%
+  2025-01-18   1,204,600    $4.52   85.3%
+  2025-01-17     312,840    $0.94   91.7%
+  2025-01-16          0    $0.00      —
+  2025-01-15     596,120    $1.77   88.4%
+```
+> Zeros on the weekend. Healthy. Or deeply suspicious.
+
+---
+
 ## Install
 
 **Homebrew** (macOS / Linux — recommended)
