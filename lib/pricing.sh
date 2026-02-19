@@ -304,4 +304,15 @@ load_custom_pricing() {
     fi
 }
 
+# ============================================================================
+# Context Window Sizes
+# ============================================================================
+
+# All current Claude models share a 200k context window.
+# Returns: token count as integer string.
+get_model_context_window() {
+    # All Claude 3.5+ and 4.x models: 200,000 tokens
+    echo "200000"
+}
+
 log_debug "Pricing system loaded"

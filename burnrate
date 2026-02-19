@@ -42,6 +42,7 @@ source "$LIB_DIR/budget.sh"
 source "$LIB_DIR/historical.sh"
 source "$LIB_DIR/charts.sh"
 source "$LIB_DIR/export.sh"
+source "$LIB_DIR/session.sh"
 
 # ============================================================================
 # Help & Usage
@@ -67,6 +68,7 @@ COMMANDS:
     preview <theme>  Preview a theme
     setup            Run interactive setup wizard
     config           Show current configuration
+    context          Show context window usage + recommendation
     query <metric>   Single raw metric — for scripting/agents (no formatting)
     doctor           Full health check (28 assertions)
     version          Show version information
@@ -140,6 +142,26 @@ cmd_summary() {
     echo ""
 
     show_summary "$CONFIG_STATS_FILE"
+
+    # Context window auto-warn (if enabled and data available)
+    if [[ "${CONFIG_CONTEXT_WARN:-true}" == "true" ]]; then
+        local ctx
+        if ctx=$(get_session_context 2>/dev/null); then
+            local ctx_pct ctx_pct_int
+            ctx_pct=$(echo "$ctx" | cut -d'|' -f3)
+            ctx_pct_int=$(echo "$ctx_pct" | awk '{printf "%d", $1+0}')
+            local threshold="${CONFIG_CONTEXT_WARN_THRESHOLD:-85}"
+            if (( ctx_pct_int >= threshold )); then
+                local used window
+                used=$(echo "$ctx"   | cut -d'|' -f1)
+                window=$(echo "$ctx" | cut -d'|' -f2)
+                echo ""
+                printf "  \033[0;33m⚠️  Context: %s%% full (%s / %s tokens)\033[0m\n" \
+                    "$ctx_pct" "$used" "$window"
+                echo -e "  \033[2mRun: burnrate context  |  Or: /compact in Claude\033[0m"
+            fi
+        fi
+    fi
 
     echo ""
     if [[ "$CONFIG_SHOW_DISCLAIMER" == "true" ]]; then
@@ -321,6 +343,125 @@ cmd_doctor() {
     run_doctor "$@"
 }
 
+# ============================================================================
+# Context Window Command
+# ============================================================================
+
+# _ctx_gauge <pct_int> — render a 30-char fill bar
+_ctx_gauge() {
+    local pct="$1"
+    local width=30
+    local filled=$(( pct * width / 100 ))
+    (( filled > width )) && filled=$width
+
+    local bar=""
+    local i=0
+    while (( i < filled )); do bar="${bar}█"; (( i++ )); done
+    while (( i < width ));  do bar="${bar}░"; (( i++ )); done
+    echo "$bar"
+}
+
+# _ctx_color <pct_int> — ANSI color for fill level
+_ctx_color() {
+    local pct="$1"
+    if   (( pct >= 90 )); then printf '\033[0;31m'   # red
+    elif (( pct >= 75 )); then printf '\033[0;33m'   # yellow
+    elif (( pct >= 50 )); then printf '\033[0;36m'   # cyan
+    else                       printf '\033[0;32m'   # green
+    fi
+}
+
+# _ctx_rec <pct_int> — themed recommendation string
+_ctx_rec() {
+    local pct="$1"
+    if   (( pct >= 90 )); then
+        echo "${THEME_CTX_CRITICAL:-Context nearly full! Run /compact or start a new session. 🚨}"
+    elif (( pct >= 75 )); then
+        echo "${THEME_CTX_WARNING:-Context getting full. Run /compact before the next heavy task. ⚠️}"
+    elif (( pct >= 50 )); then
+        echo "${THEME_CTX_HALF:-Context half used. Consider /compact for long conversations. 💧}"
+    else
+        echo "${THEME_CTX_OK:-Context clear — plenty of room. ❄️}"
+    fi
+}
+
+# Show context window usage gauge and recommendation
+cmd_context() {
+    local full_mode=false
+    [[ "${1:-}" == "--full" ]] && full_mode=true
+
+    local ctx_data
+    if ! ctx_data=$(get_session_context 2>/dev/null); then
+        echo "No session data found." >&2
+        echo "Run a Claude Code session first, then check again." >&2
+        exit 1
+    fi
+
+    local used window pct model inp cw cr out
+    used=$(echo "$ctx_data"   | cut -d'|' -f1)
+    window=$(echo "$ctx_data" | cut -d'|' -f2)
+    pct=$(echo "$ctx_data"    | cut -d'|' -f3)
+    model=$(echo "$ctx_data"  | cut -d'|' -f4)
+    inp=$(echo "$ctx_data"    | cut -d'|' -f5)
+    cw=$(echo "$ctx_data"     | cut -d'|' -f6)
+    cr=$(echo "$ctx_data"     | cut -d'|' -f7)
+    out=$(echo "$ctx_data"    | cut -d'|' -f8)
+
+    local pct_int
+    pct_int=$(echo "$pct" | awk '{printf "%d", $1+0}')
+
+    local color reset='\033[0m'
+    color=$(_ctx_color "$pct_int")
+
+    local friendly_model
+    friendly_model=$(get_friendly_model_name "$model")
+
+    local gauge
+    gauge=$(_ctx_gauge "$pct_int")
+
+    local rec
+    rec=$(_ctx_rec "$pct_int")
+
+    # Format token numbers with commas (portable)
+    _fmt_tok() { printf "%'d" "$1" 2>/dev/null || echo "$1"; }
+
+    echo ""
+    _themed_hr
+    echo -e "  🧠 Context Window"
+    _themed_hr
+    echo ""
+
+    # Gauge line (CONFIG_CONTEXT_DISPLAY: visual | number | both)
+    local display="${CONFIG_CONTEXT_DISPLAY:-both}"
+
+    if [[ "$display" == "visual" || "$display" == "both" ]]; then
+        printf "  %b[%s]%b  %s%%\n" "$color" "$gauge" "$reset" "$pct"
+    fi
+
+    if [[ "$display" == "number" || "$display" == "both" ]]; then
+        printf "  %b%s%b / %s tokens used\n" \
+            "$color" "$(_fmt_tok "$used")" "$reset" "$(_fmt_tok "$window")"
+    fi
+
+    echo ""
+    echo -e "  ${rec}"
+
+    if [[ "$full_mode" == "true" ]]; then
+        echo ""
+        echo -e "  \033[2mBreakdown (last turn)\033[0m"
+        printf "  %-26s %s\n" "Input tokens:"          "$(_fmt_tok "$inp")"
+        printf "  %-26s %s\n" "Cache created (write):" "$(_fmt_tok "$cw")"
+        printf "  %-26s %s\n" "Cache hits (read):"     "$(_fmt_tok "$cr")"
+        printf "  %-26s %s\n" "Output tokens:"         "$(_fmt_tok "$out")"
+        echo ""
+        printf "  %-26s %s\n" "Model:" "$friendly_model"
+        printf "  %-26s %s\n" "Context window:"        "$(_fmt_tok "$window")"
+    fi
+
+    echo ""
+    _themed_hr
+}
+
 # Query a single metric — raw output, no formatting, no color
 # Designed for scripting, hooks, and agents
 cmd_query() {
@@ -331,15 +472,18 @@ cmd_query() {
 Usage: burnrate query <metric>
 
 Metrics:
-  cost           Total cost (e.g. 4.21)
-  tokens         Total token count (e.g. 2847392)
-  cache_rate     Cache hit rate 0-100 (e.g. 87.30)
-  cache_savings  Dollar savings from caching (e.g. 29.14)
-  trend          Weekly % change, signed (e.g. -31.4 or N/A)
-  weekly_cost    This week's spend (e.g. 2.11)
-  monthly_cost   This month's spend (e.g. 14.67)
-  last7_cost     Last 7 days spend (e.g. 3.28)
-  model          Current model name (e.g. sonnet)
+  cost             Total cost (e.g. 4.21)
+  tokens           Total token count (e.g. 2847392)
+  cache_rate       Cache hit rate 0-100 (e.g. 87.30)
+  cache_savings    Dollar savings from caching (e.g. 29.14)
+  trend            Weekly % change, signed (e.g. -31.4 or N/A)
+  weekly_cost      This week's spend (e.g. 2.11)
+  monthly_cost     This month's spend (e.g. 14.67)
+  last7_cost       Last 7 days spend (e.g. 3.28)
+  model            Current model name (e.g. sonnet)
+  context_tokens   Tokens used in current session context (e.g. 156312)
+  context_pct      Context fill % 0-100 (e.g. 78.2)
+  context_remaining Tokens remaining in context window (e.g. 43688)
 EOF
         exit 1
     fi
@@ -396,6 +540,24 @@ EOF
         model)
             echo "$breakdown" | grep '"model_friendly"' | cut -d'"' -f4
             ;;
+        context_tokens)
+            local ctx
+            ctx=$(get_session_context 2>/dev/null) || { echo "N/A"; exit 0; }
+            echo "$ctx" | cut -d'|' -f1
+            ;;
+        context_pct)
+            local ctx
+            ctx=$(get_session_context 2>/dev/null) || { echo "N/A"; exit 0; }
+            echo "$ctx" | cut -d'|' -f3
+            ;;
+        context_remaining)
+            local ctx
+            ctx=$(get_session_context 2>/dev/null) || { echo "N/A"; exit 0; }
+            local used window
+            used=$(echo "$ctx"   | cut -d'|' -f1)
+            window=$(echo "$ctx" | cut -d'|' -f2)
+            echo $(( window - used ))
+            ;;
         *)
             echo "error: unknown metric '$metric'" >&2
             echo "Run 'burnrate query' to see available metrics." >&2
@@ -424,7 +586,7 @@ parse_args() {
                 show_version
                 exit 0
                 ;;
-            show|budget|history|week|month|trends|export|themes|preview|config|setup|doctor|query)
+            show|budget|history|week|month|trends|export|themes|preview|config|setup|doctor|query|context)
                 command="$1"
                 shift
                 args=("$@")
@@ -505,6 +667,9 @@ parse_args() {
             ;;
         query)
             cmd_query "${args[@]+"${args[@]}"}"
+            ;;
+        context)
+            cmd_context "${args[@]+"${args[@]}"}"
             ;;
         "")
             # Default: show summary

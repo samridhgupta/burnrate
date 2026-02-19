@@ -74,6 +74,11 @@ set_config_defaults() {
     # Formatting
     CONFIG_COST_DECIMALS="${CONFIG_COST_DECIMALS:-2}"  # Number of decimal places for cost display
 
+    # Context window display
+    CONFIG_CONTEXT_WARN="${CONFIG_CONTEXT_WARN:-true}"
+    CONFIG_CONTEXT_WARN_THRESHOLD="${CONFIG_CONTEXT_WARN_THRESHOLD:-85}"
+    CONFIG_CONTEXT_DISPLAY="${CONFIG_CONTEXT_DISPLAY:-both}"  # visual | number | both
+
     log_debug "Configuration defaults set"
 }
 
@@ -256,6 +261,19 @@ QUIET=false
 
 # Show "zero tokens used" disclaimer
 SHOW_DISCLAIMER=true
+
+# ============================================================================
+# CONTEXT WINDOW
+# ============================================================================
+
+# Warn when context fill exceeds threshold (true/false)
+CONTEXT_WARN=true
+
+# Threshold % to trigger warning (0-100)
+CONTEXT_WARN_THRESHOLD=85
+
+# Context display mode: visual (gauge only), number (tokens only), both
+CONTEXT_DISPLAY=both
 EOF
 }
 

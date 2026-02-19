@@ -116,6 +116,17 @@ remove_shell_integration() {
     [[ "$found" == "false" ]] && warn "No shell integration found"
 }
 
+remove_claude_hook() {
+    local settings_file="$HOME/.claude/settings.json"
+    [[ ! -f "$settings_file" ]] && return 0
+
+    if grep -q '"burnrate"' "$settings_file" 2>/dev/null; then
+        warn "Claude Code hook found in $settings_file"
+        warn "Remove the burnrate entry from the hooks.Stop section manually."
+        warn "Or delete the entire hooks block if burnrate was the only hook."
+    fi
+}
+
 # ============================================================================
 # Main
 # ============================================================================
@@ -173,6 +184,9 @@ main() {
 
     # Remove shell integration
     remove_shell_integration
+
+    # Note about Claude Code hook (manual removal required)
+    remove_claude_hook
 
     # Purge config/data if requested
     if [[ "$purge" == "true" ]]; then

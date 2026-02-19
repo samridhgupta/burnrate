@@ -155,6 +155,31 @@ Remember: Every token melts the ice. Cache to save the Arctic!
 
 ---
 
+**`burnrate context`** — know when to /compact before it's too late
+```
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  🧠 Context Window
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  [████████████████████░░░░░░░░░░]  78.3%
+  156,600 / 200,000 tokens used
+
+  ⚠️  Context getting full. Run /compact before the next heavy task.
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+> At 78% the bar is yellow. `burnrate context --full` adds a per-type breakdown: input / cache write / cache read / output. The auto-warn also surfaces in `burnrate` summary once fill crosses `CONFIG_CONTEXT_WARN_THRESHOLD` (default 85%).
+>
+> Config options — all independent:
+> ```bash
+> CONFIG_CONTEXT_DISPLAY="visual"          # gauge bar only (no token numbers)
+> CONFIG_CONTEXT_DISPLAY="number"          # token numbers only (no bar)
+> CONFIG_CONTEXT_DISPLAY="both"            # default
+> CONFIG_CONTEXT_WARN_THRESHOLD="90"       # push the warning to 90%
+> CONFIG_CONTEXT_WARN="false"              # disable summary warning entirely
+> ```
+
+---
+
 **`burnrate history`** — the hall of shame, responsive to terminal width
 ```
   DATE         TOKENS          COST   CACHE
@@ -244,12 +269,28 @@ Dump history every Sunday for spreadsheet tracking:
 0 9 * * 0 burnrate export history csv ~/claude-history-$(date +%Y-%W).csv
 ```
 
+### Context window reminder (Stop hook)
+
+Warn yourself when context is filling up — before it hits the wall:
+```json
+{
+  "type": "command",
+  "command": "bash -c 'pct=$(burnrate query context_pct 2>/dev/null); [[ \"$pct\" == \"N/A\" ]] && exit 0; (( ${pct%.*} > 75 )) && echo \"🧠 Context ${pct}% full — consider /compact\" || true'"
+}
+```
+
+Or show it quietly every response with just the gauge:
+```bash
+# In settings.json hooks → Stop
+{ "type": "command", "command": "burnrate context" }
+```
+
 ### Agent self-check before a long task
 
-Have the agent check burn before starting something expensive:
+Have the agent check burn and context before starting something expensive:
 ```bash
-echo "Pre-task status: \$$(burnrate query monthly_cost) this month, $(burnrate query cache_rate)% cache"
-# → agent can decide to be more concise if cost is climbing
+echo "Pre-task: \$$(burnrate query monthly_cost) this month, $(burnrate query cache_rate)% cache, $(burnrate query context_pct)% context"
+# → agent sees cost + cache health + context headroom before diving in
 ```
 
 ---
@@ -261,7 +302,9 @@ Burnrate needs exactly two things:
 | Access | Path | Why |
 |--------|------|-----|
 | **Read** | `~/.claude/stats-cache.json` | Your token stats. Never modified. |
+| **Read** | `~/.claude/projects/*/` | Session JSONL files for `burnrate context`. Never modified. |
 | **Write** | `~/.config/burnrate/` | Config + budget state. Your Claude files untouched. |
+| **Write** | `~/.claude/settings.json` | Only if you opt-in during `burnrate setup` to add a Stop hook. |
 
 No network. No API keys. No root. No surprises.
 
@@ -277,6 +320,8 @@ burnrate history      # Daily table (responsive, drops columns on narrow termina
 burnrate week         # This week's aggregate
 burnrate month        # This month's aggregate
 burnrate budget       # Budget status + spend projection
+burnrate context      # Context window gauge + recommendation
+burnrate context --full  # Breakdown: input / cache_write / cache_read / output
 burnrate query <m>    # Single raw metric — for scripts and agents
 burnrate config       # Current configuration
 burnrate themes       # List themes
@@ -288,15 +333,18 @@ burnrate setup        # Interactive setup wizard
 **`burnrate query`** — machine-readable single values, no formatting, no color:
 
 ```bash
-burnrate query cost           # 449.97
-burnrate query tokens         # 740107049
-burnrate query cache_rate     # 91.77
-burnrate query cache_savings  # 1830.37
-burnrate query trend          # -50.0  (negative = less than last week)
-burnrate query weekly_cost    # 2.11
-burnrate query monthly_cost   # 14.67
-burnrate query last7_cost     # 3.28
-burnrate query model          # Sonnet
+burnrate query cost               # 449.97
+burnrate query tokens             # 740107049
+burnrate query cache_rate         # 91.77
+burnrate query cache_savings      # 1830.37
+burnrate query trend              # -50.0  (negative = less than last week)
+burnrate query weekly_cost        # 2.11
+burnrate query monthly_cost       # 14.67
+burnrate query last7_cost         # 3.28
+burnrate query model              # Sonnet
+burnrate query context_pct        # 33.0   (% of context window used this session)
+burnrate query context_tokens     # 65949  (tokens used)
+burnrate query context_remaining  # 134051 (tokens left)
 ```
 
 Pipe it anywhere:
@@ -326,12 +374,17 @@ burnrate export full markdown report.md
 `~/.config/burnrate/burnrate.conf` — or set `CONFIG_*` env vars:
 
 ```bash
-CONFIG_THEME="glacial"         # glacial | ember | battery | hourglass | garden | ocean | space
-CONFIG_DAILY_BUDGET="10.00"    # alert when you blow past it
+CONFIG_THEME="glacial"                # glacial | ember | battery | hourglass | garden | ocean | space
+CONFIG_DAILY_BUDGET="10.00"           # alert when you blow past it
 CONFIG_MONTHLY_BUDGET="150.00"
-CONFIG_BUDGET_ALERT="90"       # % threshold for warnings
-CONFIG_COLORS_ENABLED="auto"   # auto | always | never
+CONFIG_BUDGET_ALERT="90"              # % threshold for warnings
+CONFIG_COLORS_ENABLED="auto"          # auto | always | never
 CONFIG_EMOJI_ENABLED="true"
+
+# Context window (optional — all default to sensible values)
+CONFIG_CONTEXT_WARN="true"            # show warning in summary when context is filling
+CONFIG_CONTEXT_WARN_THRESHOLD="85"    # % fill level that triggers the warning
+CONFIG_CONTEXT_DISPLAY="both"         # visual (gauge only) | number (tokens only) | both
 ```
 
 ---
@@ -382,20 +435,41 @@ If you're Claude (or another agent) and this output has been piped into your con
 **Quick metric checks** — use `burnrate query` to pull a single number without parsing anything:
 
 ```bash
-burnrate query cost          # total spend so far
-burnrate query cache_rate    # cache efficiency %
-burnrate query trend         # week-over-week % change (negative = improving)
-burnrate query monthly_cost  # spend this calendar month
+burnrate query cost              # total spend so far
+burnrate query cache_rate        # cache efficiency %
+burnrate query trend             # week-over-week % change (negative = improving)
+burnrate query monthly_cost      # spend this calendar month
+burnrate query context_pct       # % of 200k context window used this session
+burnrate query context_tokens    # raw tokens used in current context
+burnrate query context_remaining # tokens left before the window is full
 ```
 
 These return raw values: no color, no formatting, no banner. Safe to capture in `$(...)` and act on directly.
+
+**Context window decisions:**
+
+```bash
+pct=$(burnrate query context_pct)
+# > 90 → strongly suggest /compact or new session
+# > 75 → warn user, avoid loading large new files
+# > 50 → note it, prefer targeted reads
+# N/A  → no session data found (first run, or outside a session)
+```
+
+Remaining tokens tell you what's actually possible:
+```bash
+left=$(burnrate query context_remaining)
+# < 20000 → avoid multi-file scans, be selective about what you read
+# < 5000  → wrap up the task, don't start new subtasks
+```
 
 **How to read what you see:**
 
 - **High cache write cost isn't bad** — it means context is being cached for reuse. The savings line in `burnrate show` tells you whether it paid off.
 - **Cache hit rate is the single most useful signal.** Above 85% = workflow is cache-friendly. Below 60% = each turn paying full input price.
 - **▼ on the TOTAL row** means this week costs less than last. ▲ means it's climbing.
-- **Suggest `burnrate trends`** before a long task — gives the user a quick picture of whether spend is growing.
+- **Suggest `burnrate context --full`** if the session feels slow or expensive — shows exactly what's filling the window (input vs cache read vs cache write).
+- **Suggest `burnrate trends`** before a long task — gives the user a picture of whether spend is growing.
 - **If monthly cost is near budget**, be token-conscious: targeted file reads over broad scans, avoid re-summarising large context blocks already in cache.
 
 The user hooked burnrate here so both of you stay informed. Use it.
@@ -422,6 +496,8 @@ Pure bash 3.2+. One external dep (`bc` for decimal math). Zero startup overhead.
 
 Measured on macOS with a large stats file (~740M cumulative tokens, ~45 daily entries). Times scale with history size — a fresh install will be faster.
 
+**Cost & cache commands** (reads `stats-cache.json`):
+
 | Command | Wall time | Memory | Context tokens† | Hook-safe | Bottleneck |
 |---------|-----------|--------|-----------------|-----------|------------|
 | `burnrate` | ~0.7s | ~3.6 MB | ~210 | ✓ | Stats parse + bc |
@@ -433,13 +509,25 @@ Measured on macOS with a large stats file (~740M cumulative tokens, ~45 daily en
 | `burnrate export full json` | ~6s | ~3.7 MB | ~450 | ⚠️ slow | summary + history + budget |
 | `burnrate trends` | ~33s | ~3.7 MB | ~325 | ✗ avoid | 3 aggregation windows + sparkline |
 
+**Context window commands** (also reads `~/.claude/projects/` JSONL):
+
+| Command | Wall time | Memory | Context tokens† | Hook-safe | Bottleneck |
+|---------|-----------|--------|-----------------|-----------|------------|
+| `burnrate context` | ~0.8s | ~3.7 MB | ~50 | ✓ | Stats parse + JSONL tail scan |
+| `burnrate context --full` | ~0.8s | ~3.7 MB | ~100 | ✓ | Same + breakdown lines |
+| `burnrate query context_pct` | ~0.7s | ~3.7 MB | 1–5 | ✓ | JSONL tail scan only |
+| `burnrate` (context warn) | ~0.8s | ~3.7 MB | ~220 | ✓ | Adds JSONL scan to summary |
+| No session data (N/A path) | ~0.3s | ~3.6 MB | — | ✓ | Returns immediately |
+
 † Approximate LLM context tokens when output is piped into an agent (ANSI stripped, ~4 chars/token).
 
-**For Claude Code Stop hooks** — use `burnrate` or `burnrate query` only. `trends` and `show` do multiple aggregation passes and will noticeably slow down your prompt loop.
+**For Claude Code Stop hooks** — use `burnrate` or `burnrate query` only. `trends` and `show` do multiple aggregation passes and will noticeably slow down your prompt loop. `burnrate context` is hook-safe at ~0.8s.
 
-**Why memory is flat** — burnrate loads ~12 shell source files at startup (~3.6 MB baseline). Each command then does its work in subshells. Peak RSS barely moves because bash itself is the process; data never lives in heap.
+**Why memory is flat** — burnrate loads ~13 shell source files at startup (~3.7 MB baseline). Each command then does its work in subshells. Peak RSS barely moves because bash itself is the process; data never lives in heap.
 
 **Why `trends` is slow** — three separate aggregation windows (last-7, this-week, this-month) each iterate the full daily history in serial bash loops with `bc` math per entry. With a large history file, this compounds. A future awk rewrite would cut it to a single pass.
+
+**Context scan is fast** — `lib/session.sh` reads only `tail -n 200` of the most recent JSONL file. Even with 4000+ line session files the disk read is tiny (~10 KB). The 0.8s wall time is almost entirely bash startup + script sourcing.
 
 ---
 
@@ -452,6 +540,8 @@ Measured on macOS with a large stats file (~740M cumulative tokens, ~45 daily en
 - **bc required.** Decimal math needs `bc`. It ships on every macOS and most Linux distros. Missing? `sudo apt-get install bc`.
 - **Stats file format coupling.** If Anthropic changes the structure of `stats-cache.json`, parsing breaks. `burnrate doctor` will tell you loudly.
 - **bash 3.2 compatibility tradeoff.** No associative arrays means awk workarounds in several hot paths — contributing to the slower commands above.
+- **Context window is last-message only.** `burnrate context` reads the last assistant message in the most recently modified session JSONL. It reflects the state at the end of the previous turn, not mid-turn. Accuracy is ~1 turn behind.
+- **Context data requires an active session.** Returns `N/A` if no JSONL session files are found in `~/.claude/projects/` — e.g. on first run, or outside of a Claude Code session.
 
 ---
 
@@ -485,8 +575,10 @@ sudo apt-get install bc
 
 | Operation | Scope |
 |-----------|-------|
-| **Reads** | `~/.claude/stats-cache.json` only. Never written to. |
-| **Writes** | `~/.config/burnrate/` — your config + budget state |
+| **Reads** | `~/.claude/stats-cache.json` — token stats. Never written to. |
+| **Reads** | `~/.claude/projects/*/` — session JSONL files, for `burnrate context`. Read-only, never modified. |
+| **Writes** | `~/.config/burnrate/` — your config + budget state only. |
+| **Writes** | `~/.claude/settings.json` — only if you opt-in during setup to add a Stop hook. |
 | **Network** | Zero. None. Nada. Offline-only by design. |
 | **Privileges** | None. Never run as root. Never calls sudo. |
 

@@ -152,7 +152,7 @@ EOF
 # Step 1: Check prerequisites
 setup_prerequisites() {
     setup_header
-    setup_step 1 7 "Checking Prerequisites"
+    setup_step 1 6 "Checking Prerequisites"
 
     echo "Checking if Claude Code is installed..."
     echo ""
@@ -197,7 +197,7 @@ setup_theme() {
     fi
 
     setup_header
-    setup_step 2 7 "Choose Your Theme"
+    setup_step 2 6 "Choose Your Theme"
 
     cat <<'EOF'
 Themes give burnrate personality and style!
@@ -224,8 +224,7 @@ EOF
 
     if ask_yn "Preview this theme?" "n"; then
         echo ""
-        echo "Preview: ${themes[$choice]}"
-        echo "(Theme preview would show here - TODO: fix theme loading)"
+        preview_theme "${themes[$choice]}" 2>/dev/null || echo "(Run 'burnrate preview ${themes[$choice]}' after install)"
         echo ""
         read -p "Press Enter to continue..."
     fi
@@ -239,7 +238,7 @@ setup_animations() {
     fi
 
     setup_header
-    setup_step 3 7 "Configure Animations"
+    setup_step 3 6 "Configure Animations"
 
     cat <<'EOF'
 Burnrate can show ASCII animations for a fun experience!
@@ -283,7 +282,7 @@ setup_emoji() {
     fi
 
     setup_header
-    setup_step 4 7 "Configure Emoji"
+    setup_step 4 6 "Configure Emoji"
 
     cat <<'EOF'
 Burnrate uses emoji to make output more visual and fun!
@@ -315,7 +314,7 @@ setup_budgets() {
     fi
 
     setup_header
-    setup_step 5 7 "Configure Budgets (Optional)"
+    setup_step 5 6 "Configure Budgets (Optional)"
 
     cat <<'EOF'
 Set budget limits to get alerts when spending approaches your limits.
@@ -340,19 +339,17 @@ EOF
     read -p "Press Enter to continue..."
 }
 
-# Step 6: Shell profile integration
+# Step 6: Shell profile + Claude Code hook
 setup_shell_integration() {
     setup_header
-    setup_step 6 9 "Shell Profile Integration (Optional)"
+    setup_step 6 6 "Shell Profile + Claude Code Hook (Optional)"
 
     cat <<'EOF'
-Add burnrate to your shell profile for quick access!
+Add burnrate to your shell profile for quick access.
 
 This adds:
   • Aliases (burn, burnshow, burnbudget)
   • Quick summary functions
-  • Optional: budget status in prompt
-  • Optional: daily summary on login
 
 EOF
 
@@ -367,70 +364,88 @@ EOF
         echo "Reload your shell:"
         case "$SHELL" in
             */bash) echo "  source ~/.bashrc" ;;
-            */zsh) echo "  source ~/.zshrc" ;;
+            */zsh)  echo "  source ~/.zshrc" ;;
         esac
     else
         echo ""
         echo "Skipped shell integration."
     fi
 
+    # Claude Code hook (inline, still step 6)
+    _setup_claude_hook
+
     echo ""
     read -p "Press Enter to continue..."
 }
 
-# Step 7: Configure Claude Code hook
-setup_claude_hook() {
-    setup_header
-    setup_step 7 9 "Claude Code Integration (Optional)"
+# Claude Code Stop hook helper (called from setup_shell_integration)
+_setup_claude_hook() {
+    local settings_file="$HOME/.claude/settings.json"
 
     cat <<'EOF'
-Burnrate can automatically run after each Claude Code session!
 
-This adds a Claude Code hook that shows your token summary
-when you exit Claude Code.
+Burnrate can show your token summary after each Claude response.
+This adds a Stop hook to ~/.claude/settings.json.
 
 EOF
 
-    if ask_yn "Add burnrate as Claude Code hook?" "y"; then
+    if ! ask_yn "Add burnrate Stop hook to Claude Code?" "y"; then
         echo ""
-        echo "Configuring Claude Code hook..."
-
-        local hooks_file="$HOME/.claude/hooks.json"
-        local burnrate_path
-        burnrate_path="$(cd "$LIB_DIR/.." && pwd)/burnrate"
-
-        # Backup existing hooks
-        if [[ -f "$hooks_file" ]]; then
-            cp "$hooks_file" "$hooks_file.backup.$(date +%s)"
-            echo "✓ Backed up existing hooks"
-        fi
-
-        # Create/update hooks.json
-        cat > "$hooks_file" <<EOF
-{
-  "postExecute": "$burnrate_path"
-}
-EOF
-
-        echo "✓ Claude Code hook configured"
-        echo ""
-        echo "Burnrate will now run after each Claude Code session!"
-        echo "  Hook file: $hooks_file"
-        echo "  Command: $burnrate_path"
-    else
-        echo ""
-        echo "Skipped hook configuration."
-        echo "You can run 'burnrate' manually anytime."
+        echo "Skipped hook. Add it manually anytime — see: burnrate help"
+        return 0
     fi
 
     echo ""
-    read -p "Press Enter to continue..."
+
+    # If settings.json doesn't exist, create it cleanly
+    if [[ ! -f "$settings_file" ]]; then
+        mkdir -p "$HOME/.claude"
+        cat > "$settings_file" <<'HOOK'
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          { "type": "command", "command": "burnrate" }
+        ]
+      }
+    ]
+  }
+}
+HOOK
+        echo "✓ Created $settings_file with burnrate Stop hook"
+        return 0
+    fi
+
+    # settings.json exists — check if hook already present
+    if grep -q '"burnrate"' "$settings_file" 2>/dev/null; then
+        echo "✓ burnrate hook already present in $settings_file"
+        return 0
+    fi
+
+    # settings.json exists but no hook — show snippet, don't auto-merge
+    echo "  settings.json already exists. Add this to it manually:"
+    echo ""
+    cat <<'SNIPPET'
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          { "type": "command", "command": "burnrate" }
+        ]
+      }
+    ]
+  }
+SNIPPET
+    echo ""
+    echo "  File: $settings_file"
+    echo "  Or run 'burnrate setup' again after editing."
 }
 
 # Step 8: Review configuration
 setup_review() {
     setup_header
-    setup_step 8 9 "Review Configuration"
+    setup_step 6 6 "Review Configuration"
 
     cat <<EOF
 
@@ -457,7 +472,7 @@ EOF
 # Step 9: Save configuration
 setup_save() {
     setup_header
-    setup_step 9 9 "Saving Configuration"
+    setup_step 6 6 "Saving Configuration"
 
     local config_dir="${XDG_CONFIG_HOME:-$HOME/.config}/burnrate"
     local config_file="$config_dir/burnrate.conf"
@@ -498,6 +513,11 @@ BUDGET_ALERT=$SETUP_BUDGET_ALERT
 DEBUG=false
 QUIET=false
 SHOW_DISCLAIMER=true
+
+# Context window
+CONTEXT_WARN=true
+CONTEXT_WARN_THRESHOLD=85
+CONTEXT_DISPLAY=both
 EOF
 
     echo "✓ Configuration saved: $config_file"
@@ -509,11 +529,12 @@ EOF
     echo "Burnrate is ready to use!"
     echo ""
     echo "Try these commands:"
-    echo "  burnrate          # Show today's summary"
-    echo "  burnrate show     # Detailed report"
-    echo "  burnrate budget   # Budget status"
-    echo "  burnrate themes   # List themes"
-    echo "  burnrate --help   # Show help"
+    echo "  burnrate             # Show today's summary"
+    echo "  burnrate show        # Detailed report"
+    echo "  burnrate context     # Context window gauge"
+    echo "  burnrate budget      # Budget status"
+    echo "  burnrate themes      # List themes"
+    echo "  burnrate --help      # Show help"
     echo ""
     echo "⚠️  ZERO TOKENS USED - Pure script, reads local files only"
     echo ""
@@ -531,7 +552,6 @@ run_setup() {
     setup_emoji
     setup_budgets
     setup_shell_integration
-    setup_claude_hook
     setup_review
     setup_save
 }
