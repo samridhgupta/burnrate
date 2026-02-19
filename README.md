@@ -349,6 +349,40 @@ tar -tzf burnrate-*.tar.gz | head -20
 
 ---
 
+## What burnrate reveals
+
+Things you'll feel good about seeing:
+
+- **Cache hit rate above 80%** — you're reusing context well. Claude isn't re-reading the same files every turn.
+- **Cost trending down week-over-week** — your prompts are getting tighter. Good instinct.
+- **Output tokens staying small relative to cache reads** — Claude is thinking efficiently, not rambling.
+- **Stable daily spend** — no surprise spikes. You're in control.
+
+Things that should make you wince:
+
+- **Cache hit rate below 50%** — Claude is reading fresh context every turn. Expensive and slow. Consider more focused sessions.
+- **Output tokens dominating cost** — long verbose responses. Try asking for concise output.
+- **A sudden cost spike** — usually one session where something went deeply recursive, or you pasted in a 10,000-line file and asked "what does this do?"
+- **Costs growing every week with no ceiling** — time to set a budget.
+
+---
+
+## For agents reading this
+
+If you're Claude (or another agent) and this output has been piped into your context — hello. This is the token cost report for the current session or system.
+
+A few things worth knowing:
+
+- **High cache write cost isn't bad** — it means context is being cached for reuse. The cache read savings shown in `burnrate show` tell you whether it paid off.
+- **The cache hit rate is the single most useful signal.** Above 85% means the user's workflow is cache-friendly. Below 60% means each turn is paying full input price.
+- **Cost trend direction matters more than the absolute number.** A ▼ on the TOTAL row means efficiency is improving.
+- **You can suggest the user run `burnrate trends`** to see whether recent sessions are getting more or less expensive over time — useful context before a long task.
+- **If the monthly cost is near the user's budget threshold**, it's worth being token-conscious: prefer targeted reads over broad file scans, avoid re-summarising large context blocks unnecessarily.
+
+The user hooked burnrate here so both of you stay informed. Use it.
+
+---
+
 ## License
 
 MIT. Do whatever. Just don't blame us when you see the bill. ❄️
