@@ -14,7 +14,7 @@
 
 ---
 
-**→** [What is this](#what-is-this) · [Install](#install) · [Examples](#examples) · [Hook & Automate](#hook--automate) · [Permissions](#permissions) · [Commands](#commands) · [Configuration](#configuration) · [Themes](#themes) · [What it reveals](#what-burnrate-reveals) · [For agents](#for-agents-reading-this) · [Performance](#performance) · [How it works](#how-it-works) · [Limitations](#limitations) · [Troubleshooting](#troubleshooting) · [Security](#security)
+**→** [What is this](#what-is-this) · [Install](#install) · [Examples](#examples) · [Hook & Automate](#hook--automate) · [Permissions](#permissions) · [Commands](#commands) · [Configuration](#configuration) · [Themes](#themes) · [What it reveals](#what-burnrate-reveals) · [For agents](#for-agents-reading-this) · [Performance](#performance) · [How it works](#how-it-works) · [Limitations](#limitations) · [Troubleshooting](#troubleshooting) · [Security](#security) · [📖 INSTALL.md](INSTALL.md)
 
 ---
 
@@ -58,6 +58,17 @@ ln -s /mnt/c/Users/$WINDOWS_USER/.claude ~/.claude
 burnrate          # Today's summary
 burnrate doctor   # Health check
 ```
+
+**Setup presets** — configure without stepping through the wizard:
+```bash
+burnrate setup --arctic       # 🧊 all features on, hook auto-installed
+burnrate setup --glacier      # ❄️  balanced defaults (recommended for most users)
+burnrate setup --iceberg      # 🏔  lean — no animations, no emoji
+burnrate setup --permafrost   # 🪨  CI/script safe, fully non-interactive
+burnrate setup --hook-only    # just add the Stop hook
+```
+
+→ **[Full installation & configuration reference →  INSTALL.md](INSTALL.md)**
 
 ---
 
@@ -320,14 +331,17 @@ burnrate history      # Daily table (responsive, drops columns on narrow termina
 burnrate week         # This week's aggregate
 burnrate month        # This month's aggregate
 burnrate budget       # Budget status + spend projection
-burnrate context      # Context window gauge + recommendation
+burnrate context         # Context window gauge + recommendation
 burnrate context --full  # Breakdown: input / cache_write / cache_read / output
-burnrate query <m>    # Single raw metric — for scripts and agents
-burnrate config       # Current configuration
-burnrate themes       # List themes
-burnrate preview <t>  # Preview a theme
-burnrate doctor       # Full health check (28 assertions)
-burnrate setup        # Interactive setup wizard
+burnrate query <m>       # Single raw metric — for scripts and agents
+burnrate config          # Current configuration
+burnrate config edit     # Open config file in $EDITOR
+burnrate themes          # List themes
+burnrate preview <t>     # Preview a theme
+burnrate doctor          # Full health check (28 assertions)
+burnrate setup           # Interactive setup wizard
+burnrate setup --arctic  # All features on, no prompts (or --glacier / --iceberg / --permafrost)
+burnrate setup --hook-only  # Just install the Claude Code Stop hook
 ```
 
 **`burnrate query`** — machine-readable single values, no formatting, no color:
@@ -371,7 +385,7 @@ burnrate export full markdown report.md
 
 ## Configuration
 
-`~/.config/burnrate/burnrate.conf` — or set `CONFIG_*` env vars:
+`~/.config/burnrate/burnrate.conf` — edit directly or via `burnrate config edit`. Or set `CONFIG_*` env vars for one-off overrides. → [Full config reference in INSTALL.md](INSTALL.md#all-config-options)
 
 ```bash
 CONFIG_THEME="glacial"                # glacial | ember | battery | hourglass | garden | ocean | space

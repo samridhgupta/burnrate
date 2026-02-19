@@ -327,15 +327,37 @@ cmd_preview() {
     preview_theme "$theme_name"
 }
 
-# Show configuration
+# Show or edit configuration
 cmd_config() {
-    show_config
+    local subcmd="${1:-show}"
+    case "$subcmd" in
+        edit)
+            local config_file
+            if config_file=$(find_config_file 2>/dev/null); then
+                ${EDITOR:-${VISUAL:-nano}} "$config_file"
+            else
+                local default_conf="${XDG_CONFIG_HOME:-$HOME/.config}/burnrate/burnrate.conf"
+                echo "No config file found. Creating default at: $default_conf"
+                echo "Run 'burnrate setup' to configure interactively."
+                echo ""
+                mkdir -p "$(dirname "$default_conf")"
+                generate_config_example > "$default_conf"
+                ${EDITOR:-${VISUAL:-nano}} "$default_conf"
+            fi
+            ;;
+        show|"")
+            show_config
+            ;;
+        *)
+            die_usage "Unknown config subcommand: $subcmd\nUsage: burnrate config [show|edit]"
+            ;;
+    esac
 }
 
-# Run setup wizard
+# Run setup wizard (with optional preset/flag args)
 cmd_setup() {
     source "$LIB_DIR/setup.sh"
-    run_setup
+    run_setup "$@"
 }
 
 cmd_doctor() {

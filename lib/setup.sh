@@ -16,15 +16,225 @@ source "$LIB_DIR/integrations.sh"
 # ============================================================================
 
 SETUP_QUICK_MODE=false
+SETUP_PRESET=""           # full | medium | minimal | ci  (empty = interactive)
+SETUP_NONINTERACTIVE=false
 SETUP_CONFIG=()
 SETUP_THEME="glacial"
 SETUP_ANIMATIONS="true"
 SETUP_ANIMATION_SPEED="normal"
 SETUP_ANIMATION_STYLE="standard"
 SETUP_EMOJI="true"
+SETUP_COLORS="auto"
 SETUP_DAILY_BUDGET="0.00"
 SETUP_MONTHLY_BUDGET="0.00"
 SETUP_BUDGET_ALERT="90"
+SETUP_HOOK="ask"          # yes | no | ask
+SETUP_CONTEXT_WARN="true"
+SETUP_CONTEXT_THRESHOLD="85"
+SETUP_CONTEXT_DISPLAY="both"
+
+# ============================================================================
+# Presets
+# ============================================================================
+
+# Apply a named preset — sets all SETUP_* vars, skips interactive prompts.
+# Presets:
+#   full    — every feature on, hook auto-installed, context threshold 75%
+#   medium  — balanced defaults (matches interactive defaults)
+#   minimal — no animations, no emoji, no hook, bare numbers
+#   ci      — fully non-interactive: no color/emoji/animations, no hook
+_apply_preset() {
+    local preset="$1"
+    SETUP_PRESET="$preset"
+
+    case "$preset" in
+        # ── Fun themed names (glacial theme) ──────────────────────────────────
+        arctic|full|max)
+            # 🧊 Arctic — full feature set, hook auto-installed, lower warn threshold
+            SETUP_THEME="glacial"
+            SETUP_ANIMATIONS="true"
+            SETUP_ANIMATION_SPEED="normal"
+            SETUP_ANIMATION_STYLE="standard"
+            SETUP_EMOJI="true"
+            SETUP_COLORS="auto"
+            SETUP_HOOK="yes"
+            SETUP_CONTEXT_WARN="true"
+            SETUP_CONTEXT_THRESHOLD="75"
+            SETUP_CONTEXT_DISPLAY="both"
+            SETUP_QUICK_MODE=true
+            ;;
+        glacier|medium|default)
+            # ❄️  Glacier — balanced defaults, hook recommended
+            SETUP_THEME="glacial"
+            SETUP_ANIMATIONS="true"
+            SETUP_ANIMATION_SPEED="normal"
+            SETUP_ANIMATION_STYLE="standard"
+            SETUP_EMOJI="true"
+            SETUP_COLORS="auto"
+            SETUP_HOOK="yes"
+            SETUP_CONTEXT_WARN="true"
+            SETUP_CONTEXT_THRESHOLD="85"
+            SETUP_CONTEXT_DISPLAY="both"
+            SETUP_QUICK_MODE=true
+            ;;
+        iceberg|minimal|min)
+            # 🏔  Iceberg — lean, no animations, bare stats (just the tip showing)
+            SETUP_THEME="glacial"
+            SETUP_ANIMATIONS="false"
+            SETUP_ANIMATION_SPEED="instant"
+            SETUP_ANIMATION_STYLE="minimal"
+            SETUP_EMOJI="false"
+            SETUP_COLORS="auto"
+            SETUP_HOOK="no"
+            SETUP_CONTEXT_WARN="true"
+            SETUP_CONTEXT_THRESHOLD="90"
+            SETUP_CONTEXT_DISPLAY="number"
+            SETUP_QUICK_MODE=true
+            ;;
+        permafrost|ci|script|headless)
+            # 🪨  Permafrost — rock solid, no display, CI/script use
+            SETUP_THEME="glacial"
+            SETUP_ANIMATIONS="false"
+            SETUP_ANIMATION_SPEED="instant"
+            SETUP_ANIMATION_STYLE="minimal"
+            SETUP_EMOJI="false"
+            SETUP_COLORS="never"
+            SETUP_HOOK="no"
+            SETUP_CONTEXT_WARN="false"
+            SETUP_CONTEXT_THRESHOLD="100"
+            SETUP_CONTEXT_DISPLAY="number"
+            SETUP_QUICK_MODE=true
+            SETUP_NONINTERACTIVE=true
+            ;;
+        *)
+            echo "Unknown preset: $preset" >&2
+            echo "Available presets:" >&2
+            echo "  arctic      (alias: full)     — all features on, hook auto-installed" >&2
+            echo "  glacier     (alias: medium)   — balanced defaults" >&2
+            echo "  iceberg     (alias: minimal)  — no animations/emoji, bare stats" >&2
+            echo "  permafrost  (alias: ci)       — non-interactive, CI/script safe" >&2
+            exit 1
+            ;;
+    esac
+}
+
+# Print preset summary table
+_show_preset_summary() {
+    local preset="$1"
+    local r='\033[0m' b='\033[1m' c='\033[1;36m' d='\033[2m'
+    printf "\n  ${c}Preset: %s${r}\n\n" "$preset"
+    printf "  ${d}%-22s${r}  %s\n" "Theme"              "$SETUP_THEME"
+    printf "  ${d}%-22s${r}  %s\n" "Animations"         "$SETUP_ANIMATIONS ($SETUP_ANIMATION_SPEED)"
+    printf "  ${d}%-22s${r}  %s\n" "Emoji"              "$SETUP_EMOJI"
+    printf "  ${d}%-22s${r}  %s\n" "Colors"             "$SETUP_COLORS"
+    printf "  ${d}%-22s${r}  %s\n" "Claude Code hook"   "$SETUP_HOOK"
+    printf "  ${d}%-22s${r}  %s\n" "Context warn"       "$SETUP_CONTEXT_WARN (threshold: ${SETUP_CONTEXT_THRESHOLD}%)"
+    printf "  ${d}%-22s${r}  %s\n" "Context display"    "$SETUP_CONTEXT_DISPLAY"
+    printf "  ${d}%-22s${r}  %s\n" "Budget"             "$([ "$SETUP_DAILY_BUDGET" = "0.00" ] && echo "unlimited (edit later)" || echo "\$$SETUP_DAILY_BUDGET daily / \$$SETUP_MONTHLY_BUDGET monthly")"
+    echo ""
+}
+
+# Parse setup CLI arguments
+# Returns preset name or empty for interactive
+# Parse setup CLI arguments.
+# Presets set SETUP_QUICK_MODE=true and skip interactive prompts.
+# Individual flags can be mixed with presets for fine-tuning.
+_parse_setup_args() {
+    local arg
+    for arg in "$@"; do
+        case "$arg" in
+            # ── Themed preset shortcuts ──────────────────────────────────────
+            --arctic|--full|--max)          _apply_preset arctic      ;;
+            --glacier|--medium|--default)   _apply_preset glacier     ;;
+            --iceberg|--minimal|--min)      _apply_preset iceberg     ;;
+            --permafrost|--ci|--script)     _apply_preset permafrost  ;;
+            --preset=*)                     _apply_preset "${arg#--preset=}" ;;
+
+            # ── Theme ────────────────────────────────────────────────────────
+            --theme=*)
+                SETUP_THEME="${arg#--theme=}"
+                ;;
+
+            # ── Individual feature flags (mix with preset or standalone) ─────
+            --no-animations)    SETUP_ANIMATIONS="false"  ;;
+            --animations)       SETUP_ANIMATIONS="true"   ;;
+            --no-emoji)         SETUP_EMOJI="false"       ;;
+            --emoji)            SETUP_EMOJI="true"        ;;
+            --no-hook)          SETUP_HOOK="no"           ;;
+            --hook)             SETUP_HOOK="yes"          ;;
+            --no-color|--no-colour)  SETUP_COLORS="never" ;;
+            --color)            SETUP_COLORS="auto"       ;;
+            --context-warn=*)   SETUP_CONTEXT_THRESHOLD="${arg#--context-warn=}" ;;
+            --no-context-warn)  SETUP_CONTEXT_WARN="false" ;;
+            --context-display=*) SETUP_CONTEXT_DISPLAY="${arg#--context-display=}" ;;
+            --animation-speed=*) SETUP_ANIMATION_SPEED="${arg#--animation-speed=}" ;;
+
+            # ── Fast paths ────────────────────────────────────────────────────
+            --hook-only)
+                SETUP_PRESET="hook-only"
+                return 0
+                ;;
+            --budget-only)
+                SETUP_PRESET="budget-only"
+                return 0
+                ;;
+            --help|-h)
+                cat <<'HELP'
+burnrate setup [OPTIONS]
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Preset shortcuts (no prompts)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  --arctic        🧊  All features on, hook auto-installed (full/max)
+  --glacier       ❄️   Balanced defaults, hook recommended (medium)
+  --iceberg       🏔   Lean — no animations, no emoji (minimal)
+  --permafrost    🪨   CI/script safe — no color, no emoji, no hook
+
+  --preset=NAME   Named: arctic | glacier | iceberg | permafrost
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Individual flags (mix with preset or standalone)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  --theme=NAME             glacial|ember|battery|hourglass|garden|ocean|space
+  --animations             enable animations
+  --no-animations          disable animations
+  --emoji / --no-emoji
+  --hook / --no-hook
+  --color / --no-color
+  --context-warn=N         warn threshold % (default 85)
+  --no-context-warn        disable context window warning
+  --context-display=MODE   visual | number | both
+  --animation-speed=SPEED  slow | normal | fast | instant
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Fast paths
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  --hook-only              Just install the Claude Code Stop hook
+  --budget-only            Just configure daily/monthly budgets
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Examples:
+  burnrate setup                           # interactive wizard
+  burnrate setup --arctic                  # all features on, no prompts
+  burnrate setup --permafrost              # CI safe, fully non-interactive
+  burnrate setup --glacier --theme=ember   # medium + ember theme
+  burnrate setup --iceberg --hook          # minimal + add hook anyway
+  burnrate setup --arctic --context-warn=90  # full but higher warn threshold
+  burnrate setup --hook-only               # just the Stop hook
+  burnrate config edit                     # edit config file directly
+
+See INSTALL.md for the full configuration reference.
+HELP
+                exit 0
+                ;;
+            --*)
+                echo "Unknown option: $arg" >&2
+                echo "Run: burnrate setup --help" >&2
+                exit 1
+                ;;
+        esac
+    done
+}
 
 # ============================================================================
 # UI Helpers
@@ -115,7 +325,18 @@ ask_menu() {
 
 # Step 0: Welcome
 setup_welcome() {
+    [[ "$SETUP_NONINTERACTIVE" == "true" ]] && return 0
+
     setup_header
+
+    if [[ -n "$SETUP_PRESET" ]]; then
+        echo "⚠️  ZERO TOKENS USED - Pure script, reads local files only"
+        _show_preset_summary "$SETUP_PRESET"
+        if [[ "$SETUP_NONINTERACTIVE" != "true" ]]; then
+            read -rp "Press Enter to apply, or Ctrl-C to cancel..."
+        fi
+        return 0
+    fi
 
     cat <<'EOF'
 Welcome to Burnrate! 🔥
@@ -123,8 +344,8 @@ Welcome to Burnrate! 🔥
 Burnrate helps you track Claude Code token costs with zero API calls.
 It reads your local stats file and shows you:
   • Token usage (input, output, cache)
-  • Cost breakdown
-  • Cache efficiency
+  • Cost breakdown and cache efficiency
+  • Context window gauge (current session)
   • Budget alerts
   • Beautiful terminal UI with themes
 
@@ -146,7 +367,7 @@ EOF
     fi
 
     echo ""
-    read -p "Press Enter to continue..."
+    read -rp "Press Enter to continue..."
 }
 
 # Step 1: Check prerequisites
@@ -378,20 +599,85 @@ EOF
     read -p "Press Enter to continue..."
 }
 
+# Write the Stop hook entry to settings.json (shared by interactive + auto paths)
+_do_install_hook() {
+    local settings_file="$1"
+
+    if [[ ! -f "$settings_file" ]]; then
+        mkdir -p "$HOME/.claude"
+        cat > "$settings_file" <<'HOOK'
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          { "type": "command", "command": "burnrate" }
+        ]
+      }
+    ]
+  }
+}
+HOOK
+        success "Created $settings_file with burnrate Stop hook"
+        return 0
+    fi
+
+    if grep -q '"burnrate"' "$settings_file" 2>/dev/null; then
+        success "burnrate hook already present in $settings_file"
+        return 0
+    fi
+
+    # settings.json exists but no hook — show snippet
+    warn "settings.json already exists. Merge this block into it manually:"
+    echo ""
+    cat <<'SNIPPET'
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          { "type": "command", "command": "burnrate" }
+        ]
+      }
+    ]
+  }
+SNIPPET
+    echo ""
+    echo "  File: $settings_file"
+    echo "  Or: burnrate setup --hook-only  (re-run after editing)"
+}
+
 # Claude Code Stop hook helper (called from setup_shell_integration)
 _setup_claude_hook() {
     local settings_file="$HOME/.claude/settings.json"
 
+    # Non-interactive / preset: auto-decide
+    if [[ "$SETUP_HOOK" == "yes" ]]; then
+        _do_install_hook "$settings_file"
+        return 0
+    elif [[ "$SETUP_HOOK" == "no" ]]; then
+        info "Hook skipped (preset: $SETUP_PRESET)"
+        return 0
+    fi
+
+    # Interactive — strongly recommended
     cat <<'EOF'
 
-Burnrate can show your token summary after each Claude response.
-This adds a Stop hook to ~/.claude/settings.json.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ⭐  Recommended: Claude Code Stop hook
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Burnrate shows your token cost after every Claude response.
+This is the best way to stay aware of spend as you work.
+
+  "After every response, I know my burn rate."
+
+Adds one line to ~/.claude/settings.json. Fully reversible.
 
 EOF
 
-    if ! ask_yn "Add burnrate Stop hook to Claude Code?" "y"; then
+    if ! ask_yn "Add burnrate Stop hook? (highly recommended)" "y"; then
         echo ""
-        echo "Skipped hook. Add it manually anytime — see: burnrate help"
+        echo "Skipped. Add it later: burnrate setup --hook-only"
         return 0
     fi
 
@@ -483,41 +769,43 @@ setup_save() {
     echo ""
 
     echo "Writing configuration file..."
+    local preset_label="${SETUP_PRESET:-interactive}"
     cat > "$config_file" <<EOF
 # Burnrate Configuration
-# Generated by setup wizard on $(date)
+# Generated by burnrate setup ($preset_label) on $(date)
+# Edit anytime: burnrate config edit
 
-# Display
+# ── Display ──────────────────────────────────────────────────────────────────
 THEME=$SETUP_THEME
-COLORS_ENABLED=auto
+COLORS_ENABLED=$SETUP_COLORS
 EMOJI_ENABLED=$SETUP_EMOJI
 OUTPUT_FORMAT=detailed
 
-# Animation
+# ── Animations ───────────────────────────────────────────────────────────────
 ANIMATIONS_ENABLED=$SETUP_ANIMATIONS
 ANIMATION_SPEED=$SETUP_ANIMATION_SPEED
 ANIMATION_STYLE=$SETUP_ANIMATION_STYLE
 
-# Paths
+# ── Paths ─────────────────────────────────────────────────────────────────────
 CLAUDE_DIR=\$HOME/.claude
 STATS_FILE=\$CLAUDE_DIR/stats-cache.json
 DATA_DIR=\$HOME/.local/share/burnrate
 CACHE_DIR=\$HOME/.cache/burnrate
 
-# Budget
+# ── Budget ────────────────────────────────────────────────────────────────────
 DAILY_BUDGET=$SETUP_DAILY_BUDGET
 MONTHLY_BUDGET=$SETUP_MONTHLY_BUDGET
 BUDGET_ALERT=$SETUP_BUDGET_ALERT
 
-# Behavior
+# ── Behavior ──────────────────────────────────────────────────────────────────
 DEBUG=false
 QUIET=false
 SHOW_DISCLAIMER=true
 
-# Context window
-CONTEXT_WARN=true
-CONTEXT_WARN_THRESHOLD=85
-CONTEXT_DISPLAY=both
+# ── Context window ────────────────────────────────────────────────────────────
+CONTEXT_WARN=$SETUP_CONTEXT_WARN
+CONTEXT_WARN_THRESHOLD=$SETUP_CONTEXT_THRESHOLD
+CONTEXT_DISPLAY=$SETUP_CONTEXT_DISPLAY
 EOF
 
     echo "✓ Configuration saved: $config_file"
@@ -545,6 +833,24 @@ EOF
 # ============================================================================
 
 run_setup() {
+    # Parse CLI args — sets SETUP_PRESET and/or individual SETUP_* vars
+    _parse_setup_args "$@"
+
+    # Fast path: --hook-only
+    if [[ "${SETUP_PRESET:-}" == "hook-only" ]]; then
+        SETUP_HOOK="yes"
+        _do_install_hook "$HOME/.claude/settings.json"
+        return 0
+    fi
+
+    # Fast path: --budget-only
+    if [[ "${SETUP_PRESET:-}" == "budget-only" ]]; then
+        setup_header
+        setup_budgets
+        _save_budget_to_config
+        return 0
+    fi
+
     setup_welcome
     setup_prerequisites
     setup_theme
@@ -554,6 +860,27 @@ run_setup() {
     setup_shell_integration
     setup_review
     setup_save
+}
+
+# Save just the budget values to an existing config (used by --budget-only)
+_save_budget_to_config() {
+    local config_dir="${XDG_CONFIG_HOME:-$HOME/.config}/burnrate"
+    local config_file="$config_dir/burnrate.conf"
+    mkdir -p "$config_dir"
+
+    if [[ -f "$config_file" ]]; then
+        local tmp
+        tmp=$(mktemp)
+        grep -v "^DAILY_BUDGET=\|^MONTHLY_BUDGET=\|^BUDGET_ALERT=" "$config_file" > "$tmp" || true
+        printf "DAILY_BUDGET=%s\nMONTHLY_BUDGET=%s\nBUDGET_ALERT=%s\n" \
+            "$SETUP_DAILY_BUDGET" "$SETUP_MONTHLY_BUDGET" "$SETUP_BUDGET_ALERT" >> "$tmp"
+        mv "$tmp" "$config_file"
+        success "Budget updated in $config_file"
+    else
+        printf "DAILY_BUDGET=%s\nMONTHLY_BUDGET=%s\nBUDGET_ALERT=%s\n" \
+            "$SETUP_DAILY_BUDGET" "$SETUP_MONTHLY_BUDGET" "$SETUP_BUDGET_ALERT" > "$config_file"
+        success "Budget saved to $config_file"
+    fi
 }
 
 # Allow sourcing without auto-run
