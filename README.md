@@ -405,27 +405,43 @@ CONFIG_CONTEXT_DISPLAY="both"         # visual (gauge only) | number (tokens onl
 
 ## Themes
 
-Seven built-in metaphors for your token burn:
+14 built-in themes organized by category:
 
+**Core** — the original set
 | Theme | Vibe |
 |-------|------|
 | `glacial` ❄️ | Melting ice caps. Cache or the Arctic drowns. |
 | `ember` 🔥 | Burning fuel. Every prompt fans the flame. |
-| `battery` 🔋 | Draining charge. Cache = power saving mode. |
 | `hourglass` ⏳ | Sand falling. Tokens are time. |
 | `garden` 🌱 | Growing carefully. Waste nothing. |
 | `ocean` 🌊 | Rising tide. Each token a drop. |
 | `space` 🚀 | Finite fuel. Infinite void. |
 
+**Sci-Fi** — reference themes
+| Theme | Vibe |
+|-------|------|
+| `matrix` 🟢 | CPU cycles and memory. Technical, cold. |
+| `skynet` ☢️ | AI monitoring human token waste. Clinical, unimpressed. |
+
+**Personality** — character and voice
+| Theme | Vibe |
+|-------|------|
+| `roast` 🎤 | Comedy roast. Every metric is a punchline. |
+| `kawaii` 🌸 | Cute animals. Tokens are treats. |
+| `zen` ⬜ | No emoji. No drama. Just numbers, plainly stated. |
+| `coach` 🏆 | Sports coach. Actionable, direct, runs plays. |
+| `forge` 🔨 | A working forge. Coal, heat, and gruff wisdom. |
+
 ```bash
-burnrate --theme ember          # one-off
-burnrate preview space          # try before you commit
-burnrate themes                 # list all available themes
+burnrate --theme roast          # one-off
+burnrate preview skynet         # try before you commit
+burnrate themes                 # list all available themes, grouped by category
+burnrate themes clone glacial mytheme  # clone a theme to customize
 ```
 
-Custom themes go in `~/.config/burnrate/themes/`. burnrate finds them automatically.
+Custom themes go in `~/.config/burnrate/themes/`. burnrate finds them automatically — flat or in category subdirectories.
 
-> Want to build your own? **[📖 THEMES.md](THEMES.md)** has the full variable spec, a blank template, and instructions for cloning from an existing theme. It's mostly just writing messages — the structure is already there.
+> Want to build your own? **[📖 THEMES.md](THEMES.md)** has the full variable spec, a blank template, clone instructions, and an agent prompt you can paste directly into Claude.
 
 ---
 

@@ -26,14 +26,15 @@ burnrate preview hourglass    # try before you commit
 
 **Create your own:**
 ```bash
-# Option 1: Start from scratch with the template
-cp /path/to/burnrate/config/themes/_template.theme ~/.config/burnrate/themes/mytheme.theme
-# edit it, then:
+# Option 1: Clone a built-in and update just the messages (fastest)
+burnrate themes clone glacial mytheme
+# opens in $EDITOR automatically if EDITOR is set
+# then:
 burnrate preview mytheme
 
-# Option 2: Clone a built-in and tweak the messages
-burnrate theme clone glacial mytheme
-# now edit ~/.config/burnrate/themes/mytheme.theme
+# Option 2: Start from the blank template in THEMES.md
+# Copy the template block below into ~/.config/burnrate/themes/mytheme.theme
+# edit it, then: burnrate preview mytheme
 ```
 
 **Install a custom theme:**
@@ -51,15 +52,33 @@ burnrate preview mytheme         # verify it looks right
 
 ## Built-in themes
 
+Themes are organized into category folders under `config/themes/`. burnrate discovers themes in the top level and one level of subdirectories — so `config/themes/core/glacial.theme` and `~/.config/burnrate/themes/mytheme.theme` are both found automatically.
+
+**Core** — `config/themes/core/`
 | Name | Emoji | Metaphor |
 |------|-------|----------|
 | `glacial` | ❄️ | Environmental impact — every token melts the ice |
 | `ember` | 🔥 | Controlled burn — every prompt fans the flame |
-| `battery` | 🔋 | Device charge draining — cache = power-saving mode |
 | `hourglass` | ⏳ | Sand falling — tokens are time |
 | `garden` | 🌱 | Growing carefully — cache is compost |
 | `ocean` | 🌊 | Rising tide — every uncached token a drop |
 | `space` | 🚀 | Spacecraft on a mission — finite fuel, infinite void |
+| `battery` | 🔋 | _(deprecated — use `forge`, `matrix`, or `ember`)_ |
+
+**Sci-Fi** — `config/themes/sci-fi/`
+| Name | Emoji | Metaphor |
+|------|-------|----------|
+| `matrix` | 🟢 | Terminal grid — tokens are CPU cycles, cache is RAM |
+| `skynet` | ☢️ | AI monitoring human inefficiency — clinical and unimpressed |
+
+**Personality** — `config/themes/personality/`
+| Name | Emoji | Metaphor |
+|------|-------|----------|
+| `roast` | 🎤 | Comedy roast — every metric is a punchline at your expense |
+| `kawaii` | 🌸 | Cute animal ecosystem — tokens are treats, save the treats |
+| `zen` | ⬜ | Minimal, text-only — no emoji, just the numbers plainly stated |
+| `coach` | 🏆 | Sports coach — tokens are plays, cache is the playbook |
+| `forge` | 🔨 | Working forge — coal burned, pre-heat saved, gruff wisdom |
 
 ---
 
@@ -457,20 +476,98 @@ If something looks wrong, `burnrate preview` shows all states in one screen — 
 
 ---
 
-## Sharing your theme
+## Theme categories
 
-Drop a PR at the burnrate repo with your `.theme` file added to `config/themes/`. Include in the PR description:
-- One sentence describing the metaphor
-- Your `THEME_FOOTER` as a preview of the voice
-- Why you made it
+Bundled themes are organized by category under `config/themes/`:
+
+```
+config/themes/
+├── core/          glacial, ember, hourglass, garden, ocean, space, battery (deprecated)
+├── sci-fi/        matrix, skynet
+└── personality/   roast, kawaii, zen, coach, forge
+```
+
+User themes live flat in `~/.config/burnrate/themes/` — no category required. burnrate discovers themes one level deep, so creating category folders in your user themes dir also works if you want to organize them:
+
+```
+~/.config/burnrate/themes/
+├── mytheme.theme         # flat — works
+└── work/                 # category — also works
+    └── corporate.theme
+```
+
+**Where to put a new contributed theme:**
+- `core/` — new flagship metaphors with strong, original identities
+- `sci-fi/` — science fiction or pop-culture references
+- `personality/` — character voices, tone experiments, minimal variants
+- Or propose a new category if your theme genuinely doesn't fit
+
+---
+
+## Contributing a theme
+
+Drop a PR at the burnrate repo with:
+1. Your `.theme` file in the appropriate category folder under `config/themes/`
+2. PR description with:
+   - One sentence describing the metaphor
+   - Your `THEME_FOOTER` as a preview of the voice
+   - Which category you're adding it to, and why
 
 We'll review for:
-- Complete variable coverage (all ~70 vars defined)
-- Distinct 5-level cascade (no duplicate status icons)
-- Consistent metaphor (no mixed signals)
-- Messages that say something (not just "ok" / "bad" / "warning")
+- **Complete variable coverage** — all ~70 vars defined
+- **Distinct 5-level cascade** — no duplicate status icons
+- **Consistent metaphor** — single coherent metaphor throughout
+- **Messages that say something** — not just "ok" / "bad" / "warning"
+- **Category fit** — theme lands in the right folder
 
-We will not review for taste. Themes are personal. If your theme is intensely niche — aviation checklists, stock market tickers, golf handicaps — that's fine. More themes is more better.
+We will not review for taste. Themes are personal. If your theme is intensely niche — aviation checklists, stock market tickers, golf handicaps, 80s infomercials — that's fine. More themes is more better.
+
+---
+
+## Building themes with an AI agent
+
+If you're using Claude or another agent to generate a burnrate theme, paste this prompt directly:
+
+---
+
+```
+Create a burnrate theme file for the following concept:
+
+Concept: [DESCRIBE YOUR THEME CONCEPT HERE]
+Name: [lowercase, no spaces, e.g. "vapor" or "noir"]
+Metaphor: [What do tokens represent? What does cache represent? What does budget represent?]
+Voice: [Tone/personality — e.g. "dry and sarcastic", "warm and enthusiastic", "cold and robotic"]
+Color: [Primary color feel — e.g. "neon purple", "dark red", "monochrome green"]
+
+Requirements:
+- File must define all of these variable groups: METADATA, COLORS (6 vars), STATUS (12 vars),
+  ICONS (9 vars), MESSAGES (14 vars), LABELS (5 vars), TIPS (7 vars), FUN MESSAGES (14 vars)
+- THEME_CTX_OK/HALF/WARNING/CRITICAL must be defined for context window display
+- All 5 status levels (EXCELLENT/GOOD/WARNING/CRITICAL/DANGER) must use DISTINCT symbols
+- Messages should be written in the stated voice and stay within the metaphor
+- THEME_FOOTER should capture the theme's philosophy in one sentence
+- Output the complete bash file, starting with #!/usr/bin/env bash
+
+Reference the variable spec in THEMES.md for the full list of required variables.
+```
+
+---
+
+**To generate via `burnrate themes clone` (fastest approach):**
+
+```bash
+# Clone the closest existing theme as a starting point
+burnrate themes clone glacial mytheme    # for nature metaphors
+burnrate themes clone matrix mytheme     # for tech metaphors
+burnrate themes clone roast mytheme      # for personality/voice themes
+burnrate themes clone zen mytheme        # for minimal/text-only themes
+
+# The file opens in $EDITOR — update messages to match your concept
+# When done:
+burnrate preview mytheme
+```
+
+**For message-only / text-only themes:** clone `zen` as your base. It already has empty icon vars and minimal status indicators. You only need to rewrite the messages.
 
 ---
 
@@ -486,6 +583,8 @@ If you're building tooling that creates or validates burnrate themes programmati
 - The 5-level cascade (`EXCELLENT/GOOD/WARNING/CRITICAL/DANGER`) maps to numeric thresholds: 90/75/50/25%
 - ANSI color codes work as-is on any terminal that supports color (which is most of them)
 - Theme files should be idempotent — sourcing them multiple times should produce the same result (no side effects, no command substitution, no output)
+- Theme discovery searches: top-level of each theme directory + one level of subdirectories (category folders). Not deeper.
+- To programmatically list themes: `burnrate themes --format json` or parse `burnrate themes` output
 
 ---
 

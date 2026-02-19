@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
-# Battery Theme - Power Consumption
+# Battery Theme - Power Consumption  [DEPRECATED]
 # "Your tokens are charge. Your wallet is the outlet. Cache is power-saving mode."
+# Note: battery is deprecated as of v2.0. Consider: forge (heavy), matrix (tech), or ember (fire).
+# The theme file remains for backward compatibility.
 
 # ============================================================================
 # THEME METADATA

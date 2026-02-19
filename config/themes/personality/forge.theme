@@ -1,0 +1,140 @@
+#!/usr/bin/env bash
+# Forge Theme - Heat and Iron
+# "The forge runs hot and expensive. Cache is the pre-heat. Use it."
+
+# ============================================================================
+# THEME METADATA
+# ============================================================================
+
+THEME_NAME="forge"
+THEME_DISPLAY_NAME="Forge"
+THEME_EMOJI="🔨"
+THEME_DESCRIPTION="A working forge — tokens are coal shoveled into the furnace, cache is pre-heated metal"
+THEME_AUTHOR="burnrate"
+THEME_VERSION="1.0.0"
+
+# ============================================================================
+# COLORS (Iron and fire)
+# ============================================================================
+
+THEME_PRIMARY='\033[1;33m'       # Bright orange-gold (molten metal)
+THEME_SUCCESS='\033[0;32m'       # Green (cool, finished, ready)
+THEME_WARNING='\033[0;33m'       # Yellow (the forge is hot)
+THEME_ERROR='\033[0;31m'         # Red (things burning they shouldn't)
+THEME_INFO='\033[0;36m'          # Cyan (the cooling water)
+THEME_DIM='\033[2;33m'           # Dim gold (fading embers)
+
+# ============================================================================
+# STATUS INDICATORS (Forge temperature levels)
+# ============================================================================
+
+THEME_STATUS_EXCELLENT="⚒️ "      # 90-100% - Forge at working temp, iron at peak
+THEME_STATUS_GOOD="🔨"           # 75-89%  - Steady strike, good heat
+THEME_STATUS_WARNING="🔥"        # 50-74%  - Coal burning fast
+THEME_STATUS_CRITICAL="💥"       # 25-49%  - Overheating, structure at risk
+THEME_STATUS_DANGER="☠️ "         # 0-24%   - Forge dead, coal gone, iron cold
+
+# Budget status
+THEME_BUDGET_SAFE="⚒️"           # Coal allocation sufficient
+THEME_BUDGET_WARNING="🔥"        # Coal running faster than expected
+THEME_BUDGET_CRITICAL="💥"       # Last shovelful
+THEME_BUDGET_EXCEEDED="☠️"        # No coal. Forge is cold. Go home.
+
+# Cache efficiency
+THEME_CACHE_EXCELLENT="⚒️"       # Pre-heated — no coal needed
+THEME_CACHE_GOOD="🔨"            # Warm from the last run
+THEME_CACHE_POOR="❄️"            # Cold start — burns everything
+
+# ============================================================================
+# ICONS
+# ============================================================================
+
+THEME_ICON_LOADING="🔥"
+THEME_ICON_SUCCESS="⚒️"
+THEME_ICON_ERROR="💥"
+THEME_ICON_WARNING="🔥"
+THEME_ICON_INFO="🔧"
+THEME_ICON_COST="🪨"
+THEME_ICON_TOKENS="🔥"
+THEME_ICON_CACHE="♨️"
+THEME_ICON_BUDGET="⛏️"
+
+# ============================================================================
+# MESSAGES
+# ============================================================================
+
+THEME_MSG_EXCELLENT="Forge at working temperature. Iron pre-heated. Cache doing its job. Strike while it's hot. ⚒️"
+THEME_MSG_GOOD="Good heat. Steady strike. Cache keeping the metal warm between runs. 🔨"
+THEME_MSG_WARNING="Coal burning faster than the work warrants. Cache rate dropping — cold starts incoming. 🔥"
+THEME_MSG_CRITICAL="Forge overheating without the pre-heat. Every stroke costs a full coal load. 💥"
+THEME_MSG_DANGER="The forge is cold. The coal is gone. The iron never got to temperature. Start over. ☠️"
+
+THEME_CACHE_MSG_EXCELLENT="Pre-heat holding — cache is keeping the metal hot between passes. Not a shovel of coal wasted. ⚒️"
+THEME_CACHE_MSG_GOOD="Iron's warm from the last run. Cache working. Less coal per piece. 🔨"
+THEME_CACHE_MSG_POOR="Cold starts on everything. Full coal load every time. Cache isn't holding heat. This is the expensive way to forge. ❄️"
+
+THEME_BUDGET_MSG_OK="Coal allocation in line with the work. Forge running clean. ⚒️"
+THEME_BUDGET_MSG_WARNING="Coal burning faster than the order requires. Watch the pile. 🔥"
+THEME_BUDGET_MSG_CRITICAL="Last shovels in the bin. Budget nearly gone. The work isn't finished. 💥"
+THEME_BUDGET_MSG_EXCEEDED="No coal. Forge is cold. Order's not filled. Budget's dead. Go home and think about caching. ☠️"
+
+THEME_BUDGET_UNLIMITED_DAILY="🪨 Unlimited daily — coal like it grows on trees. It doesn't. (burnrate config)"
+THEME_BUDGET_UNLIMITED_MONTHLY="⛏️ Unlimited monthly — you've claimed the whole mine as your budget. Bold."
+THEME_BUDGET_UNLIMITED_BOTH="☠️  No limits set — running the forge with the doors open in winter. (burnrate config)"
+
+THEME_FOOTER="The forge runs hot and expensive. Cache is the pre-heat. Use it."
+
+# Context window messages
+THEME_CTX_OK="Plenty of room in the working area. Forge floor clear — work can continue. ⚒️"
+THEME_CTX_HALF="Forge floor getting crowded. Run /compact before the next big piece. 🔥"
+THEME_CTX_WARNING="Working area nearly full! /compact before something gets knocked over. 💥"
+THEME_CTX_CRITICAL="Forge floor at capacity! /compact immediately or start a fresh session in a clean forge. ☠️"
+
+# ============================================================================
+# LABELS
+# ============================================================================
+
+THEME_LABEL_COST="Coal Burned"
+THEME_LABEL_SAVINGS="Pre-Heat Savings"
+THEME_LABEL_TOKENS="Strikes Landed"
+THEME_LABEL_CACHE_READ="PRE-HEATED!"
+THEME_LABEL_STATUS="Forge Heat"
+
+# ============================================================================
+# TIPS
+# ============================================================================
+
+THEME_TIP_1="🔧 Cache = pre-heat. Work metal that's already hot. Free. Every time."
+THEME_TIP_2="🔧 High cache rate means less coal per finished piece. That's the whole game."
+THEME_TIP_3="🔧 Short, focused runs keep the heat up. Scattered sessions lose it."
+THEME_TIP_4="🔧 Output tokens cost 5x — every extra word in the response is coal you didn't need to burn."
+THEME_TIP_5="🔧 /compact is clearing the forge floor between runs. Costs nothing, gains everything."
+THEME_TIP_6="🔧 Know your coal budget. A forge without limits runs until the mine's empty."
+THEME_TIP_7="🔧 A master smith wastes nothing. Cache is the pre-heat. The pre-heat is free. ⚒️"
+
+# ============================================================================
+# FUN MESSAGES
+# ============================================================================
+
+THEME_BURN_LOW="Light day at the forge. Barely warmed up. ⚒️"
+THEME_BURN_MEDIUM="A solid shift. The forge ran hot and the work got done. 🔨"
+THEME_BURN_HIGH="Heavy run today. Coal consumption elevated. Work better be worth it. 🔥"
+THEME_BURN_MASSIVE="COAL GONE — FORGE COLD — ORDER MISSED — BUDGET COLLAPSED — BACK TO MINING 💥☠️"
+
+THEME_CACHE_HIT_1="Pre-heated! Iron was warm — that pass cost nothing. ⚒️"
+THEME_CACHE_HIT_2="Cache holding heat. Not a shovel of coal needed for this one. 🔨"
+THEME_CACHE_HIT_3="Metal pre-warm served perfectly. Forge efficiency: excellent. ⚒️"
+THEME_CACHE_HIT_4="The pre-heat paid off. Free pass through the forge. 🔥"
+
+THEME_CACHE_MISS_1="Cold start. Full coal load for that one. 🔥"
+THEME_CACHE_MISS_2="Metal went in cold. Burned extra coal to get it there. 💥"
+THEME_CACHE_MISS_3="Cache miss. Had to heat from scratch. Every cold start costs what a pre-heat wouldn't have. ❄️"
+
+THEME_SUMMARY_EFFICIENT="Master work today. Cache held heat. Coal was measured. Every strike counted. ⚒️"
+THEME_SUMMARY_AVERAGE="Decent shift. The work got done. Nothing extraordinary. The forge survived. 🔨"
+THEME_SUMMARY_WASTEFUL="Too many cold starts today. The coal pile's shorter than the work warrants. 🔥"
+THEME_SUMMARY_DISASTER="Forge ran cold, hot, cold again. Coal's gone and the order isn't finished. ☠️"
+
+THEME_STARTUP_1="Lighting the forge... 🔥"
+THEME_STARTUP_2="Checking yesterday's coal consumption. ⚒️"
+THEME_STARTUP_3="Forge monitoring system online — let's see how hot it got. 🔨"

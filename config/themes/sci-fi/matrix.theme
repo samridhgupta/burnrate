@@ -1,0 +1,140 @@
+#!/usr/bin/env bash
+# Matrix Theme - The Grid
+# "Every token consumes a cycle. Cache persists to memory. Memory is nearly free."
+
+# ============================================================================
+# THEME METADATA
+# ============================================================================
+
+THEME_NAME="matrix"
+THEME_DISPLAY_NAME="Matrix"
+THEME_EMOJI="🟢"
+THEME_DESCRIPTION="Terminal grid — tokens are CPU cycles, cache is RAM, budget is heap allocation"
+THEME_AUTHOR="burnrate"
+THEME_VERSION="1.0.0"
+
+# ============================================================================
+# COLORS (Terminal Green)
+# ============================================================================
+
+THEME_PRIMARY='\033[1;32m'       # Bright green (active terminal)
+THEME_SUCCESS='\033[0;32m'       # Green (process nominal)
+THEME_WARNING='\033[0;33m'       # Yellow (high utilization)
+THEME_ERROR='\033[0;31m'         # Red (process fault)
+THEME_INFO='\033[0;36m'          # Cyan (system info)
+THEME_DIM='\033[2;32m'           # Dim green (idle process)
+
+# ============================================================================
+# STATUS INDICATORS
+# ============================================================================
+
+THEME_STATUS_EXCELLENT="◼"       # 90-100% - All systems nominal
+THEME_STATUS_GOOD="▓"            # 75-89%  - Operating within parameters
+THEME_STATUS_WARNING="▒"         # 50-74%  - Elevated utilization
+THEME_STATUS_CRITICAL="░"        # 25-49%  - System stress detected
+THEME_STATUS_DANGER="□"          # 0-24%   - Process failure imminent
+
+# Budget status
+THEME_BUDGET_SAFE="◼"            # Heap allocation sufficient
+THEME_BUDGET_WARNING="▒"         # Allocation pressure
+THEME_BUDGET_CRITICAL="░"        # Allocation critical
+THEME_BUDGET_EXCEEDED="□"        # Stack overflow
+
+# Cache efficiency
+THEME_CACHE_EXCELLENT="◼"        # Cache: hot
+THEME_CACHE_GOOD="▓"             # Cache: warm
+THEME_CACHE_POOR="□"             # Cache: cold
+
+# ============================================================================
+# ICONS
+# ============================================================================
+
+THEME_ICON_LOADING="⧗"
+THEME_ICON_SUCCESS="✓"
+THEME_ICON_ERROR="✗"
+THEME_ICON_WARNING="△"
+THEME_ICON_INFO="›"
+THEME_ICON_COST="$"
+THEME_ICON_TOKENS="⌬"
+THEME_ICON_CACHE="◈"
+THEME_ICON_BUDGET="▣"
+
+# ============================================================================
+# MESSAGES
+# ============================================================================
+
+THEME_MSG_EXCELLENT="All processes nominal. Cache utilization: optimal. ◼"
+THEME_MSG_GOOD="System operating within expected parameters. ▓"
+THEME_MSG_WARNING="Utilization elevated. Cache efficiency declining. ▒"
+THEME_MSG_CRITICAL="System stress detected. Recommend cache intervention. ░"
+THEME_MSG_DANGER="Critical failure state. All available cache was unused. □"
+
+THEME_CACHE_MSG_EXCELLENT="Cache: hot. Repeated reads return from memory — zero compute cost. ◼"
+THEME_CACHE_MSG_GOOD="Cache: warm. Memory persistence holding. ▓"
+THEME_CACHE_MSG_POOR="Cache: cold. Every read hits the compute layer. This is expensive. □"
+
+THEME_BUDGET_MSG_OK="Heap allocation within bounds. Budget stable. ◼"
+THEME_BUDGET_MSG_WARNING="Allocation pressure increasing. Monitor spend rate. ▒"
+THEME_BUDGET_MSG_CRITICAL="Heap exhaustion imminent. Immediate action required. ░"
+THEME_BUDGET_MSG_EXCEEDED="Stack overflow. Budget allocation exhausted. Process terminated. □"
+
+THEME_BUDGET_UNLIMITED_DAILY="› Unlimited daily — running without memory limits. This ends predictably. (burnrate config)"
+THEME_BUDGET_UNLIMITED_MONTHLY="› Unlimited monthly — infinite heap allocation. No such thing exists."
+THEME_BUDGET_UNLIMITED_BOTH="□ No limits set — unallocated process in an unmanaged environment. (burnrate config)"
+
+THEME_FOOTER="Every cycle has a cost. Cache writes to memory. Memory reads are free. Pay attention."
+
+# Context window messages
+THEME_CTX_OK="Context buffer nominal — available memory sufficient. ◼"
+THEME_CTX_HALF="Context buffer at 50%. Schedule /compact before saturation. ▒"
+THEME_CTX_WARNING="Context buffer high. /compact recommended before write failure. ░"
+THEME_CTX_CRITICAL="Context buffer near capacity. /compact immediately or allocate new session. □"
+
+# ============================================================================
+# LABELS
+# ============================================================================
+
+THEME_LABEL_COST="Cycle Cost"
+THEME_LABEL_SAVINGS="Cache Savings"
+THEME_LABEL_TOKENS="Cycles Used"
+THEME_LABEL_CACHE_READ="FROM MEMORY"
+THEME_LABEL_STATUS="System Status"
+
+# ============================================================================
+# TIPS
+# ============================================================================
+
+THEME_TIP_1="› Cache hit = memory read. No compute required. Near-zero cost."
+THEME_TIP_2="› Cache miss = full compute cycle. Billed at the compute layer."
+THEME_TIP_3="› Context reuse is O(0). Fresh context is O(expensive)."
+THEME_TIP_4="› Output tokens consume 5x the compute of input tokens. Request less."
+THEME_TIP_5="› /compact flushes active context. Expensive contexts become cheap summaries."
+THEME_TIP_6="› A budget is a memory limit. Set one. The process runs cleaner."
+THEME_TIP_7="› Cache rate above 80% means your memory architecture is sound. ◼"
+
+# ============================================================================
+# FUN MESSAGES
+# ============================================================================
+
+THEME_BURN_LOW="Minimal compute. Process returned cleanly. ◼"
+THEME_BURN_MEDIUM="Moderate utilization. Expected. ▓"
+THEME_BURN_HIGH="High compute cycle detected. Check cache configuration. ▒"
+THEME_BURN_MASSIVE="MAXIMUM UTILIZATION — ALL CYCLES CONSUMED — NO CACHE — PROCESS FAULT □"
+
+THEME_CACHE_HIT_1="Memory read successful. Zero compute consumed. ◼"
+THEME_CACHE_HIT_2="Cache hit. Return from stack. No billing event. ▓"
+THEME_CACHE_HIT_3="Hot cache path. This is the correct architecture. ✓"
+THEME_CACHE_HIT_4="Persistent memory accessed. Free. This is what good looks like. ◼"
+
+THEME_CACHE_MISS_1="Cache miss. Falling through to compute. Billing event. ▒"
+THEME_CACHE_MISS_2="Cold path executed. This could have been a memory read. ░"
+THEME_CACHE_MISS_3="Cache miss. Full compute cycle billed. Architectural note: this was avoidable. □"
+
+THEME_SUMMARY_EFFICIENT="Process efficiency: high. Memory architecture: sound. Cache: hot. ◼"
+THEME_SUMMARY_AVERAGE="Process completed. Efficiency within acceptable variance. ▓"
+THEME_SUMMARY_WASTEFUL="Suboptimal memory utilization detected. Cache architecture review recommended. ░"
+THEME_SUMMARY_DISASTER="Process fault. Complete cache miss scenario. Budget allocation depleted. You built this. □"
+
+THEME_STARTUP_1="Initializing cost analysis process... ◼"
+THEME_STARTUP_2="Reading session data from local filesystem. Zero network calls. ▓"
+THEME_STARTUP_3="System online. Analyzing compute expenditure. ›"

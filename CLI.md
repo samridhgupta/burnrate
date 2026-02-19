@@ -32,7 +32,8 @@
 | `context` | Context window usage gauge + recommendation | `burnrate context` |
 | `query <metric>` | Single raw value — for scripts and agents | `burnrate query cache_rate` |
 | `export <type>` | Export data as json/csv/markdown | `burnrate export summary json` |
-| `themes` | List all available themes | `burnrate themes` |
+| `themes` | List all themes, grouped by category | `burnrate themes` |
+| `themes clone <s> <t>` | Clone a built-in theme to customize | `burnrate themes clone glacial mytheme` |
 | `preview <theme>` | Preview a theme without setting it | `burnrate preview ocean` |
 | `config` | Show current configuration | `burnrate config` |
 | `config show` | Same as `config` | `burnrate config show` |

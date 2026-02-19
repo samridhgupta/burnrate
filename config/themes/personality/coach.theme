@@ -1,0 +1,140 @@
+#!/usr/bin/env bash
+# Coach Theme - The Playbook
+# "Great teams cache. Bad teams improvise. Know the difference."
+
+# ============================================================================
+# THEME METADATA
+# ============================================================================
+
+THEME_NAME="coach"
+THEME_DISPLAY_NAME="Coach"
+THEME_EMOJI="🏆"
+THEME_DESCRIPTION="Sports coach calling plays — tokens are plays, cache is the playbook, budget is the salary cap"
+THEME_AUTHOR="burnrate"
+THEME_VERSION="1.0.0"
+
+# ============================================================================
+# COLORS (Championship palette — green and gold)
+# ============================================================================
+
+THEME_PRIMARY='\033[1;32m'       # Bright green (field)
+THEME_SUCCESS='\033[0;32m'       # Green (touchdown)
+THEME_WARNING='\033[0;33m'       # Gold (penalty flag)
+THEME_ERROR='\033[0;31m'         # Red (flagged play)
+THEME_INFO='\033[0;36m'          # Cyan (play analysis)
+THEME_DIM='\033[2;32m'           # Dim green (bench)
+
+# ============================================================================
+# STATUS INDICATORS (Performance rating)
+# ============================================================================
+
+THEME_STATUS_EXCELLENT="🏆"      # 90-100% - Championship form
+THEME_STATUS_GOOD="🥈"           # 75-89%  - Playoff caliber
+THEME_STATUS_WARNING="📋"        # 50-74%  - Needs more practice
+THEME_STATUS_CRITICAL="🚑"       # 25-49%  - Injured reserve
+THEME_STATUS_DANGER="💀"         # 0-24%   - Season over
+
+# Budget status
+THEME_BUDGET_SAFE="🏆"           # Under the cap
+THEME_BUDGET_WARNING="📋"        # Cap pressure
+THEME_BUDGET_CRITICAL="🚑"       # Cap crisis
+THEME_BUDGET_EXCEEDED="💀"       # Cap violation
+
+# Cache efficiency
+THEME_CACHE_EXCELLENT="🏆"       # Playbook memorized cold
+THEME_CACHE_GOOD="📋"            # Running the plays
+THEME_CACHE_POOR="💀"            # Improvising every down
+
+# ============================================================================
+# ICONS
+# ============================================================================
+
+THEME_ICON_LOADING="📋"
+THEME_ICON_SUCCESS="🏆"
+THEME_ICON_ERROR="💀"
+THEME_ICON_WARNING="🚑"
+THEME_ICON_INFO="📣"
+THEME_ICON_COST="💰"
+THEME_ICON_TOKENS="🏈"
+THEME_ICON_CACHE="📋"
+THEME_ICON_BUDGET="📊"
+
+# ============================================================================
+# MESSAGES
+# ============================================================================
+
+THEME_MSG_EXCELLENT="Championship-level efficiency. Cache rate is high. Playbook execution: excellent. 🏆"
+THEME_MSG_GOOD="Solid performance. Playoff caliber. Cache holding, budget tracked, no surprises. 🥈"
+THEME_MSG_WARNING="You're going off-script. Cache rate dropping — more improvisation than execution. 📋"
+THEME_MSG_CRITICAL="Performance is declining. Low cache rate means every play costs full price. Call a timeout. 🚑"
+THEME_MSG_DANGER="Season-ending performance. No playbook, no cache, no budget. We'll review the tape. 💀"
+
+THEME_CACHE_MSG_EXCELLENT="Playbook memorized cold — not a single play is being improvised. That's a championship team. 🏆"
+THEME_CACHE_MSG_GOOD="Running the plays. Cache is doing the heavy lifting. Good discipline. 📋"
+THEME_CACHE_MSG_POOR="Improvising every down. No playbook, no cache. Full price for every single play. That's how you lose seasons. 💀"
+
+THEME_BUDGET_MSG_OK="Cap space healthy. Budget tracking against plan. Team is financially sound. 🏆"
+THEME_BUDGET_MSG_WARNING="Cap pressure building. Spend rate is above projection. Watch the salary line. 📋"
+THEME_BUDGET_MSG_CRITICAL="Cap crisis. Budget nearly gone and we're not in the fourth quarter yet. 🚑"
+THEME_BUDGET_MSG_EXCEEDED="Cap violation. Budget is gone. Season suspended. Nobody's getting paid. 💀"
+
+THEME_BUDGET_UNLIMITED_DAILY="📣 No daily cap — running without a salary ceiling. That's not a team, that's a spending problem. (burnrate config)"
+THEME_BUDGET_UNLIMITED_MONTHLY="💰 No monthly cap — you've bought every player in the league and several coaches."
+THEME_BUDGET_UNLIMITED_BOTH="💀 No cap at all — every great dynasty eventually learns why the salary cap exists. (burnrate config)"
+
+THEME_FOOTER="Great teams cache. Bad teams improvise. Know the difference."
+
+# Context window messages
+THEME_CTX_OK="Plenty of field to work with. Context has room — full playbook available. 🏆"
+THEME_CTX_HALF="Halftime. Context is half full. Run /compact before the second half to keep plays fresh. 📋"
+THEME_CTX_WARNING="Fourth quarter and the playbook's getting thin. /compact before the last drive. 🚑"
+THEME_CTX_CRITICAL="Time's up. Context at capacity. /compact now or call in a new team. No timeouts left. 💀"
+
+# ============================================================================
+# LABELS
+# ============================================================================
+
+THEME_LABEL_COST="Cap Spend"
+THEME_LABEL_SAVINGS="Cap Saved"
+THEME_LABEL_TOKENS="Plays Run"
+THEME_LABEL_CACHE_READ="PLAYBOOK PLAY!"
+THEME_LABEL_STATUS="Game Status"
+
+# ============================================================================
+# TIPS
+# ============================================================================
+
+THEME_TIP_1="📣 Cache hit rate above 80% means your team knows the playbook cold. That's a winner."
+THEME_TIP_2="📣 Every cache miss is an improvised play. Improvised plays cost more and succeed less."
+THEME_TIP_3="📣 Short, focused sessions run tighter plays. Long wandering sessions lose yards."
+THEME_TIP_4="📣 Output tokens cost 5x — ask for concise answers. A short completion is better than a long incompletion."
+THEME_TIP_5="📣 /compact is halftime. Clear the playbook, reset the clock, run fresh in the second half."
+THEME_TIP_6="📣 A salary cap is why good teams stay good. Set a budget. Stick to it."
+THEME_TIP_7="📣 The best play is the cached play. Memorize the book. The book is free. 🏆"
+
+# ============================================================================
+# FUN MESSAGES
+# ============================================================================
+
+THEME_BURN_LOW="Quick drill. Low cost. Good warm-up. 📋"
+THEME_BURN_MEDIUM="Full practice today. The team ran routes. Solid session. 🏈"
+THEME_BURN_HIGH="Heavy game day spend. Lots of improvisation. Hope it was worth it. 🚑"
+THEME_BURN_MASSIVE="FULL GAME + OVERTIME + POSTSEASON PARTY — ALL CAP SPACE GONE — REPORT TO COACH 💀"
+
+THEME_CACHE_HIT_1="Executed play from the book. Zero improvisation cost. That's how it's done. 🏆"
+THEME_CACHE_HIT_2="Playbook play! Called it, ran it, no cost. Championship-level execution. 📋"
+THEME_CACHE_HIT_3="From the playbook. Ran clean. The book is always cheaper than improv. 🏆"
+THEME_CACHE_HIT_4="Cache hit — that play cost nothing because you'd already run it. Smart coaching. 📋"
+
+THEME_CACHE_MISS_1="Off-script. Had to improvise that one. Cost it. 📋"
+THEME_CACHE_MISS_2="That was an audible, not a play. Expensive audible. 🚑"
+THEME_CACHE_MISS_3="Cache miss. Improvised play. Full price. Great teams don't improvise when the book already has it. 💀"
+
+THEME_SUMMARY_EFFICIENT="Championship performance. High cache rate, low spend, tight execution. Film review will be short. 🏆"
+THEME_SUMMARY_AVERAGE="Solid game. Nothing spectacular, nothing terrible. The team executed adequately. 🥈"
+THEME_SUMMARY_WASTEFUL="Too much improvisation today. Low cache rate, high spend. Tape review scheduled for Monday. 🚑"
+THEME_SUMMARY_DISASTER="Film review cancelled — the tape is too painful. No cache, no budget, no wins. Start fresh. 💀"
+
+THEME_STARTUP_1="Reviewing yesterday's game tape... 📋"
+THEME_STARTUP_2="Cap analysis and cache performance review loading. 🏆"
+THEME_STARTUP_3="Coach's report incoming — let's see what the numbers say. 📣"

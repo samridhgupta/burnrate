@@ -1,0 +1,140 @@
+#!/usr/bin/env bash
+# Roast Theme - The Comedy Roast
+# "The numbers don't lie. Unfortunately, neither does this tool."
+
+# ============================================================================
+# THEME METADATA
+# ============================================================================
+
+THEME_NAME="roast"
+THEME_DISPLAY_NAME="Roast"
+THEME_EMOJI="🎤"
+THEME_DESCRIPTION="A comedy roast — every metric is a punchline at your expense"
+THEME_AUTHOR="burnrate"
+THEME_VERSION="1.0.0"
+
+# ============================================================================
+# COLORS (Stage lighting — warm amber)
+# ============================================================================
+
+THEME_PRIMARY='\033[1;33m'       # Bright amber (spotlight)
+THEME_SUCCESS='\033[0;32m'       # Green (rare applause)
+THEME_WARNING='\033[0;33m'       # Yellow (the crowd shifting)
+THEME_ERROR='\033[0;31m'         # Red (heckled off stage)
+THEME_INFO='\033[0;36m'          # Cyan (the announcer)
+THEME_DIM='\033[2;33m'           # Dim amber (awkward silence)
+
+# ============================================================================
+# STATUS INDICATORS (Escalating audience reaction)
+# ============================================================================
+
+THEME_STATUS_EXCELLENT="🎤"      # 90-100% - Standing ovation
+THEME_STATUS_GOOD="👏"           # 75-89%  - Polite applause
+THEME_STATUS_WARNING="😬"        # 50-74%  - Nervous laughter
+THEME_STATUS_CRITICAL="🪦"       # 25-49%  - Total silence
+THEME_STATUS_DANGER="🍅"         # 0-24%   - Tomatoes incoming
+
+# Budget status
+THEME_BUDGET_SAFE="🎤"           # Safe — they're laughing with you
+THEME_BUDGET_WARNING="😬"        # Warning — that joke didn't land
+THEME_BUDGET_CRITICAL="🪦"       # Critical — someone walked out
+THEME_BUDGET_EXCEEDED="🍅"       # Exceeded — hit with a tomato
+
+# Cache efficiency
+THEME_CACHE_EXCELLENT="🎤"       # Cache knows the material cold
+THEME_CACHE_GOOD="👏"            # Cache doing the work
+THEME_CACHE_POOR="🍅"            # Bombing without the notes
+
+# ============================================================================
+# ICONS
+# ============================================================================
+
+THEME_ICON_LOADING="🎤"
+THEME_ICON_SUCCESS="👏"
+THEME_ICON_ERROR="🍅"
+THEME_ICON_WARNING="😬"
+THEME_ICON_INFO="🎙️"
+THEME_ICON_COST="💸"
+THEME_ICON_TOKENS="🎭"
+THEME_ICON_CACHE="📝"
+THEME_ICON_BUDGET="🎟️"
+
+# ============================================================================
+# MESSAGES
+# ============================================================================
+
+THEME_MSG_EXCELLENT="Look at this. An efficient session. Go ahead, take a bow. You earned it. 🎤"
+THEME_MSG_GOOD="Decent numbers. Not exceptional, but the crowd isn't leaving. That counts. 👏"
+THEME_MSG_WARNING="Cache rate's slipping. The material isn't landing like it used to. 😬"
+THEME_MSG_CRITICAL="This is the part of the show where people quietly check their phones. 🪦"
+THEME_MSG_DANGER="You bombed. Not a little. Completely. The room is empty. They're refunding tickets. 🍅"
+
+THEME_CACHE_MSG_EXCELLENT="Cache knows the material cold — not one wasted cycle of fresh compute. Great prep. 🎤"
+THEME_CACHE_MSG_GOOD="Cache doing its job. You're not reinventing the wheel every prompt. Good instinct. 👏"
+THEME_CACHE_MSG_POOR="No cache, no prep, just winging it and hoping nobody notices. They noticed. The bill noticed. 🍅"
+
+THEME_BUDGET_MSG_OK="Budget's fine. You're not spending like you're trying to lose it. Refreshing. 🎤"
+THEME_BUDGET_MSG_WARNING="Spend rate is... ambitious. Let's call it ambitious. 😬"
+THEME_BUDGET_MSG_CRITICAL="Budget's almost gone. In the comedy world, we call this a 'tight five' with no material left. 🪦"
+THEME_BUDGET_MSG_EXCEEDED="Budget: deceased. Cause of death: low cache rate and high ambition. Next of kin has been notified. 🍅"
+
+THEME_BUDGET_UNLIMITED_DAILY="🎙️ Unlimited daily — either very brave or not paying attention. Either way, good material. (burnrate config)"
+THEME_BUDGET_UNLIMITED_MONTHLY="💸 Unlimited monthly — you've written yourself an open bar tab at a very expensive bar."
+THEME_BUDGET_UNLIMITED_BOTH="🍅 No limits at all — bold move. Let's see how this plays out. It won't play out well. (burnrate config)"
+
+THEME_FOOTER="The numbers don't lie. Unfortunately, neither does this tool."
+
+# Context window messages
+THEME_CTX_OK="Context window has room. You haven't run out of material yet. 🎤"
+THEME_CTX_HALF="Context at half capacity. The second act is looming — consider /compact before intermission. 😬"
+THEME_CTX_WARNING="Context filling fast. The venue's getting crowded. /compact before someone calls the fire marshal. 🪦"
+THEME_CTX_CRITICAL="Context is full. This show is over. /compact or start a new engagement. The audience has left. 🍅"
+
+# ============================================================================
+# LABELS
+# ============================================================================
+
+THEME_LABEL_COST="Bill So Far"
+THEME_LABEL_SAVINGS="Comped"
+THEME_LABEL_TOKENS="Lines Delivered"
+THEME_LABEL_CACHE_READ="COMPED MATERIAL!"
+THEME_LABEL_STATUS="Crowd Reaction"
+
+# ============================================================================
+# TIPS
+# ============================================================================
+
+THEME_TIP_1="💡 Cache hit = free material. You already paid for the joke. Use it again."
+THEME_TIP_2="💡 High cache rate means the audience heard this bit before. That's good here."
+THEME_TIP_3="💡 Short tight sets cost less than rambling improv sessions. Shocking, I know."
+THEME_TIP_4="💡 Output tokens cost 5x input. Asking for shorter answers isn't rude, it's smart."
+THEME_TIP_5="💡 /compact = cutting the dead weight before the second set. Do it."
+THEME_TIP_6="💡 A budget is just knowing when to leave the stage. Know when to leave the stage."
+THEME_TIP_7="💡 The best performer in this room is your cache. It works for free. 🎤"
+
+# ============================================================================
+# FUN MESSAGES
+# ============================================================================
+
+THEME_BURN_LOW="A light warm-up set. Nobody was hurt. 🎤"
+THEME_BURN_MEDIUM="A full show tonight. The crowd got their money's worth. 👏"
+THEME_BURN_HIGH="Big night. Long show. Open bar was a mistake. 😬"
+THEME_BURN_MASSIVE="FULL VENUE, FULL BAR TAB, STANDING OVATION FOR YOUR WALLET'S FUNERAL 🍅"
+
+THEME_CACHE_HIT_1="Cached material — delivered perfectly, cost nothing. The mark of a professional. 🎤"
+THEME_CACHE_HIT_2="Cache hit! You already paid for that joke. This one's on the house. 👏"
+THEME_CACHE_HIT_3="Using the prepared material. Smart. That's what professionals do. 🎤"
+THEME_CACHE_HIT_4="Cache working perfectly. The notes are doing their job so you don't have to wing it. 👏"
+
+THEME_CACHE_MISS_1="Went off-script. Had to improvise. It showed. And it cost extra. 😬"
+THEME_CACHE_MISS_2="No cache on that one. Fresh material, fresh bill. Was it worth it? 🪦"
+THEME_CACHE_MISS_3="Cache miss. You just paid full compute price to do something you could have had for free. Classic. 🍅"
+
+THEME_SUMMARY_EFFICIENT="Great show. Cache rate was high. Costs were reasonable. You can come back. 🎤"
+THEME_SUMMARY_AVERAGE="Solid if uninspiring. The crowd clapped. Bills were paid. Nobody's talking about it. 👏"
+THEME_SUMMARY_WASTEFUL="Rough night. Low cache rate, high spend. The material needed more prep. 😬"
+THEME_SUMMARY_DISASTER="You bombed so hard the venue is reconsidering its policy on open tabs. 🍅"
+
+THEME_STARTUP_1="Alright, let's see what happened out there... 🎤"
+THEME_STARTUP_2="Counting the receipts from last night's performance. 👏"
+THEME_STARTUP_3="Token cost analysis — this is either going to feel good or really bad. 🎭"

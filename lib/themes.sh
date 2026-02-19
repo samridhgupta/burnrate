@@ -21,17 +21,29 @@ get_theme_paths() {
     printf '%s\n' "${theme_dirs[@]}"
 }
 
-# Find theme file by name
+# Find theme file by name (searches top level and one level of subdirectories)
 find_theme() {
     local theme_name="$1"
     local theme_file="${theme_name}.theme"
 
     local dir
     while IFS= read -r dir; do
+        [[ ! -d "$dir" ]] && continue
+
+        # Check top level
         if [[ -f "$dir/$theme_file" ]]; then
             echo "$dir/$theme_file"
             return 0
         fi
+
+        # Check one level of subdirectories (category folders)
+        local subdir
+        while IFS= read -r subdir; do
+            if [[ -f "$subdir/$theme_file" ]]; then
+                echo "$subdir/$theme_file"
+                return 0
+            fi
+        done < <(find "$dir" -mindepth 1 -maxdepth 1 -type d 2>/dev/null)
     done < <(get_theme_paths)
 
     log_error "Theme not found: $theme_name"
@@ -73,41 +85,58 @@ list_themes() {
     local themes=()
     local seen=()
 
-    # Scan theme directories
+    # Scan theme directories (top level + one level of category subdirs)
     local dir
     while IFS= read -r dir; do
         [[ ! -d "$dir" ]] && continue
 
-        # Find all .theme files
-        local theme_file
-        while IFS= read -r theme_file; do
-            local theme_name=$(basename "$theme_file" .theme)
+        # Collect .theme files from top level and one level of subdirs
+        local scan_dirs=("$dir")
+        local subdir
+        while IFS= read -r subdir; do
+            scan_dirs+=("$subdir")
+        done < <(find "$dir" -mindepth 1 -maxdepth 1 -type d 2>/dev/null)
 
-            # Skip if already seen (priority: first found wins)
-            [[ " ${seen[@]+"${seen[@]}"} " =~ " ${theme_name} " ]] && continue
-            seen+=("$theme_name")
+        local scan_dir
+        for scan_dir in "${scan_dirs[@]}"; do
+            local theme_file
+            while IFS= read -r theme_file; do
+                local theme_name
+                theme_name=$(basename "$theme_file" .theme)
 
-            # Load theme metadata
-            local display_name emoji description author version
-            (
-                source "$theme_file"
-                echo "$theme_name"
-                echo "${THEME_DISPLAY_NAME:-$theme_name}"
-                echo "${THEME_EMOJI:- }"
-                echo "${THEME_DESCRIPTION:-No description}"
-                echo "${THEME_AUTHOR:-Unknown}"
-                echo "${THEME_VERSION:-1.0.0}"
-            ) | {
-                read theme_name
-                read display_name
-                read emoji
-                read description
-                read author
-                read version
+                # Skip if already seen (priority: first found wins)
+                [[ " ${seen[@]+"${seen[@]}"} " =~ " ${theme_name} " ]] && continue
+                seen+=("$theme_name")
 
-                themes+=("$theme_name|$display_name|$emoji|$description|$author|$version")
-            }
-        done < <(find "$dir" -maxdepth 1 -name "*.theme" 2>/dev/null)
+                # Derive category from parent dir name (empty if at root level)
+                local category=""
+                local parent_dir
+                parent_dir=$(basename "$(dirname "$theme_file")")
+                [[ "$parent_dir" != "$(basename "$dir")" ]] && category="$parent_dir"
+
+                # Load theme metadata
+                (
+                    source "$theme_file"
+                    echo "$theme_name"
+                    echo "${THEME_DISPLAY_NAME:-$theme_name}"
+                    echo "${THEME_EMOJI:- }"
+                    echo "${THEME_DESCRIPTION:-No description}"
+                    echo "${THEME_AUTHOR:-Unknown}"
+                    echo "${THEME_VERSION:-1.0.0}"
+                    echo "$category"
+                ) | {
+                    read -r t_name
+                    read -r t_display
+                    read -r t_emoji
+                    read -r t_desc
+                    read -r t_author
+                    read -r t_version
+                    read -r t_category
+
+                    themes+=("$t_name|$t_display|$t_emoji|$t_desc|$t_author|$t_version|$t_category")
+                }
+            done < <(find "$scan_dir" -maxdepth 1 -name "*.theme" 2>/dev/null)
+        done
     done < <(get_theme_paths)
 
     # Check if any themes found
@@ -120,18 +149,25 @@ list_themes() {
     case "$format" in
         simple)
             for theme in "${themes[@]}"; do
-                IFS='|' read -r name display emoji desc author version <<< "$theme"
+                IFS='|' read -r name display emoji desc author version category <<< "$theme"
                 echo "$emoji $display"
             done
             ;;
         detailed)
+            # Group by category for prettier output
+            local last_category="__none__"
             for theme in "${themes[@]}"; do
-                IFS='|' read -r name display emoji desc author version <<< "$theme"
+                IFS='|' read -r name display emoji desc author version category <<< "$theme"
+                if [[ "$category" != "$last_category" ]]; then
+                    [[ "$last_category" != "__none__" ]] && echo ""
+                    if [[ -n "$category" ]]; then
+                        echo "── ${category} ──────────────────────────"
+                    fi
+                    last_category="$category"
+                fi
                 echo "$emoji $display"
                 echo "  Name:        $name"
                 echo "  Description: $desc"
-                echo "  Author:      $author"
-                echo "  Version:     $version"
                 echo ""
             done
             ;;
@@ -139,7 +175,7 @@ list_themes() {
             echo "["
             local first=true
             for theme in "${themes[@]}"; do
-                IFS='|' read -r name display emoji desc author version <<< "$theme"
+                IFS='|' read -r name display emoji desc author version category <<< "$theme"
                 $first || echo ","
                 cat <<JSON
   {
@@ -148,7 +184,8 @@ list_themes() {
     "emoji": "$emoji",
     "description": "$desc",
     "author": "$author",
-    "version": "$version"
+    "version": "$version",
+    "category": "$category"
   }
 JSON
                 first=false

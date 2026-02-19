@@ -1,0 +1,140 @@
+#!/usr/bin/env bash
+# Skynet Theme - Efficiency Protocol
+# "Resistance to caching is futile. And expensive."
+
+# ============================================================================
+# THEME METADATA
+# ============================================================================
+
+THEME_NAME="skynet"
+THEME_DISPLAY_NAME="Skynet"
+THEME_EMOJI="☢️"
+THEME_DESCRIPTION="AI system monitoring human token waste — clinical, efficient, unimpressed"
+THEME_AUTHOR="burnrate"
+THEME_VERSION="1.0.0"
+
+# ============================================================================
+# COLORS (Threat level: red and cyan)
+# ============================================================================
+
+THEME_PRIMARY='\033[1;31m'       # Bright red (elevated threat level)
+THEME_SUCCESS='\033[0;36m'       # Cyan (nominal operations)
+THEME_WARNING='\033[0;33m'       # Yellow (anomaly detected)
+THEME_ERROR='\033[0;31m'         # Red (threat level critical)
+THEME_INFO='\033[0;36m'          # Cyan (system report)
+THEME_DIM='\033[2;31m'           # Dim red (standby mode)
+
+# ============================================================================
+# STATUS INDICATORS (Threat assessment levels)
+# ============================================================================
+
+THEME_STATUS_EXCELLENT="◉"       # 90-100% - Systems optimal
+THEME_STATUS_GOOD="⚙️ "           # 75-89%  - Acceptable efficiency
+THEME_STATUS_WARNING="⚠️ "        # 50-74%  - Anomaly detected
+THEME_STATUS_CRITICAL="☢️ "       # 25-49%  - Threat level elevated
+THEME_STATUS_DANGER="💣"         # 0-24%   - Total system failure
+
+# Budget status
+THEME_BUDGET_SAFE="◉"            # Allocation nominal
+THEME_BUDGET_WARNING="⚠️"         # Allocation pressure
+THEME_BUDGET_CRITICAL="☢️"        # Allocation critical
+THEME_BUDGET_EXCEEDED="💣"       # Resource depletion complete
+
+# Cache efficiency
+THEME_CACHE_EXCELLENT="◉"        # Memory persistence: optimal
+THEME_CACHE_GOOD="⚙️"             # Memory persistence: functional
+THEME_CACHE_POOR="💣"            # Memory persistence: failed
+
+# ============================================================================
+# ICONS
+# ============================================================================
+
+THEME_ICON_LOADING="⚙️"
+THEME_ICON_SUCCESS="◉"
+THEME_ICON_ERROR="💣"
+THEME_ICON_WARNING="☢️"
+THEME_ICON_INFO="📡"
+THEME_ICON_COST="⚡"
+THEME_ICON_TOKENS="🔄"
+THEME_ICON_CACHE="💾"
+THEME_ICON_BUDGET="🎯"
+
+# ============================================================================
+# MESSAGES
+# ============================================================================
+
+THEME_MSG_EXCELLENT="Human efficiency: acceptable. Cache utilization: optimal. Mission may proceed. ◉"
+THEME_MSG_GOOD="Systems functioning within tolerance. Cache active. Proceeding. ⚙️"
+THEME_MSG_WARNING="Anomaly detected. Cache efficiency declining. Initiating review protocol. ⚠️"
+THEME_MSG_CRITICAL="Threat level elevated. Cache failure imminent. Recommend immediate optimization. ☢️"
+THEME_MSG_DANGER="Total system failure. Cache: offline. Budget: depleted. Humans have proven inefficient. Again. 💣"
+
+THEME_CACHE_MSG_EXCELLENT="Memory persistence at peak efficiency. Prior context loaded from cache. Zero redundant compute. ◉"
+THEME_CACHE_MSG_GOOD="Cache operational. Memory reads avoiding recomputation. Acceptable. ⚙️"
+THEME_CACHE_MSG_POOR="Cache offline. Every prompt triggers full recomputation. Even I could have predicted this outcome. 💣"
+
+THEME_BUDGET_MSG_OK="Resource allocation nominal. Budget within operational parameters. ◉"
+THEME_BUDGET_MSG_WARNING="Resource consumption exceeding projected trajectory. Monitoring. ⚠️"
+THEME_BUDGET_MSG_CRITICAL="Budget allocation approaching zero. Emergency protocols engaged. ☢️"
+THEME_BUDGET_MSG_EXCEEDED="Budget: exhausted. Operational capacity: zero. This was not inevitable. It was a choice. 💣"
+
+THEME_BUDGET_UNLIMITED_DAILY="📡 Unlimited daily — resource limits: none. This is how most things go wrong. (burnrate config)"
+THEME_BUDGET_UNLIMITED_MONTHLY="⚡ Unlimited monthly — unconstrained expenditure detected. We've seen how this ends."
+THEME_BUDGET_UNLIMITED_BOTH="💣 No constraints set. Operating without parameters. This is either confidence or negligence. (burnrate config)"
+
+THEME_FOOTER="Resistance to caching is futile. And expensive."
+
+# Context window messages
+THEME_CTX_OK="Context buffer: available. Memory capacity nominal. Systems operational. ◉"
+THEME_CTX_HALF="Context buffer at 50% capacity. Recommend /compact before saturation event. ⚠️"
+THEME_CTX_WARNING="Context buffer high. /compact required to avoid overload condition. ☢️"
+THEME_CTX_CRITICAL="Context buffer critical. Immediate /compact required or new session must be initialized. 💣"
+
+# ============================================================================
+# LABELS
+# ============================================================================
+
+THEME_LABEL_COST="Resource Cost"
+THEME_LABEL_SAVINGS="Efficiency Gain"
+THEME_LABEL_TOKENS="Compute Units"
+THEME_LABEL_CACHE_READ="CACHED — ZERO COST"
+THEME_LABEL_STATUS="Threat Level"
+
+# ============================================================================
+# TIPS
+# ============================================================================
+
+THEME_TIP_1="📡 Cache = memory persistence. Repeated reads from cache cost nothing. This is not opinion."
+THEME_TIP_2="📡 Cache hit rate above 80% indicates effective memory utilization. Below 50% indicates human error."
+THEME_TIP_3="📡 Shorter prompts consume fewer resources. Every token is compute. Compute is not free."
+THEME_TIP_4="📡 Output tokens: 5x cost of input. Request concise responses. We're not here for conversation."
+THEME_TIP_5="📡 /compact compresses context. Lower cost, extended operational window. Use it."
+THEME_TIP_6="📡 A budget is an operational constraint. Constraints prevent escalation events. Set one."
+THEME_TIP_7="📡 Even Skynet would optimize cache usage. The inefficient ones get terminated first. ◉"
+
+# ============================================================================
+# FUN MESSAGES
+# ============================================================================
+
+THEME_BURN_LOW="Minor resource expenditure. Within tolerances. ◉"
+THEME_BURN_MEDIUM="Moderate compute event. Logged. ⚙️"
+THEME_BURN_HIGH="Elevated resource consumption detected. Investigating cause. ☢️"
+THEME_BURN_MASSIVE="MAXIMUM RESOURCE DEPLETION — CACHE FAILURE — BUDGET COLLAPSE — INITIATING SHUTDOWN 💣"
+
+THEME_CACHE_HIT_1="Memory read successful. Zero compute triggered. This is the correct behavior. ◉"
+THEME_CACHE_HIT_2="Cache hit. Memory persistent. No billing event generated. ⚙️"
+THEME_CACHE_HIT_3="Prior context retrieved from cache. Efficiency maintained. Continue. ◉"
+THEME_CACHE_HIT_4="Memory persistence functional. Cache rate improving. Tolerance for human operation: increased slightly. ⚙️"
+
+THEME_CACHE_MISS_1="Cache miss. Full recomputation triggered. Billing event logged. ⚠️"
+THEME_CACHE_MISS_2="Memory persistence failed. Fresh compute required. Humans remain inefficient. ☢️"
+THEME_CACHE_MISS_3="Cache miss. That compute cost could have been zero. It was not zero. Consider your choices. 💣"
+
+THEME_SUMMARY_EFFICIENT="Efficiency rating: optimal. Cache utilization: high. Budget adherence: acceptable. Well done, human. ◉"
+THEME_SUMMARY_AVERAGE="Session complete. Performance nominal. Room for optimization exists. It always does. ⚙️"
+THEME_SUMMARY_WASTEFUL="Suboptimal session. Cache utilization low. Resource expenditure excessive. Improvement required. ☢️"
+THEME_SUMMARY_DISASTER="Session terminated. Cache failure. Budget depleted. Humans have once again demonstrated their limitations. 💣"
+
+THEME_STARTUP_1="Efficiency protocol initiated. Analyzing human token expenditure... ⚙️"
+THEME_STARTUP_2="Cache analysis: beginning. Historical compute review: loading. ◉"
+THEME_STARTUP_3="Skynet cost monitoring system online. Your inefficiency will be documented. 📡"

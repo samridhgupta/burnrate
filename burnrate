@@ -65,6 +65,7 @@ COMMANDS:
     budget           Check budget status and alerts
     export           Export data (json/csv/markdown)
     themes           List available themes
+    themes clone <s> <t>  Clone a theme for customization
     preview <theme>  Preview a theme
     setup            Run interactive setup wizard
     config           Show current configuration
@@ -106,7 +107,9 @@ CONFIGURATION:
     See: burnrate config
 
 THEMES:
-    Bundled themes: glacial, ember, battery, hourglass, garden, ocean, space
+    Bundled themes: glacial, ember, hourglass, garden, ocean, space,
+                    matrix, zen, roast, skynet, kawaii, forge, coach
+    (battery: deprecated — use forge, matrix, or ember instead)
     User themes: ~/.config/burnrate/themes/
     Create: copy example from config/themes/ and customize
 
@@ -311,9 +314,111 @@ cmd_export() {
 
 # List themes
 cmd_themes() {
-    echo "🎨 Available Themes"
+    local subcmd="${1:-list}"
+    case "$subcmd" in
+        list|"")
+            echo "🎨 Available Themes"
+            echo ""
+            list_themes detailed
+            ;;
+        clone)
+            local src="${2:-}"
+            local dst="${3:-}"
+            if [[ -z "$src" || -z "$dst" ]]; then
+                die_usage "Usage: burnrate themes clone <source> <target>\nExample: burnrate themes clone glacial mytheme"
+            fi
+            _cmd_themes_clone "$src" "$dst"
+            ;;
+        *)
+            # treat as legacy: `burnrate themes` with no subcommand
+            echo "🎨 Available Themes"
+            echo ""
+            list_themes detailed
+            ;;
+    esac
+}
+
+_cmd_themes_clone() {
+    local src="$1" dst="$2"
+
+    # Find source theme file
+    local src_file=""
+    local builtin_dir
+    # Resolve bundled themes dir relative to script
+    if [[ -d "$SCRIPT_DIR/config/themes" ]]; then
+        builtin_dir="$SCRIPT_DIR/config/themes"
+    elif [[ -d "$SCRIPT_DIR/../share/burnrate/themes" ]]; then
+        builtin_dir="$(cd "$SCRIPT_DIR/../share/burnrate/themes" && pwd)"
+    fi
+
+    # Check user themes first (flat), then builtin (flat + one level subdirs)
+    local user_themes_dir="${XDG_CONFIG_HOME:-$HOME/.config}/burnrate/themes"
+    local candidate
+
+    # User themes (flat only)
+    if [[ -f "$user_themes_dir/${src}.theme" ]]; then
+        src_file="$user_themes_dir/${src}.theme"
+    fi
+
+    # Builtin: top-level then subdirs
+    if [[ -z "$src_file" && -n "${builtin_dir:-}" ]]; then
+        if [[ -f "$builtin_dir/${src}.theme" ]]; then
+            src_file="$builtin_dir/${src}.theme"
+        else
+            # Search one level of category subdirs
+            while IFS= read -r candidate; do
+                if [[ "$(basename "$candidate" .theme)" == "$src" ]]; then
+                    src_file="$candidate"
+                    break
+                fi
+            done < <(find "$builtin_dir" -mindepth 2 -maxdepth 2 -name "*.theme" 2>/dev/null)
+        fi
+    fi
+
+    if [[ -z "$src_file" ]]; then
+        echo "Error: theme '${src}' not found." >&2
+        echo "Run 'burnrate themes' to see available themes." >&2
+        exit 1
+    fi
+
+    # Validate destination name
+    if [[ ! "$dst" =~ ^[a-z0-9_-]+$ ]]; then
+        echo "Error: target name must be lowercase alphanumeric with hyphens/underscores only." >&2
+        exit 1
+    fi
+
+    # Create user themes dir and destination file
+    mkdir -p "$user_themes_dir"
+    local dst_file="$user_themes_dir/${dst}.theme"
+
+    if [[ -f "$dst_file" ]]; then
+        echo "Error: theme '${dst}' already exists at: $dst_file" >&2
+        echo "Delete it first or choose a different name." >&2
+        exit 1
+    fi
+
+    # Copy and update metadata
+    sed \
+        -e "s/^THEME_NAME=.*/THEME_NAME=\"${dst}\"/" \
+        -e "s/^THEME_AUTHOR=.*/THEME_AUTHOR=\"\"/" \
+        "$src_file" > "$dst_file"
+
+    echo "Theme cloned: ${src} → ${dst}"
+    echo "File: $dst_file"
     echo ""
-    list_themes detailed
+    echo "Next steps:"
+    echo "  1. Edit the file: ${EDITOR:-nano} \"$dst_file\""
+    echo "  2. Preview it:    burnrate preview ${dst}"
+    echo "  3. Set it:        burnrate setup --theme=${dst}"
+    echo ""
+
+    # Offer to open in editor
+    if [[ -n "${EDITOR:-}" ]]; then
+        read -r -p "Open in \$EDITOR now? [Y/n] " yn
+        case "${yn:-y}" in
+            [Yy]*) ${EDITOR} "$dst_file" ;;
+        esac
+    fi
 }
 
 # Preview theme

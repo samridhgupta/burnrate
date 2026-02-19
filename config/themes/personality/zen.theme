@@ -1,0 +1,140 @@
+#!/usr/bin/env bash
+# Zen Theme - Quiet Observation
+# "Less noise. Same numbers."
+
+# ============================================================================
+# THEME METADATA
+# ============================================================================
+
+THEME_NAME="zen"
+THEME_DISPLAY_NAME="Zen"
+THEME_EMOJI="⬜"
+THEME_DESCRIPTION="Minimal and undecorated — just the numbers, plainly stated"
+THEME_AUTHOR="burnrate"
+THEME_VERSION="1.0.0"
+
+# ============================================================================
+# COLORS (Monochrome — minimal palette)
+# ============================================================================
+
+THEME_PRIMARY='\033[0;37m'       # Light gray (primary text)
+THEME_SUCCESS='\033[2;37m'       # Dim white (success — subtle)
+THEME_WARNING='\033[0;33m'       # Amber (the one accent)
+THEME_ERROR='\033[0;31m'         # Red (genuinely bad)
+THEME_INFO='\033[2;37m'          # Dim gray (secondary)
+THEME_DIM='\033[2;37m'           # Dim gray (muted)
+
+# ============================================================================
+# STATUS INDICATORS (Text-only, no emoji)
+# ============================================================================
+
+THEME_STATUS_EXCELLENT="·"       # 90-100% - Fine
+THEME_STATUS_GOOD="‒"            # 75-89%  - Acceptable
+THEME_STATUS_WARNING="–"         # 50-74%  - Attention
+THEME_STATUS_CRITICAL="—"        # 25-49%  - Problem
+THEME_STATUS_DANGER="✗"          # 0-24%   - Failure
+
+# Budget status
+THEME_BUDGET_SAFE="·"            # Within budget
+THEME_BUDGET_WARNING="–"         # Approaching
+THEME_BUDGET_CRITICAL="—"        # Near limit
+THEME_BUDGET_EXCEEDED="✗"        # Gone
+
+# Cache efficiency
+THEME_CACHE_EXCELLENT="·"        # Good cache
+THEME_CACHE_GOOD="‒"             # Decent cache
+THEME_CACHE_POOR="—"             # Poor cache
+
+# ============================================================================
+# ICONS (Empty — text-only mode)
+# ============================================================================
+
+THEME_ICON_LOADING=""
+THEME_ICON_SUCCESS=""
+THEME_ICON_ERROR=""
+THEME_ICON_WARNING=""
+THEME_ICON_INFO=""
+THEME_ICON_COST=""
+THEME_ICON_TOKENS=""
+THEME_ICON_CACHE=""
+THEME_ICON_BUDGET=""
+
+# ============================================================================
+# MESSAGES
+# ============================================================================
+
+THEME_MSG_EXCELLENT="Cache rate is good. Nothing to address."
+THEME_MSG_GOOD="Operating normally. Cache is adequate."
+THEME_MSG_WARNING="Cache rate is declining. Worth reviewing."
+THEME_MSG_CRITICAL="Cache rate is low. Costs are higher than necessary."
+THEME_MSG_DANGER="Cache rate has failed. You are paying for every token. This is the expensive way."
+
+THEME_CACHE_MSG_EXCELLENT="Cache is working. Reads are returning from prior context at no additional cost."
+THEME_CACHE_MSG_GOOD="Cache is functioning. Savings are accumulating."
+THEME_CACHE_MSG_POOR="Cache is not working. Every prompt is being processed fresh. Consider shorter, more focused sessions."
+
+THEME_BUDGET_MSG_OK="Budget is within limits."
+THEME_BUDGET_MSG_WARNING="Budget is being consumed at an elevated rate."
+THEME_BUDGET_MSG_CRITICAL="Budget is nearly exhausted."
+THEME_BUDGET_MSG_EXCEEDED="Budget is gone."
+
+THEME_BUDGET_UNLIMITED_DAILY="No daily limit set. You may wish to set one. (burnrate config)"
+THEME_BUDGET_UNLIMITED_MONTHLY="No monthly limit set."
+THEME_BUDGET_UNLIMITED_BOTH="No limits configured. Consider adding them. (burnrate config)"
+
+THEME_FOOTER="Less noise. Same numbers."
+
+# Context window messages
+THEME_CTX_OK="Context window has space remaining."
+THEME_CTX_HALF="Context window is half full. Running /compact would help."
+THEME_CTX_WARNING="Context window is getting full. Consider /compact before the next long exchange."
+THEME_CTX_CRITICAL="Context window is nearly full. /compact now, or start a new session."
+
+# ============================================================================
+# LABELS
+# ============================================================================
+
+THEME_LABEL_COST="Cost"
+THEME_LABEL_SAVINGS="Saved"
+THEME_LABEL_TOKENS="Tokens"
+THEME_LABEL_CACHE_READ="Cached"
+THEME_LABEL_STATUS="Status"
+
+# ============================================================================
+# TIPS
+# ============================================================================
+
+THEME_TIP_1="Cache reads cost significantly less than fresh token processing."
+THEME_TIP_2="A cache rate above 80% means prior context is being reused effectively."
+THEME_TIP_3="Shorter, more focused sessions tend to produce better cache efficiency."
+THEME_TIP_4="Output tokens cost approximately 5 times more than input tokens."
+THEME_TIP_5="/compact compresses context history. It reduces cost and extends the usable session."
+THEME_TIP_6="Setting a daily or monthly budget gives you a ceiling and a signal."
+THEME_TIP_7="The most expensive sessions are usually unfocused ones."
+
+# ============================================================================
+# FUN MESSAGES
+# ============================================================================
+
+THEME_BURN_LOW="Minor spend."
+THEME_BURN_MEDIUM="Moderate spend."
+THEME_BURN_HIGH="Elevated spend today."
+THEME_BURN_MASSIVE="Significant spend. Consider what drove this."
+
+THEME_CACHE_HIT_1="Cache served this. No additional cost."
+THEME_CACHE_HIT_2="Read from cache."
+THEME_CACHE_HIT_3="Cache working correctly."
+THEME_CACHE_HIT_4="Cached context reused."
+
+THEME_CACHE_MISS_1="Cache miss. Processed fresh."
+THEME_CACHE_MISS_2="Not cached. Full cost applied."
+THEME_CACHE_MISS_3="Cache miss. This one cost more than it needed to."
+
+THEME_SUMMARY_EFFICIENT="Efficient session. Cache rate was high. Cost was low."
+THEME_SUMMARY_AVERAGE="Normal session. Nothing exceptional."
+THEME_SUMMARY_WASTEFUL="This session was more expensive than it needed to be. Cache rate was low."
+THEME_SUMMARY_DISASTER="Expensive session. Low cache rate, high spend. Review what happened."
+
+THEME_STARTUP_1="Loading..."
+THEME_STARTUP_2="Reading session data."
+THEME_STARTUP_3="Analysis ready."
