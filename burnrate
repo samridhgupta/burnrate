@@ -131,10 +131,9 @@ cmd_summary() {
         echo ""
     fi
 
-    local h="${THEME_PRIMARY:-\033[1;36m}" r="\033[0m"
-    echo -e "${h}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${r}"
+    _themed_hr
     echo -e "  📊 Token Burn Summary"
-    echo -e "${h}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${r}"
+    _themed_hr
     echo ""
 
     show_summary "$CONFIG_STATS_FILE"
@@ -157,8 +156,7 @@ cmd_show() {
 
     show_detailed_breakdown "$CONFIG_STATS_FILE"
 
-    local h="${THEME_PRIMARY:-\033[1;36m}" r="\033[0m"
-    echo -e "${h}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${r}"
+    _themed_hr
 
     if [[ "$CONFIG_SHOW_DISCLAIMER" == "true" ]]; then
         echo -e "\033[2m${THEME_FOOTER}\033[0m"

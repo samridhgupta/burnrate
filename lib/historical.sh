@@ -200,17 +200,60 @@ format_daily_breakdown() {
 
     case "$format" in
         table)
-            printf "%-12s %-25s %15s %12s\n" "DATE" "MODEL" "TOKENS" "COST"
-            printf "%-12s %-25s %15s %12s\n" "────────────" "─────────────────────────" "───────────────" "────────────"
+            # Responsive column widths based on terminal width
+            # date=10, model varies, tokens=11 ("740,107,049"), cost=7 ("$449.97")
+            local tw
+            tw=$(term_width)
+            local t_date t_model t_tokens t_cost show_model=true
+            if (( tw >= 75 )); then
+                t_date=12; t_model=22; t_tokens=13; t_cost=10
+            elif (( tw >= 60 )); then
+                t_date=12; t_model=14; t_tokens=12; t_cost=10
+            elif (( tw >= 48 )); then
+                t_date=10; t_model=11; t_tokens=11; t_cost=9
+            else
+                # Drop model column entirely on very narrow terminals
+                t_date=10; t_model=0;  t_tokens=11; t_cost=9; show_model=false
+            fi
+
+            # Build separator strings
+            local sd sm st sc
+            # shellcheck disable=SC2046
+            sd="$(printf '─%.0s' $(seq 1 "$t_date"))"
+            # shellcheck disable=SC2046
+            [[ "$show_model" == "true" ]] && sm="$(printf '─%.0s' $(seq 1 "$t_model"))"
+            # shellcheck disable=SC2046
+            st="$(printf '─%.0s' $(seq 1 "$t_tokens"))"
+            # shellcheck disable=SC2046
+            sc="$(printf '─%.0s' $(seq 1 "$t_cost"))"
+
+            local d="\033[2m" r="\033[0m"
+            if [[ "$show_model" == "true" ]]; then
+                printf "${d}%-${t_date}s  %-${t_model}s  %${t_tokens}s  %${t_cost}s${r}\n" "DATE" "MODEL" "TOKENS" "COST"
+                printf "${d}%-${t_date}s  %-${t_model}s  %${t_tokens}s  %${t_cost}s${r}\n" "$sd" "$sm" "$st" "$sc"
+            else
+                printf "${d}%-${t_date}s  %${t_tokens}s  %${t_cost}s${r}\n" "DATE" "TOKENS" "COST"
+                printf "${d}%-${t_date}s  %${t_tokens}s  %${t_cost}s${r}\n" "$sd" "$st" "$sc"
+            fi
 
             while IFS='|' read -r date model tokens cost; do
                 local short_model
                 short_model=$(echo "$model" | sed 's/claude-//; s/-20[0-9]*$//')
-                printf "%-12s %-25s %15s %12s\n" \
-                    "$date" \
-                    "$short_model" \
-                    "$(printf "%'d" "$tokens" 2>/dev/null || echo "$tokens")" \
-                    "\$$cost"
+                # Truncate model name to fit column when narrow
+                if [[ "$show_model" == "true" ]] && (( ${#short_model} > t_model )); then
+                    short_model="${short_model:0:$((t_model - 1))}…"
+                fi
+                if [[ "$show_model" == "true" ]]; then
+                    printf "%-${t_date}s  %-${t_model}s  %${t_tokens}s  %${t_cost}s\n" \
+                        "$date" "$short_model" \
+                        "$(printf "%'d" "$tokens" 2>/dev/null || echo "$tokens")" \
+                        "\$$(printf "%.2f" "$cost" 2>/dev/null || echo "$cost")"
+                else
+                    printf "%-${t_date}s  %${t_tokens}s  %${t_cost}s\n" \
+                        "$date" \
+                        "$(printf "%'d" "$tokens" 2>/dev/null || echo "$tokens")" \
+                        "\$$(printf "%.2f" "$cost" 2>/dev/null || echo "$cost")"
+                fi
             done <<< "$breakdown"
             ;;
 

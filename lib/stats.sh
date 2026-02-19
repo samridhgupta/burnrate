@@ -391,32 +391,72 @@ show_detailed_breakdown() {
     cache_read_cost=$(echo "$costs_section" | grep '"cache_read"' | cut -d: -f2 | tr -d ' ,')
     total_cost=$(echo "$costs_section" | grep '"total"' | cut -d: -f2 | tr -d ' ,')
 
-    # Theme colors (with plain fallbacks for no-color mode)
+    # Theme colors
     local h b d r
     h="${THEME_PRIMARY:-\033[1;36m}"
     b="\033[1m"
     d="\033[2m"
     r="\033[0m"
 
-    echo -e "${h}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${r}"
+    _themed_hr
     echo -e "  ${h}Token Usage & Cost Breakdown${r}"
-    echo -e "${h}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${r}"
+    _themed_hr
     echo ""
     echo -e "  Model: ${b}${model}${r}"
     echo ""
 
-    # Table — columns: Type(20) Tokens(15) Cost(12)
-    # Full-width separators match their column width exactly
-    printf "  ${d}%-20s  %15s  %12s${r}\n" "Type" "Tokens" "Cost"
-    printf "  ${d}%-20s  %15s  %12s${r}\n" "────────────────────" "───────────────" "────────────"
-    printf "  %-20s  %15s  %12s\n"  "Input"       "$(format_number "$input_tokens")"        "\$$(format_cost "$input_cost")"
-    printf "  %-20s  %15s  %12s\n"  "Output"      "$(format_number "$output_tokens")"       "\$$(format_cost "$output_cost")"
-    printf "  %-20s  %15s  %12s\n"  "Cache Write" "$(format_number "$cache_write")"         "\$$(format_cost "$cache_write_cost")"
-    printf "  %-20s  %15s  %12s\n"  "Cache Read"  "$(format_number "$cache_read")"          "\$$(format_cost "$cache_read_cost")"
-    printf "  ${d}%-20s  %15s  %12s${r}\n" "────────────────────" "───────────────" "────────────"
-    echo -e "  ${b}$(printf "%-20s  %15s  %12s" "TOTAL" \
-        "$(format_number $((input_tokens + output_tokens + cache_write + cache_read)))" \
-        "\$$(format_cost "$total_cost")")${r}"
+    # Responsive column widths based on terminal width
+    # Minimum data widths: type=11 ("Cache Write"), tokens=11 ("740,107,049"), cost=7 ("$449.97")
+    local tw
+    tw=$(term_width)
+    local t_type t_tokens t_cost ind
+    if (( tw >= 70 )); then
+        t_type=20; t_tokens=15; t_cost=12; ind=2   # total visible: 55
+    elif (( tw >= 54 )); then
+        t_type=14; t_tokens=13; t_cost=10; ind=1   # total visible: 42
+    elif (( tw >= 42 )); then
+        t_type=12; t_tokens=12; t_cost=9;  ind=0   # total visible: 37
+    else
+        t_type=0;  t_tokens=0;  t_cost=0;  ind=0   # stacked mode
+    fi
+
+    local pad
+    pad="$(printf '%*s' "$ind" '')"
+
+    local total_toks=$((input_tokens + output_tokens + cache_write + cache_read))
+
+    if (( t_type > 0 )); then
+        # Build separator strings matching each column width exactly
+        local sep1 sep2 sep3
+        # shellcheck disable=SC2046
+        sep1="$(printf '─%.0s' $(seq 1 "$t_type"))"
+        # shellcheck disable=SC2046
+        sep2="$(printf '─%.0s' $(seq 1 "$t_tokens"))"
+        # shellcheck disable=SC2046
+        sep3="$(printf '─%.0s' $(seq 1 "$t_cost"))"
+
+        printf "${d}${pad}%-${t_type}s  %${t_tokens}s  %${t_cost}s${r}\n" "Type" "Tokens" "Cost"
+        printf "${d}${pad}%-${t_type}s  %${t_tokens}s  %${t_cost}s${r}\n" "$sep1" "$sep2" "$sep3"
+        printf "${pad}%-${t_type}s  %${t_tokens}s  %${t_cost}s\n" "Input"       "$(format_number "$input_tokens")"  "\$$(format_cost "$input_cost")"
+        printf "${pad}%-${t_type}s  %${t_tokens}s  %${t_cost}s\n" "Output"      "$(format_number "$output_tokens")" "\$$(format_cost "$output_cost")"
+        printf "${pad}%-${t_type}s  %${t_tokens}s  %${t_cost}s\n" "Cache Write" "$(format_number "$cache_write")"   "\$$(format_cost "$cache_write_cost")"
+        printf "${pad}%-${t_type}s  %${t_tokens}s  %${t_cost}s\n" "Cache Read"  "$(format_number "$cache_read")"    "\$$(format_cost "$cache_read_cost")"
+        printf "${d}${pad}%-${t_type}s  %${t_tokens}s  %${t_cost}s${r}\n" "$sep1" "$sep2" "$sep3"
+        echo -e "${b}${pad}$(printf "%-${t_type}s  %${t_tokens}s  %${t_cost}s" \
+            "TOTAL" "$(format_number "$total_toks")" "\$$(format_cost "$total_cost")")${r}"
+    else
+        # Stacked layout for very narrow terminals (<42 cols)
+        local _sr
+        _sr() { echo -e "${d}$1${r}"; printf "  %-8s  %s\n" "Tokens:" "$2"; printf "  %-8s  %s\n" "Cost:" "$3"; echo ""; }
+        _sr "Input"       "$(format_number "$input_tokens")"  "\$$(format_cost "$input_cost")"
+        _sr "Output"      "$(format_number "$output_tokens")" "\$$(format_cost "$output_cost")"
+        _sr "Cache Write" "$(format_number "$cache_write")"   "\$$(format_cost "$cache_write_cost")"
+        _sr "Cache Read"  "$(format_number "$cache_read")"    "\$$(format_cost "$cache_read_cost")"
+        echo -e "${d}──────────────────${r}"
+        echo -e "${b}TOTAL${r}"
+        printf "  %-8s  %s\n" "Tokens:" "$(format_number "$total_toks")"
+        printf "  %-8s  %s\n" "Cost:"   "\$$(format_cost "$total_cost")"
+    fi
     echo ""
 
     # Cache efficiency — themed, same treatment as show_summary

@@ -242,9 +242,6 @@ show_banner() {
     local icon
     icon=$(_banner_icon)
 
-    # Trim $HOME from cwd (bash 3.2 compatible; ~ in replacement is literal, no escaping needed)
-    local dir="${PWD/#$HOME/~}"
-
     # Capitalise theme name (bash 3.2 compatible — no ${var^})
     local theme_cap
     theme_cap="$(echo "$theme" | awk '{print toupper(substr($0,1,1)) substr($0,2)}')"
@@ -260,17 +257,36 @@ show_banner() {
         r="\033[0m"
     fi
 
-    # Art is 9-10 visible chars wide; text column starts at 13 (consistent across all 3 rows)
-    #   row 1:  art(10)   — no text
-    #   row 2:  art(9)  + 4sp → col 13 → version
-    #   row 3:  art(10) + 3sp → col 13 → theme · tagline
-    #   row 4:  13sp           → col 13 → directory
+    local tw
+    tw=$(term_width)
+
     echo ""
-    echo -e "${c}  ╲ ╱ ╲ ╱${r}"
-    echo -e "${c}  ─  ${icon}  ─${r}    ${b}burnrate v${version}${r}"
-    echo -e "${c}  ╱ ╲ ╱ ╲${r}   ${d}${theme_cap} · Zero API Calls${r}"
-    echo -e "             ${d}${dir}${r}"
+    if (( tw >= 50 )); then
+        # Full snowflake art — 3 rows of art, version + tagline on right
+        #   art col: 10 visible chars wide
+        #   text col: starts at position 14 (art + 4 spaces on narrow art rows)
+        echo -e "${c}  ╲ ╱ ╲ ╱${r}"
+        echo -e "${c}  ─  ${icon}  ─${r}    ${b}burnrate v${version}${r}"
+        echo -e "${c}  ╱ ╲ ╱ ╲${r}   ${d}${theme_cap} · Zero API Calls${r}"
+    else
+        # Compact single-line for narrow terminals
+        echo -e "  ${c}${icon}${r}  ${b}burnrate v${version}${r}  ${d}${theme_cap}${r}"
+    fi
     echo ""
+}
+
+# Responsive themed horizontal rule (capped at 80 cols for readability)
+# Usage: _themed_hr [width]
+_themed_hr() {
+    local w="${1:-}"
+    if [[ -z "$w" ]]; then
+        w=$(term_width)
+        (( w > 80 )) && w=80
+    fi
+    local h="${THEME_PRIMARY:-\033[1;36m}" r="\033[0m"
+    # printf '━%.0s' consumes one arg per ━ — handles multi-byte correctly
+    # shellcheck disable=SC2046
+    echo -e "${h}$(printf '━%.0s' $(seq 1 "$w"))${r}"
 }
 
 log_debug "Responsive layout loaded ($(term_width)x$(term_height), $(term_size))"
