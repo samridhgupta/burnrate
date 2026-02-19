@@ -289,7 +289,7 @@ check_config() {
     _info "Colors:        ${CONFIG_COLORS_ENABLED}"
     _info "Animations:    ${CONFIG_ANIMATIONS_ENABLED}"
     _info "Daily budget:  \$${CONFIG_DAILY_BUDGET}"
-    _info "Monthly budget:\$${CONFIG_MONTHLY_BUDGET}"
+    _info "Monthly budget: \$${CONFIG_MONTHLY_BUDGET}"
     _info "Cost decimals: ${CONFIG_COST_DECIMALS}"
     echo ""
 

@@ -135,22 +135,26 @@ calculate_cost() {
     local input_price output_price cache_write_price cache_read_price
     read -r input_price output_price cache_write_price cache_read_price <<< "$pricing"
 
+    # bc omits leading zero for values < 1 (e.g. ".79" instead of "0.79")
+    # _bc_fix ensures valid JSON numbers with leading zeros
+    _bc_fix() { local v="$1"; [[ "$v" == .* ]] && v="0${v}"; [[ "$v" == -.* ]] && v="-0${v:1}"; echo "$v"; }
+
     # Calculate costs (tokens / 1M * price)
     local input_cost
-    input_cost=$(echo "scale=6; ($input_tokens / 1000000) * $input_price" | bc)
+    input_cost=$(_bc_fix "$(echo "scale=6; ($input_tokens / 1000000) * $input_price" | bc)")
 
     local output_cost
-    output_cost=$(echo "scale=6; ($output_tokens / 1000000) * $output_price" | bc)
+    output_cost=$(_bc_fix "$(echo "scale=6; ($output_tokens / 1000000) * $output_price" | bc)")
 
     local cache_write_cost
-    cache_write_cost=$(echo "scale=6; ($cache_write_tokens / 1000000) * $cache_write_price" | bc)
+    cache_write_cost=$(_bc_fix "$(echo "scale=6; ($cache_write_tokens / 1000000) * $cache_write_price" | bc)")
 
     local cache_read_cost
-    cache_read_cost=$(echo "scale=6; ($cache_read_tokens / 1000000) * $cache_read_price" | bc)
+    cache_read_cost=$(_bc_fix "$(echo "scale=6; ($cache_read_tokens / 1000000) * $cache_read_price" | bc)")
 
     # Total cost
     local total_cost
-    total_cost=$(echo "scale=6; $input_cost + $output_cost + $cache_write_cost + $cache_read_cost" | bc)
+    total_cost=$(_bc_fix "$(echo "scale=6; $input_cost + $output_cost + $cache_write_cost + $cache_read_cost" | bc)")
 
     # Return cost breakdown
     cat <<EOF

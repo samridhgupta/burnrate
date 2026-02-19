@@ -279,39 +279,60 @@ create_default_config() {
 # Configuration Display
 # ============================================================================
 
-# Show current configuration
+# Show current configuration (themed output)
 show_config() {
-    echo "Burnrate Configuration"
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    local h="${THEME_PRIMARY:-\033[1;36m}"
+    local b="\033[1m"
+    local d="\033[2m"
+    local y="${THEME_WARNING:-\033[0;33m}"
+    local r="\033[0m"
+
+    echo -e "${h}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${r}"
+    echo -e "  ${h}Burnrate Configuration${r}"
+    echo -e "${h}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${r}"
     echo ""
-    echo "Display:"
-    echo "  Theme:      $CONFIG_THEME"
-    echo "  Colors:     $CONFIG_COLORS_ENABLED"
-    echo "  Emoji:      $CONFIG_EMOJI_ENABLED"
-    echo "  Format:     $CONFIG_OUTPUT_FORMAT"
+
+    echo -e "  ${b}Display${r}"
+    printf "  ${d}%-12s${r}  %s\n" "Theme"   "$CONFIG_THEME"
+    printf "  ${d}%-12s${r}  %s\n" "Colors"  "$CONFIG_COLORS_ENABLED"
+    printf "  ${d}%-12s${r}  %s\n" "Emoji"   "$CONFIG_EMOJI_ENABLED"
+    printf "  ${d}%-12s${r}  %s\n" "Format"  "$CONFIG_OUTPUT_FORMAT"
     echo ""
-    echo "Animation:"
-    echo "  Enabled:    $CONFIG_ANIMATIONS_ENABLED"
-    echo "  Speed:      $CONFIG_ANIMATION_SPEED"
-    echo "  Style:      $CONFIG_ANIMATION_STYLE"
+
+    echo -e "  ${b}Animation${r}"
+    printf "  ${d}%-12s${r}  %s\n" "Enabled" "$CONFIG_ANIMATIONS_ENABLED"
+    printf "  ${d}%-12s${r}  %s\n" "Speed"   "$CONFIG_ANIMATION_SPEED"
+    printf "  ${d}%-12s${r}  %s\n" "Style"   "$CONFIG_ANIMATION_STYLE"
     echo ""
-    echo "Paths:"
-    echo "  Claude:     $CONFIG_CLAUDE_DIR"
-    echo "  Stats:      $CONFIG_STATS_FILE"
-    echo "  Data:       $CONFIG_DATA_DIR"
+
+    echo -e "  ${b}Paths${r}"
+    printf "  ${d}%-12s${r}  %s\n" "Claude"  "$CONFIG_CLAUDE_DIR"
+    printf "  ${d}%-12s${r}  %s\n" "Stats"   "$CONFIG_STATS_FILE"
+    printf "  ${d}%-12s${r}  %s\n" "Data"    "$CONFIG_DATA_DIR"
     echo ""
-    echo "Budget:"
-    echo "  Daily:      \$$CONFIG_DAILY_BUDGET"
-    echo "  Monthly:    \$$CONFIG_MONTHLY_BUDGET"
-    echo "  Alert:      ${CONFIG_BUDGET_ALERT}%"
+
+    echo -e "  ${b}Budget${r}"
+    if [[ "${CONFIG_DAILY_BUDGET:-0.00}" == "0.00" || "${CONFIG_DAILY_BUDGET:-0.00}" == "0" ]]; then
+        printf "  ${d}%-12s${r}  ${d}unlimited${r}\n" "Daily"
+    else
+        printf "  ${d}%-12s${r}  ${y}\$%s${r}\n" "Daily" "$CONFIG_DAILY_BUDGET"
+    fi
+    if [[ "${CONFIG_MONTHLY_BUDGET:-0.00}" == "0.00" || "${CONFIG_MONTHLY_BUDGET:-0.00}" == "0" ]]; then
+        printf "  ${d}%-12s${r}  ${d}unlimited${r}\n" "Monthly"
+    else
+        printf "  ${d}%-12s${r}  ${y}\$%s${r}\n" "Monthly" "$CONFIG_MONTHLY_BUDGET"
+    fi
+    printf "  ${d}%-12s${r}  %s\n" "Alert"   "${CONFIG_BUDGET_ALERT}%"
     echo ""
-    echo "Config file:"
+
+    echo -e "  ${b}Config file${r}"
     local config_file
     if config_file=$(find_config_file); then
-        echo "  $config_file"
+        printf "  ${d}%-12s${r}  %s\n" "Location" "$config_file"
     else
-        echo "  (using defaults)"
+        printf "  ${d}%-12s${r}  %s\n" "Location" "(defaults — run: burnrate setup)"
     fi
+    echo ""
 }
 
 log_debug "Config system loaded (15 core options)"

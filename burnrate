@@ -125,21 +125,23 @@ show_version() {
 cmd_summary() {
     show_banner
 
-    if [[ "$CONFIG_SHOW_DISCLAIMER" == "true" ]]; then
+    # Disclaimer: only in non-TTY (piped/scripted) — banner covers it in terminals
+    if [[ "$CONFIG_SHOW_DISCLAIMER" == "true" ]] && [[ ! -t 1 ]]; then
         echo "⚠️  ZERO TOKENS USED - Pure script, reads local files only"
         echo ""
     fi
 
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo "  📊 Token Burn Summary"
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    local h="${THEME_PRIMARY:-\033[1;36m}" r="\033[0m"
+    echo -e "${h}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${r}"
+    echo -e "  📊 Token Burn Summary"
+    echo -e "${h}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${r}"
     echo ""
 
     show_summary "$CONFIG_STATS_FILE"
 
     echo ""
     if [[ "$CONFIG_SHOW_DISCLAIMER" == "true" ]]; then
-        echo "${THEME_FOOTER}"
+        echo -e "\033[2m${THEME_FOOTER}\033[0m"
     fi
 }
 
@@ -147,25 +149,26 @@ cmd_summary() {
 cmd_show() {
     show_banner
 
-    if [[ "$CONFIG_SHOW_DISCLAIMER" == "true" ]]; then
+    # Disclaimer only in non-TTY — banner covers it in terminals
+    if [[ "$CONFIG_SHOW_DISCLAIMER" == "true" ]] && [[ ! -t 1 ]]; then
         echo "⚠️  ZERO TOKENS USED - Pure script, reads local files only"
         echo ""
     fi
 
     show_detailed_breakdown "$CONFIG_STATS_FILE"
 
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo ""
+    local h="${THEME_PRIMARY:-\033[1;36m}" r="\033[0m"
+    echo -e "${h}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${r}"
 
     if [[ "$CONFIG_SHOW_DISCLAIMER" == "true" ]]; then
-        echo "${THEME_FOOTER}"
+        echo -e "\033[2m${THEME_FOOTER}\033[0m"
         echo ""
     fi
 }
 
 # Check budget status
 cmd_budget() {
-    if [[ "$CONFIG_SHOW_DISCLAIMER" == "true" ]]; then
+    if [[ "$CONFIG_SHOW_DISCLAIMER" == "true" ]] && [[ ! -t 1 ]]; then
         echo "⚠️  ZERO TOKENS USED - Pure script, reads local files only"
         echo ""
     fi
@@ -182,7 +185,7 @@ cmd_budget() {
 cmd_history() {
     local format="${1:-table}"
 
-    if [[ "$CONFIG_SHOW_DISCLAIMER" == "true" ]]; then
+    if [[ "$CONFIG_SHOW_DISCLAIMER" == "true" ]] && [[ ! -t 1 ]]; then
         echo "⚠️  ZERO TOKENS USED - Pure script, reads local files only"
         echo ""
     fi
@@ -200,7 +203,7 @@ cmd_history() {
 
 # Show weekly aggregate
 cmd_week() {
-    if [[ "$CONFIG_SHOW_DISCLAIMER" == "true" ]]; then
+    if [[ "$CONFIG_SHOW_DISCLAIMER" == "true" ]] && [[ ! -t 1 ]]; then
         echo "⚠️  ZERO TOKENS USED - Pure script, reads local files only"
         echo ""
     fi
@@ -215,7 +218,7 @@ cmd_week() {
     cost=$(echo "$week_data" | cut -d'|' -f2)
 
     printf "Tokens:  %15s\n" "$(printf "%'d" "$tokens" 2>/dev/null || echo "$tokens")"
-    printf "Cost:    %15s\n" "\$$cost"
+    printf "Cost:    %15s\n" "\$$(format_cost "$cost")"
 
     if [[ "$CONFIG_SHOW_DISCLAIMER" == "true" ]]; then
         echo ""
@@ -225,7 +228,7 @@ cmd_week() {
 
 # Show monthly aggregate
 cmd_month() {
-    if [[ "$CONFIG_SHOW_DISCLAIMER" == "true" ]]; then
+    if [[ "$CONFIG_SHOW_DISCLAIMER" == "true" ]] && [[ ! -t 1 ]]; then
         echo "⚠️  ZERO TOKENS USED - Pure script, reads local files only"
         echo ""
     fi
@@ -240,7 +243,7 @@ cmd_month() {
     cost=$(echo "$month_data" | cut -d'|' -f2)
 
     printf "Tokens:  %15s\n" "$(printf "%'d" "$tokens" 2>/dev/null || echo "$tokens")"
-    printf "Cost:    %15s\n" "\$$cost"
+    printf "Cost:    %15s\n" "\$$(format_cost "$cost")"
 
     if [[ "$CONFIG_SHOW_DISCLAIMER" == "true" ]]; then
         echo ""
@@ -250,7 +253,7 @@ cmd_month() {
 
 # Show spending trends
 cmd_trends() {
-    if [[ "$CONFIG_SHOW_DISCLAIMER" == "true" ]]; then
+    if [[ "$CONFIG_SHOW_DISCLAIMER" == "true" ]] && [[ ! -t 1 ]]; then
         echo "⚠️  ZERO TOKENS USED - Pure script, reads local files only"
         echo ""
     fi

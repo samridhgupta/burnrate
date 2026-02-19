@@ -391,31 +391,58 @@ show_detailed_breakdown() {
     cache_read_cost=$(echo "$costs_section" | grep '"cache_read"' | cut -d: -f2 | tr -d ' ,')
     total_cost=$(echo "$costs_section" | grep '"total"' | cut -d: -f2 | tr -d ' ,')
 
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo "Token Usage & Cost Breakdown"
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    # Theme colors (with plain fallbacks for no-color mode)
+    local h b d r
+    h="${THEME_PRIMARY:-\033[1;36m}"
+    b="\033[1m"
+    d="\033[2m"
+    r="\033[0m"
+
+    echo -e "${h}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${r}"
+    echo -e "  ${h}Token Usage & Cost Breakdown${r}"
+    echo -e "${h}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${r}"
     echo ""
-    echo "Model: $model"
-    echo ""
-    printf "%-20s %15s %12s\n" "Type" "Tokens" "Cost"
-    printf "%-20s %15s %12s\n" "────" "──────" "────"
-    printf "%-20s %15s %12s\n" "Input"       "$(format_number $input_tokens)"       "\$$(format_cost $input_cost)"
-    printf "%-20s %15s %12s\n" "Output"      "$(format_number $output_tokens)"      "\$$(format_cost $output_cost)"
-    printf "%-20s %15s %12s\n" "Cache Write" "$(format_number $cache_write)"        "\$$(format_cost $cache_write_cost)"
-    printf "%-20s %15s %12s\n" "Cache Read"  "$(format_number $cache_read)"         "\$$(format_cost $cache_read_cost)"
-    printf "%-20s %15s %12s\n" "────" "──────" "────────"
-    printf "%-20s %15s %12s\n" "TOTAL" "$(format_number $((input_tokens + output_tokens + cache_write + cache_read)))" "\$$(format_cost $total_cost)"
+    echo -e "  Model: ${b}${model}${r}"
     echo ""
 
-    # Cache efficiency
+    # Table — columns: Type(20) Tokens(15) Cost(12)
+    # Full-width separators match their column width exactly
+    printf "  ${d}%-20s  %15s  %12s${r}\n" "Type" "Tokens" "Cost"
+    printf "  ${d}%-20s  %15s  %12s${r}\n" "────────────────────" "───────────────" "────────────"
+    printf "  %-20s  %15s  %12s\n"  "Input"       "$(format_number "$input_tokens")"        "\$$(format_cost "$input_cost")"
+    printf "  %-20s  %15s  %12s\n"  "Output"      "$(format_number "$output_tokens")"       "\$$(format_cost "$output_cost")"
+    printf "  %-20s  %15s  %12s\n"  "Cache Write" "$(format_number "$cache_write")"         "\$$(format_cost "$cache_write_cost")"
+    printf "  %-20s  %15s  %12s\n"  "Cache Read"  "$(format_number "$cache_read")"          "\$$(format_cost "$cache_read_cost")"
+    printf "  ${d}%-20s  %15s  %12s${r}\n" "────────────────────" "───────────────" "────────────"
+    echo -e "  ${b}$(printf "%-20s  %15s  %12s" "TOTAL" \
+        "$(format_number $((input_tokens + output_tokens + cache_write + cache_read)))" \
+        "\$$(format_cost "$total_cost")")${r}"
+    echo ""
+
+    # Cache efficiency — themed, same treatment as show_summary
     local cache_efficiency
     cache_efficiency=$(get_cache_efficiency "$stats_file")
 
     local cache_savings
     cache_savings=$(get_cache_savings "$stats_file" "$model")
 
-    echo "Cache Efficiency: ${cache_efficiency}%"
-    echo "Cache Savings: \$$(format_cost $cache_savings)"
+    local cache_icon cache_color cache_label
+    local ce_int
+    ce_int=$(echo "$cache_efficiency" | cut -d. -f1)
+    if [[ "$ce_int" -ge 90 ]]; then
+        cache_icon="${THEME_CACHE_EXCELLENT:-❄️ }"; cache_color="${THEME_SUCCESS:-\033[0;36m}"; cache_label="excellent"
+    elif [[ "$ce_int" -ge 75 ]]; then
+        cache_icon="${THEME_CACHE_GOOD:-🧊}";       cache_color="${THEME_SUCCESS:-\033[0;36m}"; cache_label="good"
+    elif [[ "$ce_int" -ge 50 ]]; then
+        cache_icon="${THEME_STATUS_WARNING:-💧}";   cache_color="${THEME_WARNING:-\033[0;33m}"; cache_label="ok"
+    elif [[ "$ce_int" -ge 25 ]]; then
+        cache_icon="${THEME_STATUS_CRITICAL:-🌊}";  cache_color="${THEME_WARNING:-\033[0;33m}"; cache_label="low"
+    else
+        cache_icon="${THEME_CACHE_POOR:-🔥}";       cache_color="${THEME_ERROR:-\033[0;31m}";   cache_label="poor"
+    fi
+
+    echo -e "  Cache:   ${cache_color}${cache_icon} ${cache_efficiency}% hit rate (${cache_label})${r}"
+    echo -e "  Savings: ${cache_color}\$$(format_cost "$cache_savings") saved vs no caching${r}"
     echo ""
 }
 
