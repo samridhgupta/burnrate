@@ -17,18 +17,30 @@ while [ -h "$SCRIPT_SOURCE" ]; do
 done
 SCRIPT_DIR="$(cd -P "$(dirname "$SCRIPT_SOURCE")" && pwd)"
 
+# Locate lib directory — supports local/symlink install and Homebrew
+# Local:  $SCRIPT_DIR/lib/               (default install via install.sh)
+# Brew:   $SCRIPT_DIR/../share/burnrate/lib/  (brew puts binary in bin/, libs in share/)
+if [[ -d "$SCRIPT_DIR/lib" ]]; then
+    LIB_DIR="$SCRIPT_DIR/lib"
+elif [[ -d "$SCRIPT_DIR/../share/burnrate/lib" ]]; then
+    LIB_DIR="$(cd "$SCRIPT_DIR/../share/burnrate/lib" && pwd)"
+else
+    echo "Error: burnrate libraries not found. Try reinstalling: brew reinstall burnrate" >&2
+    exit 1
+fi
+
 # Source libraries
-source "$SCRIPT_DIR/lib/core.sh"
-source "$SCRIPT_DIR/lib/config.sh"
-source "$SCRIPT_DIR/lib/colors.sh"
-source "$SCRIPT_DIR/lib/layout.sh"
-source "$SCRIPT_DIR/lib/animations.sh"
-source "$SCRIPT_DIR/lib/themes.sh"
-source "$SCRIPT_DIR/lib/pricing.sh"
-source "$SCRIPT_DIR/lib/stats.sh"
-source "$SCRIPT_DIR/lib/budget.sh"
-source "$SCRIPT_DIR/lib/historical.sh"
-source "$SCRIPT_DIR/lib/export.sh"
+source "$LIB_DIR/core.sh"
+source "$LIB_DIR/config.sh"
+source "$LIB_DIR/colors.sh"
+source "$LIB_DIR/layout.sh"
+source "$LIB_DIR/animations.sh"
+source "$LIB_DIR/themes.sh"
+source "$LIB_DIR/pricing.sh"
+source "$LIB_DIR/stats.sh"
+source "$LIB_DIR/budget.sh"
+source "$LIB_DIR/historical.sh"
+source "$LIB_DIR/export.sh"
 
 # ============================================================================
 # Help & Usage
@@ -94,8 +106,8 @@ THEMES:
     Create: copy example from config/themes/ and customize
 
 MORE INFO:
-    GitHub: https://github.com/yourusername/burnrate
-    Issues: https://github.com/yourusername/burnrate/issues
+    GitHub: https://github.com/samridhgupta/burnrate
+    Issues: https://github.com/samridhgupta/burnrate/issues
 
 EOF
 }
@@ -111,6 +123,8 @@ show_version() {
 
 # Show today's summary (default command)
 cmd_summary() {
+    show_banner
+
     if [[ "$CONFIG_SHOW_DISCLAIMER" == "true" ]]; then
         echo "⚠️  ZERO TOKENS USED - Pure script, reads local files only"
         echo ""
@@ -131,6 +145,8 @@ cmd_summary() {
 
 # Show detailed report
 cmd_show() {
+    show_banner
+
     if [[ "$CONFIG_SHOW_DISCLAIMER" == "true" ]]; then
         echo "⚠️  ZERO TOKENS USED - Pure script, reads local files only"
         echo ""
@@ -288,12 +304,12 @@ cmd_config() {
 
 # Run setup wizard
 cmd_setup() {
-    source "$SCRIPT_DIR/lib/setup.sh"
+    source "$LIB_DIR/setup.sh"
     run_setup
 }
 
 cmd_doctor() {
-    source "$SCRIPT_DIR/lib/doctor.sh"
+    source "$LIB_DIR/doctor.sh"
     run_doctor "$@"
 }
 

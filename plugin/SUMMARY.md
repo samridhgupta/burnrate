@@ -217,8 +217,8 @@ Contributions welcome! Areas to contribute:
 
 ## 📞 Support
 
-- **Issues**: https://github.com/yourusername/burnrate/issues
-- **Discussions**: https://github.com/yourusername/burnrate/discussions
+- **Issues**: https://github.com/samridhgupta/burnrate/issues
+- **Discussions**: https://github.com/samridhgupta/burnrate/discussions
 - **Discord**: (coming soon)
 
 ## 🏆 Credits

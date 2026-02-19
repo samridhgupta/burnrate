@@ -1,0 +1,86 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"   # Trigger on any tag like v1.0.0, v1.2.3-beta, etc.
+
+permissions:
+  contents: write  # Required to create releases and push formula update
+
+jobs:
+  release:
+    name: Create release & update Homebrew formula
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # Full history needed so we can push the formula update back to main
+          fetch-depth: 0
+
+      # ── 1. Create GitHub Release ──────────────────────────────────────────
+      - name: Create GitHub Release
+        id: create_release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          make_latest: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # ── 2. Compute sha256 of the release tarball ──────────────────────────
+      #    GitHub auto-generates /archive/refs/tags/<tag>.tar.gz for every tag.
+      #    We wait briefly then download it to compute the sha256 Homebrew needs.
+      - name: Compute tarball sha256
+        id: sha256
+        run: |
+          TAG="${{ github.ref_name }}"
+          VERSION="${TAG#v}"
+          URL="https://github.com/samridhgupta/burnrate/archive/refs/tags/${TAG}.tar.gz"
+
+          # Wait for GitHub to publish the tarball (usually instant, but be safe)
+          for i in 1 2 3 4 5; do
+            HTTP=$(curl -sLo /dev/null -w "%{http_code}" "$URL")
+            [[ "$HTTP" == "200" ]] && break
+            echo "Waiting for tarball (attempt $i)..."
+            sleep 5
+          done
+
+          SHA256=$(curl -sL "$URL" | sha256sum | awk '{print $1}')
+
+          echo "sha256=$SHA256"   >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "url=$URL"         >> "$GITHUB_OUTPUT"
+
+      # ── 3. Patch Formula/burnrate.rb ──────────────────────────────────────
+      - name: Update Homebrew formula
+        run: |
+          sed -i \
+            -e "s|url \".*archive/refs/tags/.*\"|url \"${{ steps.sha256.outputs.url }}\"|" \
+            -e "s|sha256 \".*\"|sha256 \"${{ steps.sha256.outputs.sha256 }}\"|" \
+            -e "s|version \".*\"|version \"${{ steps.sha256.outputs.version }}\"|" \
+            Formula/burnrate.rb
+
+          echo "Updated formula:"
+          grep -E "url |sha256 |version " Formula/burnrate.rb
+
+      # ── 4. Also bump version in lib/core.sh ──────────────────────────────
+      - name: Bump BURNRATE_VERSION in core.sh
+        run: |
+          VERSION="${{ steps.sha256.outputs.version }}"
+          sed -i "s/readonly BURNRATE_VERSION=.*/readonly BURNRATE_VERSION=\"${VERSION}\"/" lib/core.sh
+          echo "core.sh version: $(grep BURNRATE_VERSION lib/core.sh)"
+
+      # ── 5. Commit formula + version bump back to main ─────────────────────
+      - name: Commit and push formula update
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add Formula/burnrate.rb lib/core.sh
+          git diff --cached --quiet && echo "No changes to commit" && exit 0
+
+          git commit -m "chore: release ${{ github.ref_name }} — update formula + version"
+          git push origin HEAD:main

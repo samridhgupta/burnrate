@@ -190,11 +190,11 @@ See [Contributing Guide](../README.md#-contributing). We welcome:
 
 ### Where do I report bugs?
 
-[GitHub Issues](https://github.com/yourusername/burnrate/issues)
+[GitHub Issues](https://github.com/samridhgupta/burnrate/issues)
 
 ### Can I request features?
 
-Yes! Use [GitHub Discussions](https://github.com/yourusername/burnrate/discussions).
+Yes! Use [GitHub Discussions](https://github.com/samridhgupta/burnrate/discussions).
 
 ### How do I submit a theme?
 
@@ -205,8 +205,8 @@ Create a PR with your theme file in `config/themes/`. Include a screenshot!
 ### How do I get help?
 
 1. Check this FAQ
-2. Search [GitHub Issues](https://github.com/yourusername/burnrate/issues)
-3. Ask in [GitHub Discussions](https://github.com/yourusername/burnrate/discussions)
+2. Search [GitHub Issues](https://github.com/samridhgupta/burnrate/issues)
+3. Ask in [GitHub Discussions](https://github.com/samridhgupta/burnrate/discussions)
 4. Open a new issue with details
 
 ### Can I hire you for custom development?
@@ -224,11 +224,11 @@ Contact: dev@burnrate.dev (if available)
 
 **Didn't find your answer?**
 
-Ask in [GitHub Discussions](https://github.com/yourusername/burnrate/discussions) - we're happy to help!
+Ask in [GitHub Discussions](https://github.com/samridhgupta/burnrate/discussions) - we're happy to help!
 
 **Found an error in this FAQ?**
 
-Submit a PR or [open an issue](https://github.com/yourusername/burnrate/issues). Thanks!
+Submit a PR or [open an issue](https://github.com/samridhgupta/burnrate/issues). Thanks!
 
 ---
 

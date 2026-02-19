@@ -5,7 +5,7 @@ Thank you to everyone who has contributed to making burnrate better!
 ## Core Team
 
 **Lead Developer**
-- [@yourusername](https://github.com/yourusername) - Creator & Maintainer
+- [@samridhgupta](https://github.com/samridhgupta) - Creator & Maintainer
 
 ## Contributors
 

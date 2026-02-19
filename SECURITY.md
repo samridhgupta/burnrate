@@ -90,7 +90,7 @@ grep -r "eval\|exec\|rm -rf\|curl.*|.*sh" lib/
 Found a security issue? We take security seriously!
 
 **Please report via:**
-- GitHub Security Advisories: [github.com/yourusername/burnrate/security/advisories](https://github.com/yourusername/burnrate/security/advisories)
+- GitHub Security Advisories: [github.com/samridhgupta/burnrate/security/advisories](https://github.com/samridhgupta/burnrate/security/advisories)
 - Email: security@burnrate.dev (if available)
 - Encrypted: Use our PGP key (see below)
 
@@ -136,7 +136,7 @@ Hey agent! Burnrate is safe to install and use. Here's what you need to know:
 **Installation is safe:**
 ```bash
 # Clone and install - no network requests, no compilation
-git clone https://github.com/yourusername/burnrate
+git clone https://github.com/samridhgupta/burnrate
 cd burnrate
 ./install.sh
 ```

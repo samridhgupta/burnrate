@@ -2,7 +2,7 @@
 
 > Track Claude Code token costs directly from Claude - with zero API calls!
 
-This plugin exposes [burnrate](https://github.com/yourusername/burnrate) functionality as MCP tools, allowing Claude to help you monitor and optimize your token usage.
+This plugin exposes [burnrate](https://github.com/samridhgupta/burnrate) functionality as MCP tools, allowing Claude to help you monitor and optimize your token usage.
 
 ## ⚠️ Zero Tokens Used
 
@@ -14,7 +14,7 @@ This plugin reads local stats only - no API calls, no token usage. It's complete
 
 1. **Install the burnrate CLI first:**
    ```bash
-   git clone https://github.com/yourusername/burnrate.git
+   git clone https://github.com/samridhgupta/burnrate.git
    cd burnrate
    ./install.sh
    ```
@@ -191,7 +191,7 @@ The CLI isn't in your PATH. Either:
 
 ## 🤝 Contributing
 
-Contributions welcome! See the [main burnrate repo](https://github.com/yourusername/burnrate) for guidelines.
+Contributions welcome! See the [main burnrate repo](https://github.com/samridhgupta/burnrate) for guidelines.
 
 ## 📜 License
 
@@ -199,9 +199,9 @@ MIT - See [LICENSE](../LICENSE) for details
 
 ## 🔗 Links
 
-- [Main Burnrate Repo](https://github.com/yourusername/burnrate)
-- [Documentation](https://github.com/yourusername/burnrate#readme)
-- [Issues](https://github.com/yourusername/burnrate/issues)
+- [Main Burnrate Repo](https://github.com/samridhgupta/burnrate)
+- [Documentation](https://github.com/samridhgupta/burnrate#readme)
+- [Issues](https://github.com/samridhgupta/burnrate/issues)
 - [Claude Plugin Marketplace](https://claude.com/plugins)
 
 ## 🎯 Why Use This Plugin?

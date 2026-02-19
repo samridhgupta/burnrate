@@ -8,7 +8,7 @@ Get up and running with the Burnrate Claude plugin in 5 minutes!
 
 ```bash
 # Clone the repo
-git clone https://github.com/yourusername/burnrate.git
+git clone https://github.com/samridhgupta/burnrate.git
 cd burnrate
 
 # Run installer
@@ -245,4 +245,4 @@ Now you can track token costs right from Claude conversations. The plugin uses z
 
 ---
 
-Need help? [Open an issue](https://github.com/yourusername/burnrate/issues)
+Need help? [Open an issue](https://github.com/samridhgupta/burnrate/issues)

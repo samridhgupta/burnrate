@@ -213,4 +213,64 @@ progress() {
     printf "] %d%%" "$percentage"
 }
 
+# ============================================================================
+# Startup Banner
+# ============================================================================
+
+# Single-width center icon per theme (emoji-safe: all BMP single-width chars)
+_banner_icon() {
+    case "${CONFIG_THEME:-glacial}" in
+        glacial)   echo "❄" ;;
+        ember)     echo "✦" ;;
+        ocean)     echo "≋" ;;
+        space)     echo "★" ;;
+        garden)    echo "✿" ;;
+        battery)   echo "▮" ;;
+        hourglass) echo "⧖" ;;
+        *)         echo "❄" ;;
+    esac
+}
+
+# Show startup banner — snowflake pattern, theme-coloured, version/dir on right
+# Skipped when: --quiet, piped/redirected output, or --no-color (graceful plain fallback)
+show_banner() {
+    [[ "${CONFIG_QUIET:-false}" == "true" ]] && return 0
+    [[ ! -t 1 ]] && return 0  # non-TTY: piped/redirected — skip logo
+
+    local version="${BURNRATE_VERSION:-1.0.0}"
+    local theme="${CONFIG_THEME:-glacial}"
+    local icon
+    icon=$(_banner_icon)
+
+    # Trim $HOME from cwd (bash 3.2 compatible; ~ in replacement is literal, no escaping needed)
+    local dir="${PWD/#$HOME/~}"
+
+    # Capitalise theme name (bash 3.2 compatible — no ${var^})
+    local theme_cap
+    theme_cap="$(echo "$theme" | awk '{print toupper(substr($0,1,1)) substr($0,2)}')"
+
+    # Colors: use theme vars if loaded, else cyan fallback; respect --no-color
+    local c d b r
+    if [[ "${CONFIG_COLORS_ENABLED:-auto}" == "false" ]]; then
+        c="" d="" b="" r=""
+    else
+        c="${THEME_PRIMARY:-\033[1;36m}"
+        d="${THEME_DIM:-\033[2;36m}"
+        b="\033[1m"
+        r="\033[0m"
+    fi
+
+    # Art is 9-10 visible chars wide; text column starts at 13 (consistent across all 3 rows)
+    #   row 1:  art(10)   — no text
+    #   row 2:  art(9)  + 4sp → col 13 → version
+    #   row 3:  art(10) + 3sp → col 13 → theme · tagline
+    #   row 4:  13sp           → col 13 → directory
+    echo ""
+    echo -e "${c}  ╲ ╱ ╲ ╱${r}"
+    echo -e "${c}  ─  ${icon}  ─${r}    ${b}burnrate v${version}${r}"
+    echo -e "${c}  ╱ ╲ ╱ ╲${r}   ${d}${theme_cap} · Zero API Calls${r}"
+    echo -e "             ${d}${dir}${r}"
+    echo ""
+}
+
 log_debug "Responsive layout loaded ($(term_width)x$(term_height), $(term_size))"

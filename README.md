@@ -5,10 +5,11 @@
 **⚠️ ZERO TOKENS USED** - Pure bash script. No AI calls. Just reads local stats.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Version](https://img.shields.io/badge/version-0.1.0--alpha-blue)](https://github.com/yourusername/burnrate)
+[![Version](https://img.shields.io/badge/version-0.1.0--alpha-blue)](https://github.com/samridhgupta/burnrate)
 [![Bash](https://img.shields.io/badge/bash-3.2%2B-green)](https://www.gnu.org/software/bash/)
-[![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux-lightgrey)](https://github.com/yourusername/burnrate)
+[![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20WSL2-lightgrey)](https://github.com/samridhgupta/burnrate)
 [![Security](https://img.shields.io/badge/security-audited-success)](SECURITY.md)
+[![CI](https://github.com/samridhgupta/burnrate/actions/workflows/ci.yml/badge.svg)](https://github.com/samridhgupta/burnrate/actions/workflows/ci.yml)
 
 ---
 
@@ -108,33 +109,90 @@ Remember: Every token melts the ice. Cache to save the Arctic! 🐻‍❄️
 - **⚡ Fast & Offline** - No network calls, instant results
   - *Performance:* Pure bash is FAST. No Python startup time, no Node.js overhead!
 
-## 🚀 Quick Start
+## 🚀 Installation
 
-### One-Line Install
+### Platform Support
+
+| Platform | Method | Status |
+|---|---|---|
+| macOS 10.15+ | Homebrew or curl | ✅ First-class |
+| Linux (Debian, Ubuntu, Fedora, Arch…) | curl or git | ✅ First-class |
+| Windows WSL2 | curl inside WSL2 | ✅ Supported |
+| Windows Git Bash / MSYS2 | git clone | ⚠️ Best-effort |
+| Native Windows (PowerShell/cmd) | — | ❌ Not supported |
+
+---
+
+### Homebrew (macOS & Linux — recommended)
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/yourusername/burnrate/main/install.sh | bash
+brew tap samridhgupta/burnrate https://github.com/samridhgupta/burnrate && brew install burnrate
 ```
 
-### Manual Install
+Subsequent updates:
+```bash
+brew upgrade burnrate
+```
+
+---
+
+### curl (macOS & Linux — one-liner)
 
 ```bash
-# Clone repository
-git clone https://github.com/yourusername/burnrate
+curl -fsSL https://raw.githubusercontent.com/samridhgupta/burnrate/main/install.sh | bash
+```
+
+---
+
+### Git clone (manual)
+
+```bash
+git clone https://github.com/samridhgupta/burnrate
 cd burnrate
-
-# Run installer
 ./install.sh
-
-# Run setup wizard
-burnrate setup
 ```
+
+---
+
+### Windows — WSL2 (recommended for Windows users)
+
+1. Install WSL2: `wsl --install` in PowerShell (requires Windows 10 2004+)
+2. Open your WSL2 terminal (Ubuntu by default)
+3. Run the curl one-liner above inside WSL2
+
+```bash
+# Inside WSL2 terminal
+curl -fsSL https://raw.githubusercontent.com/samridhgupta/burnrate/main/install.sh | bash
+```
+
+> **Note:** Your Claude Code stats file (`~/.claude/stats-cache.json`) must be accessible from within WSL2.
+> If Claude Code runs on Windows (not inside WSL2), mount or copy the file:
+> ```bash
+> # Symlink from Windows profile into WSL2 home
+> ln -s /mnt/c/Users/$WINDOWS_USER/.claude ~/.claude
+> ```
+
+---
+
+### Windows — Git Bash / MSYS2 (best-effort)
+
+Git Bash provides a bash environment on Windows with most GNU tools available.
+Full functionality is not guaranteed — WSL2 is strongly preferred.
+
+```bash
+git clone https://github.com/samridhgupta/burnrate
+cd burnrate
+./install.sh
+```
+
+---
 
 ### Verify Installation
 
 ```bash
 burnrate --version
-burnrate           # Show current usage
+burnrate           # Today's summary with snowflake banner
+burnrate doctor    # Run health check
 ```
 
 ---
@@ -147,11 +205,11 @@ burnrate           # Show current usage
 
 ```bash
 # 1. Clone (no tokens used!)
-git clone https://github.com/yourusername/burnrate
+git clone https://github.com/samridhgupta/burnrate
 cd burnrate
 
 # 2. Install (creates symlink to ~/.local/bin/burnrate)
-./install.sh
+./install.sh --skip-setup
 
 # 3. Verify
 burnrate --version
@@ -777,8 +835,8 @@ grep '"model"' ~/.claude/stats-cache.json
 ### 🆘 Still Stuck?
 
 1. **Check the FAQ:** [docs/FAQ.md](docs/FAQ.md) (coming soon!)
-2. **Search Issues:** [github.com/yourusername/burnrate/issues](https://github.com/yourusername/burnrate/issues)
-3. **Ask for Help:** [GitHub Discussions](https://github.com/yourusername/burnrate/discussions)
+2. **Search Issues:** [github.com/samridhgupta/burnrate/issues](https://github.com/samridhgupta/burnrate/issues)
+3. **Ask for Help:** [GitHub Discussions](https://github.com/samridhgupta/burnrate/discussions)
 4. **Open an Issue:** Include your `burnrate --version` and OS info
 
 ### Known Issues
@@ -963,7 +1021,7 @@ burnrate/
 
 ```bash
 # 1. Fork and clone
-git clone https://github.com/yourusername/burnrate
+git clone https://github.com/samridhgupta/burnrate
 cd burnrate
 
 # 2. Create feature branch
@@ -1030,7 +1088,7 @@ Love burnrate? Help keep the Arctic frozen! ❄️
 **⭐ Star on GitHub**
 - It's free and makes us smile!
 - Helps others discover burnrate
-- [Give us a star →](https://github.com/yourusername/burnrate)
+- [Give us a star →](https://github.com/samridhgupta/burnrate)
 
 **💬 Spread the Word**
 - Tweet about your savings: "Burnrate helped me save $XXX on Claude costs! ❄️"
@@ -1038,8 +1096,8 @@ Love burnrate? Help keep the Arctic frozen! ❄️
 - Tell your fellow developers
 
 **🐛 Report Issues**
-- Found a bug? [Report it!](https://github.com/yourusername/burnrate/issues)
-- Have an idea? [Share it!](https://github.com/yourusername/burnrate/discussions)
+- Found a bug? [Report it!](https://github.com/samridhgupta/burnrate/issues)
+- Have an idea? [Share it!](https://github.com/samridhgupta/burnrate/discussions)
 
 **🔧 Contribute Code**
 - See [Contributing](#-contributing) above
@@ -1049,9 +1107,9 @@ Love burnrate? Help keep the Arctic frozen! ❄️
 
 Building burnrate took many ~~tokens~~ hours! If it's saved you money or made your life easier:
 
-[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-support-yellow.svg)](https://buymeacoffee.com/yourusername)
-[![Ko-fi](https://img.shields.io/badge/Ko--fi-support-ff5e5b.svg)](https://ko-fi.com/yourusername)
-[![GitHub Sponsors](https://img.shields.io/badge/GitHub%20Sponsors-support-ea4aaa.svg)](https://github.com/sponsors/yourusername)
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-support-yellow.svg)](https://buymeacoffee.com/samridhgupta)
+[![Ko-fi](https://img.shields.io/badge/Ko--fi-support-ff5e5b.svg)](https://ko-fi.com/samridhgupta)
+[![GitHub Sponsors](https://img.shields.io/badge/GitHub%20Sponsors-support-ea4aaa.svg)](https://github.com/sponsors/samridhgupta)
 
 **Every coffee helps:**
 - ☕ $3 - One coffee = One new feature
@@ -1138,14 +1196,14 @@ Burnrate makes AI costs **tangible** through environmental metaphors. It's not j
 
 **Built something cool with burnrate?** Share it!
 
-- 💬 [GitHub Discussions](https://github.com/yourusername/burnrate/discussions) - Share tips, themes, integrations
-- 🐛 [Issue Tracker](https://github.com/yourusername/burnrate/issues) - Report bugs, request features
-- ⭐ [Star the repo](https://github.com/yourusername/burnrate) - Help others discover burnrate
+- 💬 [GitHub Discussions](https://github.com/samridhgupta/burnrate/discussions) - Share tips, themes, integrations
+- 🐛 [Issue Tracker](https://github.com/samridhgupta/burnrate/issues) - Report bugs, request features
+- ⭐ [Star the repo](https://github.com/samridhgupta/burnrate) - Help others discover burnrate
 - 🐦 [Tweet @burnrate](https://twitter.com/burnrate) - Share your savings!
 
-**Theme Showcase:** [Share your custom themes →](https://github.com/yourusername/burnrate/discussions/themes)
+**Theme Showcase:** [Share your custom themes →](https://github.com/samridhgupta/burnrate/discussions/themes)
 
-**Integration Library:** [Browse community integrations →](https://github.com/yourusername/burnrate/wiki/integrations)
+**Integration Library:** [Browse community integrations →](https://github.com/samridhgupta/burnrate/wiki/integrations)
 
 ---
 
@@ -1187,11 +1245,11 @@ MIT License - see [LICENSE](LICENSE)
 
 **Remember:** Track tokens. Cache aggressively. Save the Arctic. 🌍
 
-[![Star on GitHub](https://img.shields.io/github/stars/yourusername/burnrate?style=social)](https://github.com/yourusername/burnrate)
+[![Star on GitHub](https://img.shields.io/github/stars/samridhgupta/burnrate?style=social)](https://github.com/samridhgupta/burnrate)
 [![Follow on Twitter](https://img.shields.io/twitter/follow/burnrate?style=social)](https://twitter.com/burnrate)
 
 **[⬆ Back to Top](#burnrate-)**
 
-Made with 🤍 (and zero tokens!) • [Report Bug](https://github.com/yourusername/burnrate/issues) • [Request Feature](https://github.com/yourusername/burnrate/discussions)
+Made with 🤍 (and zero tokens!) • [Report Bug](https://github.com/samridhgupta/burnrate/issues) • [Request Feature](https://github.com/samridhgupta/burnrate/discussions)
 
 </div>

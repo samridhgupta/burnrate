@@ -9,7 +9,7 @@ set -uo pipefail
 # Configuration
 # ============================================================================
 
-readonly REPO_URL="https://github.com/yourusername/burnrate"
+readonly REPO_URL="https://github.com/samridhgupta/burnrate"
 readonly INSTALL_DIR="${BURNRATE_INSTALL_DIR:-$HOME/.local/bin}"
 readonly SOURCE_DIR="$HOME/.local/share/burnrate"
 readonly CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/burnrate"
@@ -34,10 +34,18 @@ error() { echo -e "${_IRD}✗ $*${_IC}"; exit 1; }
 # ============================================================================
 
 detect_os() {
-    case "$(uname -s)" in
-        Darwin*) echo "macos" ;;
-        Linux*) echo "linux" ;;
-        *) error "Unsupported OS: $(uname -s)" ;;
+    local uname_s
+    uname_s="$(uname -s)"
+    case "$uname_s" in
+        Darwin*)  echo "macos" ;;
+        Linux*)   echo "linux" ;;
+        MINGW*|MSYS*|CYGWIN*)
+            warn "Windows Git Bash / MSYS2 detected."
+            warn "For best results use WSL2: https://learn.microsoft.com/windows/wsl/install"
+            warn "Continuing with bash install (best-effort)..."
+            echo "windows-bash"
+            ;;
+        *)        error "Unsupported OS: $uname_s" ;;
     esac
 }
 

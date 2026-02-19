@@ -193,7 +193,7 @@ main() {
     echo "The Arctic will miss you. 🐻‍❄️"
     echo ""
     echo "Reinstall anytime:"
-    echo "  git clone https://github.com/yourusername/burnrate"
+    echo "  git clone https://github.com/samridhgupta/burnrate"
     echo "  cd burnrate && ./install.sh"
     echo ""
 }

@@ -241,7 +241,7 @@ echo "   - Test CLI:   burnrate --version"
 echo "   - Test MCP:   node $PLUGIN_PATH"
 echo ""
 echo "💬 Need help?"
-echo "   https://github.com/yourusername/burnrate/issues"
+echo "   https://github.com/samridhgupta/burnrate/issues"
 echo ""
 
 # Cleanup

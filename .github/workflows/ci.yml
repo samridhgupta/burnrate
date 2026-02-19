@@ -1,0 +1,87 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # ── Shellcheck ─────────────────────────────────────────────────────────────
+  shellcheck:
+    name: Shellcheck
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run shellcheck on all shell scripts
+        uses: ludeeus/action-shellcheck@master
+        with:
+          scandir: "."
+          # SC2034 = unused var (many theme vars are "declared for user customisation")
+          # SC1091 = not following sourced file (we source dynamically)
+          ignore_codes: "SC2034,SC1091"
+          severity: warning
+
+  # ── Tests ──────────────────────────────────────────────────────────────────
+  test:
+    name: Tests (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install bc (Linux only — pre-installed on macOS)
+        if: runner.os == 'Linux'
+        run: sudo apt-get install -y bc
+
+      - name: Run unit tests
+        run: bash tests/test_core.sh
+
+      - name: Smoke test — version flag
+        run: bash burnrate --version
+
+      - name: Smoke test — help flag
+        run: bash burnrate --help
+
+  # ── Install smoke test ─────────────────────────────────────────────────────
+  install:
+    name: Install smoke test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install bc (Linux only)
+        if: runner.os == 'Linux'
+        run: sudo apt-get install -y bc
+
+      - name: Create mock Claude stats file
+        run: |
+          mkdir -p "$HOME/.claude"
+          cat > "$HOME/.claude/stats-cache.json" <<'JSON'
+          {
+            "version": 1,
+            "tokens": { "total": 1000000, "cacheRead": 900000, "cacheWrite": 50000, "input": 30000, "output": 20000 },
+            "costs":  { "total": 0.45 },
+            "model":  "claude-sonnet-4-6"
+          }
+          JSON
+
+      - name: Run install.sh --skip-setup
+        run: bash install.sh --skip-setup
+
+      - name: Verify burnrate is on PATH and works
+        run: |
+          export PATH="$HOME/.local/bin:$PATH"
+          burnrate --version
+          burnrate --help

@@ -79,7 +79,7 @@ git push origin main
 
 ### 4. Create GitHub Release
 
-1. Go to: https://github.com/yourusername/burnrate/releases/new
+1. Go to: https://github.com/samridhgupta/burnrate/releases/new
 2. Select tag: `plugin-v0.1.0`
 3. Title: "Burnrate Plugin v0.1.0"
 4. Description:
@@ -103,13 +103,13 @@ This is the initial release of the Burnrate Claude plugin.
 
 ## 📦 Installation
 
-See [Plugin README](https://github.com/yourusername/burnrate/tree/main/plugin#installation) for installation instructions.
+See [Plugin README](https://github.com/samridhgupta/burnrate/tree/main/plugin#installation) for installation instructions.
 
 ## 🔗 Links
 
-- [Quick Start Guide](https://github.com/yourusername/burnrate/blob/main/plugin/QUICKSTART.md)
-- [Full Documentation](https://github.com/yourusername/burnrate/blob/main/plugin/README.md)
-- [Main Burnrate CLI](https://github.com/yourusername/burnrate)
+- [Quick Start Guide](https://github.com/samridhgupta/burnrate/blob/main/plugin/QUICKSTART.md)
+- [Full Documentation](https://github.com/samridhgupta/burnrate/blob/main/plugin/README.md)
+- [Main Burnrate CLI](https://github.com/samridhgupta/burnrate)
 ```
 
 5. Attach files:
@@ -130,9 +130,9 @@ See [Plugin README](https://github.com/yourusername/burnrate/tree/main/plugin#in
    - Category: Productivity, Development, Analytics
    - Short Description: "Track Claude Code token costs with zero API calls"
    - Long Description: (Copy from claude-plugin.json)
-   - Repository URL: https://github.com/yourusername/burnrate
+   - Repository URL: https://github.com/samridhgupta/burnrate
    - License: MIT
-   - Homepage: https://github.com/yourusername/burnrate/tree/main/plugin
+   - Homepage: https://github.com/samridhgupta/burnrate/tree/main/plugin
 
 3. **Upload Required Files**
    - `claude-plugin.json` (metadata)
@@ -144,7 +144,7 @@ See [Plugin README](https://github.com/yourusername/burnrate/tree/main/plugin#in
 4. **Verification Information**
    - Contact email
    - GitHub account
-   - Support URL: https://github.com/yourusername/burnrate/issues
+   - Support URL: https://github.com/samridhgupta/burnrate/issues
 
 5. **Technical Review Checklist**
    - [ ] MCP protocol compliance
@@ -164,7 +164,7 @@ See [Plugin README](https://github.com/yourusername/burnrate/tree/main/plugin#in
 
 1. Install burnrate CLI:
    ```bash
-   git clone https://github.com/yourusername/burnrate.git
+   git clone https://github.com/samridhgupta/burnrate.git
    cd burnrate && ./install.sh
    ```
 
