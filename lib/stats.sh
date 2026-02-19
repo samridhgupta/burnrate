@@ -6,6 +6,7 @@
 LIB_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$LIB_DIR/core.sh"
 source "$LIB_DIR/pricing.sh"
+source "$LIB_DIR/charts.sh"
 
 # ============================================================================
 # Stats File Parsing (Pure Bash - No jq!)
@@ -365,6 +366,7 @@ show_summary() {
 # Show detailed breakdown
 show_detailed_breakdown() {
     local stats_file="${1:-$CONFIG_STATS_FILE}"
+    local weekly_trend="${2:-}"   # optional: signed % change from get_spending_trend()
 
     local breakdown
     breakdown=$(get_usage_breakdown "$stats_file")
@@ -442,8 +444,11 @@ show_detailed_breakdown() {
         printf "${pad}%-${t_type}s  %${t_tokens}s  %${t_cost}s\n" "Cache Write" "$(format_number "$cache_write")"   "\$$(format_cost "$cache_write_cost")"
         printf "${pad}%-${t_type}s  %${t_tokens}s  %${t_cost}s\n" "Cache Read"  "$(format_number "$cache_read")"    "\$$(format_cost "$cache_read_cost")"
         printf "${d}${pad}%-${t_type}s  %${t_tokens}s  %${t_cost}s${r}\n" "$sep1" "$sep2" "$sep3"
-        echo -e "${b}${pad}$(printf "%-${t_type}s  %${t_tokens}s  %${t_cost}s" \
+        # TOTAL row — append inline trend badge after cost if available
+        echo -en "${b}${pad}$(printf "%-${t_type}s  %${t_tokens}s  %${t_cost}s" \
             "TOTAL" "$(format_number "$total_toks")" "\$$(format_cost "$total_cost")")${r}"
+        if [[ -n "$weekly_trend" ]]; then printf "   "; trend_inline "$weekly_trend"; fi
+        echo ""
     else
         # Stacked layout for very narrow terminals (<42 cols)
         local _sr
@@ -453,7 +458,9 @@ show_detailed_breakdown() {
         _sr "Cache Write" "$(format_number "$cache_write")"   "\$$(format_cost "$cache_write_cost")"
         _sr "Cache Read"  "$(format_number "$cache_read")"    "\$$(format_cost "$cache_read_cost")"
         echo -e "${d}──────────────────${r}"
-        echo -e "${b}TOTAL${r}"
+        echo -en "${b}TOTAL${r}"
+        if [[ -n "$weekly_trend" ]]; then printf "   "; trend_inline "$weekly_trend"; fi
+        echo ""
         printf "  %-8s  %s\n" "Tokens:" "$(format_number "$total_toks")"
         printf "  %-8s  %s\n" "Cost:"   "\$$(format_cost "$total_cost")"
     fi

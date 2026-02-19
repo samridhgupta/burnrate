@@ -155,15 +155,11 @@ cmd_show() {
         echo ""
     fi
 
-    show_detailed_breakdown "$CONFIG_STATS_FILE"
-
-    # Inline weekly cost trend badge
-    local _trend _change _d="\033[2m" _r="\033[0m"
+    local _trend _change
     _trend=$(get_spending_trend)
     _change=$(echo "$_trend" | cut -d'|' -f3)
-    printf "  Weekly trend:  "
-    trend_inline "$_change"; echo ""
-    echo ""
+
+    show_detailed_breakdown "$CONFIG_STATS_FILE" "$_change"
 
     _themed_hr
 
