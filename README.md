@@ -63,22 +63,26 @@ burnrate doctor   # Health check
 
 ## Examples
 
-**`burnrate`** — the daily sanity check
+**`burnrate`** — a regular Tuesday
 ```
   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   📊 Token Burn Summary
   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   Model:  Sonnet
-  Tokens: 2,847,392
-  Cost:   $4.21
-  Cache:  ❄️  87.3% hit rate (excellent)
+  Tokens: 3,394,000
+  Cost:   $7.70
+  Cache:  🧊 82.0% hit rate (good)
+
+  ♾️  No limits set — you're an ice age unto yourself! (set limits with: burnrate config)
+
+Remember: Every token melts the ice. Cache to save the Arctic! 🐻‍❄️
 ```
-> $4 spent. $29 saved by caching. The Arctic lives another day.
+> 82% — not perfect, but the Arctic is still standing. The `♾️` message appears when no budget is configured. Set one with `burnrate setup` or `CONFIG_DAILY_BUDGET` / `CONFIG_MONTHLY_BUDGET`.
 
 ---
 
-**`burnrate show`** — full token breakdown with weekly trend
+**`burnrate show`** — the day you refactored the entire monolith
 ```
   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   Token Usage & Cost Breakdown
@@ -86,77 +90,84 @@ burnrate doctor   # Health check
 
   Model: Sonnet
 
-  Type                    Tokens          Cost
-  ──────────────  ──────────────  ────────────
-  Input                  48,210         $0.14
-  Output                192,880         $2.89
-  Cache Write          1,204,600         $4.52
-  Cache Read           1,401,702         $0.42
-  ──────────────  ──────────────  ────────────
-  TOTAL                2,847,392         $7.97   ▼ 31.4%
+  Type                    Tokens           Cost
+  ──────────────  ──────────────  ─────────────
+  Input               18,420,000         $55.26
+  Output               7,840,000        $117.60
+  Cache Write          2,100,000          $7.88
+  Cache Read             960,000          $0.29
+  ──────────────  ──────────────  ─────────────
+  TOTAL               29,320,000        $181.03   ▲ 329.0%
 
-  Cache:   ❄️  87.3% hit rate (excellent)
-  Savings: $29.14 saved vs no caching
-  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Cache:   🌊 31.4% hit rate (poor)
+  Savings: $2.59 saved vs no caching
+
+The polar bears are swimming! 🐻‍❄️💧
 ```
-> ▼ 31.4% — you burned less than last week. The polar bears approve.
+> ▲ 329.0% and $2.59 saved out of $181.03 spent. Output tokens ate 65% of the cost. `🌊` means poor — the glacial theme escalates from ❄️ (excellent) → 🧊 (good) → 💧 (fair) → 🌊 (poor) → ♨️ (critical) as things melt.
 
 ---
 
-**`burnrate trends`** — sparkline + period table + cache health
+**`burnrate trends`** — the burn chart, CI-friendly
 ```
-  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  📊 Spending Trends
-  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Spending Trends
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  Token volume  ·  last 14 active days
-  ▕ ▁▁▃▃▅▇█▅▃▂▁▂▏
+  Token volume  ·  last 7 active days
+  ▕  ▁▃█▂▅▏
 
-  PERIOD             TOKENS      COST
+  PERIOD             TOKENS        COST
   ─────────────  ──────────  ────────
-  Last 7 days     1,203,441     $3.28   ▼ 31.4%
-  This week         847,210     $2.11   ▼ 18.2%
-  This month      4,918,004    $14.67
+  Last 7 days    35,266,000    $196.14  ▲ 329.0%
+  This week      35,266,000    $196.14  ▲ 329.0%
+  This month     42,840,000    $208.72
 
   CACHE
   ─────────────  ──────────  ────────
-  Hit rate        ❄️  87.3%  excellent
-  Savings         $29.14 vs no caching
+  Hit rate        82.0%  good
+  Savings         $6.64 vs no caching
+
+Remember: Every token melts the ice. Cache to save the Arctic!
 ```
-> Sparkline shows activity by day. A spike in the middle? Big refactor. We don't talk about it.
+> The `█` in the sparkline is that one day. No emoji, no color — same data, machine-friendly output. Enable with `--no-emoji --no-color` flags or set `CONFIG_EMOJI_ENABLED=false` / `CONFIG_COLORS_ENABLED=never` for permanent CI mode.
 
 ---
 
-**`burnrate budget`** — where you stand against your limits
+**`burnrate budget`** — when limits are set and ignored
 ```
   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   💰 Budget Status
   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   Daily Budget:   $10.00
-  Spent today:     $3.28  [████░░░░░░░░░░░░░░░]  32.8%
+  Spent today:    $18.47  [████████████████████]  184.7%
+  💥 Ice cap collapsed!
 
-  Monthly Budget: $150.00
-  Spent:          $14.67  [█░░░░░░░░░░░░░░░░░░]   9.8%
+  Monthly Budget: $200.00
+  Spent:         $196.14  [███████████████████░]   98.1%
+  🚨 Glacier retreat!
 
-  Projection:     ~$44 by month end  (on track ✓)
+  Projection:    ~$214 by month end  (⚠️ will exceed monthly budget)
   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
-> Set budgets with `burnrate setup`. Hit the threshold and burnrate screams at you — before Claude does.
+> Budget alerts activate at the `CONFIG_BUDGET_ALERT` threshold (default 90%). Set limits via `burnrate setup` or add `CONFIG_DAILY_BUDGET=10.00` and `CONFIG_MONTHLY_BUDGET=200.00` to `~/.config/burnrate/burnrate.conf`.
 
 ---
 
-**`burnrate history`** — daily table, responsive to terminal width
+**`burnrate history`** — the hall of shame, responsive to terminal width
 ```
-  DATE         TOKENS       COST   CACHE
-  ──────────   ─────────   ──────  ──────
-  2025-01-19     847,210    $2.11   89.1%
-  2025-01-18   1,204,600    $4.52   85.3%
-  2025-01-17     312,840    $0.94   91.7%
-  2025-01-16          0    $0.00      —
-  2025-01-15     596,120    $1.77   88.4%
+  DATE         TOKENS          COST   CACHE
+  ──────────   ──────────    ──────  ──────
+  2025-01-19   3,394,000     $7.70   82.0%
+  2025-01-18     892,000     $2.59   88.4%
+  2025-01-17  29,320,000   $181.03   31.4%
+  2025-01-16   1,248,000     $3.61   79.2%
+  2025-01-15     412,000     $1.21   85.1%
+  2025-01-14           0     $0.00      —
+  2025-01-13           0     $0.00      —
 ```
-> Zeros on the weekend. Healthy. Or deeply suspicious.
+> Jan 17 — 31.4% cache, $181.03, 29M tokens. Someone pasted the entire codebase. The zeros are the weekend, which is fine, probably.
 
 ---
 
