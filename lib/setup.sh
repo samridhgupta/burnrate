@@ -306,7 +306,9 @@ ask_yn() {
     while true; do
         read -p "$question $prompt " answer
         answer="${answer:-$default}"
-        case "${answer,,}" in
+        # Convert to lowercase (bash 3.2 compatible)
+        answer=$(echo "$answer" | tr '[:upper:]' '[:lower:]')
+        case "$answer" in
             y|yes) return 0 ;;
             n|no) return 1 ;;
             *) echo "Please answer yes or no." ;;
