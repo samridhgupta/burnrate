@@ -2,7 +2,7 @@ class Burnrate < Formula
   desc "Track Claude Code token costs with zero API calls"
   homepage "https://github.com/samridhgupta/burnrate"
   url "https://github.com/samridhgupta/burnrate/archive/refs/tags/v0.8.1.tar.gz"
-  sha256 "1b9b25ea93488d2f48daca89e1c9c3ff62ed821975ee60f6d2427f0cceba900b"
+  sha256 "796d2555338e41c0cb268228a2735e8dc7024f4fb1104d8bc982aac47830aeed"
   license "MIT"
   version "0.8.1"
 
