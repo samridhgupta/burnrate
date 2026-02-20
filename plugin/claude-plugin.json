@@ -7,7 +7,7 @@
   "icon": "🔥❄️",
   "author": {
     "name": "Burnrate Contributors",
-    "url": "https://github.com/yourusername/burnrate"
+    "url": "https://github.com/samridhgupta/burnrate"
   },
   "categories": [
     "productivity",
@@ -24,10 +24,10 @@
     "usage",
     "monitoring"
   ],
-  "homepage": "https://github.com/yourusername/burnrate",
+  "homepage": "https://github.com/samridhgupta/burnrate",
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/burnrate"
+    "url": "https://github.com/samridhgupta/burnrate"
   },
   "license": "MIT",
   "mcp_server": {
@@ -54,7 +54,7 @@
   "requirements": {
     "burnrate_cli": {
       "description": "Burnrate CLI must be installed",
-      "installation": "See https://github.com/yourusername/burnrate#installation"
+      "installation": "See https://github.com/samridhgupta/burnrate#installation"
     },
     "node": ">=18.0.0"
   },
@@ -82,16 +82,6 @@
     {
       "name": "Zero Token Usage",
       "description": "Completely offline - reads local stats only"
-    }
-  ],
-  "screenshots": [
-    {
-      "url": "https://example.com/screenshots/summary.png",
-      "caption": "Token usage summary with cost breakdown"
-    },
-    {
-      "url": "https://example.com/screenshots/history.png",
-      "caption": "Daily usage history with trends"
     }
   ]
 }
