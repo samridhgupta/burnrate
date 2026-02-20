@@ -198,27 +198,20 @@ list_themes() {
                 parent_dir=$(basename "$(dirname "$theme_file")")
                 [[ "$parent_dir" != "$(basename "$dir")" ]] && category="$parent_dir"
 
-                # Load theme metadata
-                (
-                    source "$theme_file"
-                    echo "$theme_name"
-                    echo "${THEME_DISPLAY_NAME:-$theme_name}"
-                    echo "${THEME_EMOJI:- }"
-                    echo "${THEME_DESCRIPTION:-No description}"
-                    echo "${THEME_AUTHOR:-Unknown}"
-                    echo "${THEME_VERSION:-1.0.0}"
-                    echo "$category"
-                ) | {
-                    read -r t_name
-                    read -r t_display
-                    read -r t_emoji
-                    read -r t_desc
-                    read -r t_author
-                    read -r t_version
-                    read -r t_category
-
-                    themes+=("$t_name|$t_display|$t_emoji|$t_desc|$t_author|$t_version|$t_category")
-                }
+                # Load theme metadata in a subshell and capture as a single line
+                local t_meta
+                t_meta=$(
+                    source "$theme_file" 2>/dev/null
+                    printf '%s|%s|%s|%s|%s|%s|%s\n' \
+                        "$theme_name" \
+                        "${THEME_DISPLAY_NAME:-$theme_name}" \
+                        "${THEME_EMOJI:- }" \
+                        "${THEME_DESCRIPTION:-No description}" \
+                        "${THEME_AUTHOR:-Unknown}" \
+                        "${THEME_VERSION:-1.0.0}" \
+                        "$category"
+                )
+                themes+=("$t_meta")
             done < <(find "$scan_dir" -maxdepth 1 -name "*.theme" 2>/dev/null)
         done
     done < <(get_theme_paths)

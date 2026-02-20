@@ -251,8 +251,8 @@ show_banner() {
     if [[ "${CONFIG_COLORS_ENABLED:-auto}" == "false" ]]; then
         c="" d="" b="" r=""
     else
-        c="${THEME_PRIMARY:-\033[1;36m}"
-        d="${THEME_DIM:-\033[2;36m}"
+        c="${THEME_PRIMARY-\033[1;36m}"
+        d="${THEME_DIM-\033[2;36m}"
         b="\033[1m"
         r="\033[0m"
     fi
@@ -283,7 +283,9 @@ _themed_hr() {
         w=$(term_width)
         (( w > 80 )) && w=80
     fi
-    local h="${THEME_PRIMARY:-\033[1;36m}" r="\033[0m"
+    local h="${THEME_PRIMARY-\033[1;36m}"
+    local r=""
+    [[ -n "$h" ]] && r="\033[0m"
     # printf '━%.0s' consumes one arg per ━ — handles multi-byte correctly
     # shellcheck disable=SC2046
     echo -e "${h}$(printf '━%.0s' $(seq 1 "$w"))${r}"

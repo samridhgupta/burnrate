@@ -180,7 +180,9 @@ cmd_summary() {
 
     echo ""
     if [[ "$CONFIG_SHOW_DISCLAIMER" == "true" ]]; then
-        echo -e "\033[2m${THEME_FOOTER}\033[0m"
+        local _dim="${THEME_DIM-\033[2m}" _r=""
+        [[ -n "$_dim" ]] && _r="\033[0m"
+        echo -e "${_dim}${THEME_FOOTER}${_r}"
     fi
 }
 
@@ -863,6 +865,26 @@ main() {
     validate_config
 
     # Load theme (with 3-system overlay: theme → messages → icons → colors)
+    # Pre-scan CLI for flags that affect theme loading (--theme, --colors, --icons, --messages, --no-color)
+    # Full parsing happens later in parse_args; this is a targeted first pass.
+    _prescan_theme_flags() {
+        local _prev=""
+        for _a in "$@"; do
+            case "$_prev" in
+                --theme)    CONFIG_THEME="$_a" ;;
+                --colors|--colour-scheme|--color-scheme) CONFIG_COLOR_SCHEME="$_a" ;;
+                --icons|--icon-set)   CONFIG_ICON_SET="$_a" ;;
+                --messages|--message-set) CONFIG_MESSAGE_SET="$_a" ;;
+                --format)   CONFIG_OUTPUT_FORMAT="$_a" ;;
+            esac
+            case "$_a" in
+                --no-color|--no-colour) CONFIG_COLORS_ENABLED=false; CONFIG_COLOR_SCHEME="none" ;;
+            esac
+            _prev="$_a"
+        done
+    }
+    _prescan_theme_flags "$@"
+
     load_theme "$CONFIG_THEME"
 
     # Parse arguments and run command

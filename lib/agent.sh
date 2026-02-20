@@ -22,6 +22,8 @@ source "$LIB_DIR/budget.sh"
 # and CONFIG_MESSAGE_SET to "agent" silently.
 # Checks: non-TTY stdout, known orchestrator env vars.
 detect_agent_context() {
+    # Allow explicit bypass for testing/debugging
+    [[ "${BURNRATE_NO_AGENT_DETECT:-}" == "true" ]] && return 0
     [[ "${BURNRATE_AGENT_CONTEXT:-false}" == "true" ]] && return 0
 
     local detected=false
@@ -194,10 +196,11 @@ cmd_agent_summary() {
     local model
     model=$(get_model_from_stats "$stats_file" 2>/dev/null || echo "unknown")
 
-    # Cost via pricing module
-    local total_cost
-    total_cost=$(get_usage_breakdown "$stats_file" 2>/dev/null \
-        | grep '"total"' | grep -o '[0-9.]*' | head -1 || echo "0")
+    # Cost via pricing module — calculate directly to avoid ambiguous "total" key in breakdown JSON
+    local cost_json total_cost
+    cost_json=$(calculate_cost "$input_tokens" "$output_tokens" "$cache_write" "$cache_read" "$model" 2>/dev/null \
+        || echo '{"total": 0}')
+    total_cost=$(echo "$cost_json" | grep '"total"' | cut -d: -f2 | tr -d ' ,}')
     total_cost="${total_cost:-0}"
 
     # --- Cache ---

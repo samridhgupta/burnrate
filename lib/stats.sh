@@ -248,35 +248,38 @@ show_summary() {
     cache_efficiency=$(get_cache_efficiency "$stats_file")
 
     # Color-code cache efficiency using theme levels
-    local cache_icon cache_color cache_label reset="\033[0m"
+    local cache_icon cache_color cache_label
     local ce_int
     ce_int=$(echo "$cache_efficiency" | cut -d. -f1)
     if [[ "$ce_int" -ge 90 ]]; then
-        cache_icon="${THEME_CACHE_EXCELLENT:-❄️ }"
-        cache_color="${THEME_SUCCESS:-\033[0;36m}"
+        cache_icon="${THEME_CACHE_EXCELLENT-❄️ }"
+        cache_color="${THEME_SUCCESS-\033[0;36m}"
         cache_label="excellent"
     elif [[ "$ce_int" -ge 75 ]]; then
-        cache_icon="${THEME_CACHE_GOOD:-🧊}"
-        cache_color="${THEME_SUCCESS:-\033[0;36m}"
+        cache_icon="${THEME_CACHE_GOOD-🧊}"
+        cache_color="${THEME_SUCCESS-\033[0;36m}"
         cache_label="good"
     elif [[ "$ce_int" -ge 50 ]]; then
-        cache_icon="${THEME_STATUS_WARNING:-💧}"
-        cache_color="${THEME_WARNING:-\033[0;33m}"
+        cache_icon="${THEME_STATUS_WARNING-💧}"
+        cache_color="${THEME_WARNING-\033[0;33m}"
         cache_label="ok"
     elif [[ "$ce_int" -ge 25 ]]; then
-        cache_icon="${THEME_STATUS_CRITICAL:-🌊}"
-        cache_color="${THEME_WARNING:-\033[0;33m}"
+        cache_icon="${THEME_STATUS_CRITICAL-🌊}"
+        cache_color="${THEME_WARNING-\033[0;33m}"
         cache_label="low"
     else
-        cache_icon="${THEME_CACHE_POOR:-🔥}"
-        cache_color="${THEME_ERROR:-\033[0;31m}"
+        cache_icon="${THEME_CACHE_POOR-🔥}"
+        cache_color="${THEME_ERROR-\033[0;31m}"
         cache_label="poor — consider caching more!"
     fi
+
+    local reset=""
+    [[ -n "$cache_color" ]] && reset="\033[0m"
 
     echo "Model:  $model"
     echo "Tokens: $(format_number $total_tokens)"
     echo "Cost:   \$$(format_cost $total_cost)"
-    echo -e "Cache:  ${cache_color}${cache_icon} ${cache_efficiency}% hit rate (${cache_label})${reset}"
+    echo -e "Cache:  ${cache_color}${cache_icon}${cache_icon:+ }${cache_efficiency}% hit rate (${cache_label})${reset}"
 
     # Budget remaining — only show if budgets are configured
     local daily_budget monthly_budget
@@ -295,27 +298,27 @@ show_summary() {
         local pct_int
         pct_int=$(echo "$pct" | cut -d. -f1)
 
-        local reset="\033[0m"
-
         # Pick icon + color + message from theme (with plain fallbacks)
-        local icon color msg
+        local icon color msg reset
+        reset=""
         if [[ "$pct_int" -ge 100 ]]; then
-            icon="${THEME_BUDGET_EXCEEDED:-💥}"
-            color="${THEME_ERROR:-\033[0;31m}"
-            msg="${THEME_BUDGET_MSG_EXCEEDED:-Over budget!}"
+            icon="${THEME_BUDGET_EXCEEDED-💥}"
+            color="${THEME_ERROR-\033[0;31m}"
+            msg="${THEME_BUDGET_MSG_EXCEEDED-Over budget!}"
         elif [[ "$pct_int" -ge "${alert_pct%.*}" ]]; then
-            icon="${THEME_BUDGET_CRITICAL:-🚨}"
-            color="${THEME_WARNING:-\033[0;33m}"
-            msg="${THEME_BUDGET_MSG_CRITICAL:-Approaching limit}"
+            icon="${THEME_BUDGET_CRITICAL-🚨}"
+            color="${THEME_WARNING-\033[0;33m}"
+            msg="${THEME_BUDGET_MSG_CRITICAL-Approaching limit}"
         elif [[ "$pct_int" -ge 50 ]]; then
-            icon="${THEME_BUDGET_WARNING:-⚠️ }"
-            color="${THEME_WARNING:-\033[0;33m}"
-            msg="${THEME_BUDGET_MSG_WARNING:-Halfway there}"
+            icon="${THEME_BUDGET_WARNING-⚠️ }"
+            color="${THEME_WARNING-\033[0;33m}"
+            msg="${THEME_BUDGET_MSG_WARNING-Halfway there}"
         else
-            icon="${THEME_BUDGET_SAFE:-🐻‍❄️ }"
-            color="${THEME_SUCCESS:-\033[0;32m}"
-            msg="${THEME_BUDGET_MSG_OK:-On track}"
+            icon="${THEME_BUDGET_SAFE-🐻‍❄️ }"
+            color="${THEME_SUCCESS-\033[0;32m}"
+            msg="${THEME_BUDGET_MSG_OK-On track}"
         fi
+        [[ -n "$color" ]] && reset="\033[0m"
 
         # Ice-level bar (30 chars wide): filled = spent, empty = remaining
         local bar_width=20
@@ -357,7 +360,7 @@ show_summary() {
         _budget_line "Monthly" "$monthly_budget" "$total_cost"
     else
         # No budgets — show funny unlimited message from theme
-        local unlimited_msg="${THEME_BUDGET_UNLIMITED_BOTH:-♾️  No limits set — you\'re living dangerously! (burnrate config to set budgets)}"
+        local unlimited_msg="${THEME_BUDGET_UNLIMITED_BOTH-♾️  No limits set — you\'re living dangerously! (burnrate config to set budgets)}"
         echo ""
         echo -e "  ${unlimited_msg}"
     fi
@@ -395,7 +398,7 @@ show_detailed_breakdown() {
 
     # Theme colors
     local h b d r
-    h="${THEME_PRIMARY:-\033[1;36m}"
+    h="${THEME_PRIMARY-\033[1;36m}"
     b="\033[1m"
     d="\033[2m"
     r="\033[0m"
@@ -477,15 +480,15 @@ show_detailed_breakdown() {
     local ce_int
     ce_int=$(echo "$cache_efficiency" | cut -d. -f1)
     if [[ "$ce_int" -ge 90 ]]; then
-        cache_icon="${THEME_CACHE_EXCELLENT:-❄️ }"; cache_color="${THEME_SUCCESS:-\033[0;36m}"; cache_label="excellent"
+        cache_icon="${THEME_CACHE_EXCELLENT-❄️ }"; cache_color="${THEME_SUCCESS-\033[0;36m}"; cache_label="excellent"
     elif [[ "$ce_int" -ge 75 ]]; then
-        cache_icon="${THEME_CACHE_GOOD:-🧊}";       cache_color="${THEME_SUCCESS:-\033[0;36m}"; cache_label="good"
+        cache_icon="${THEME_CACHE_GOOD-🧊}";       cache_color="${THEME_SUCCESS-\033[0;36m}"; cache_label="good"
     elif [[ "$ce_int" -ge 50 ]]; then
-        cache_icon="${THEME_STATUS_WARNING:-💧}";   cache_color="${THEME_WARNING:-\033[0;33m}"; cache_label="ok"
+        cache_icon="${THEME_STATUS_WARNING-💧}";   cache_color="${THEME_WARNING-\033[0;33m}"; cache_label="ok"
     elif [[ "$ce_int" -ge 25 ]]; then
-        cache_icon="${THEME_STATUS_CRITICAL:-🌊}";  cache_color="${THEME_WARNING:-\033[0;33m}"; cache_label="low"
+        cache_icon="${THEME_STATUS_CRITICAL-🌊}";  cache_color="${THEME_WARNING-\033[0;33m}"; cache_label="low"
     else
-        cache_icon="${THEME_CACHE_POOR:-🔥}";       cache_color="${THEME_ERROR:-\033[0;31m}";   cache_label="poor"
+        cache_icon="${THEME_CACHE_POOR-🔥}";       cache_color="${THEME_ERROR-\033[0;31m}";   cache_label="poor"
     fi
 
     echo -e "  Cache:   ${cache_color}${cache_icon} ${cache_efficiency}% hit rate (${cache_label})${r}"
