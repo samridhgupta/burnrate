@@ -27,6 +27,9 @@ class Burnrate < Formula
     # Ensure user config directory exists
     config_dir = Pathname.new(ENV["HOME"]) / ".config" / "burnrate"
     config_dir.mkpath unless config_dir.exist?
+
+    # Run interactive setup wizard
+    system "#{bin}/burnrate", "setup"
   end
 
   def caveats
