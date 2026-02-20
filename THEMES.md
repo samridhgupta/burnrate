@@ -82,6 +82,81 @@ Themes are organized into category folders under `config/themes/`. burnrate disc
 
 ---
 
+## 3-system architecture: colors, icons, messages
+
+Themes are full bundles — they define everything. But you can override any axis independently without changing the theme.
+
+Three independent components sit on top of a base theme:
+
+```
+base theme  ← always loaded first (sets everything)
+     ↓
+message set ← replaces all THEME_MSG_*, THEME_BUDGET_MSG_*, etc.
+     ↓
+icon set    ← replaces all THEME_ICON_*, THEME_STATUS_*, THEME_CACHE_*, THEME_BUDGET_*
+     ↓
+color scheme ← replaces THEME_PRIMARY, THEME_SUCCESS, THEME_WARNING, THEME_ERROR, THEME_INFO, THEME_DIM
+```
+
+Each layer only overwrites what it defines. The rest falls through from the layer below.
+
+**Override via CLI:**
+```bash
+burnrate --messages agent            # terse factual messages, keep theme colors/icons
+burnrate --icons minimal             # ASCII-only indicators, keep theme colors/messages
+burnrate --colors none               # strip colors, keep theme icons/messages
+burnrate --theme roast --colors ocean  # roast voice + ocean color palette
+burnrate --icons none --messages agent # agent mode on any theme
+```
+
+**Override via config:**
+```bash
+# ~/.config/burnrate/burnrate.conf
+COLOR_SCHEME=ocean     # none | amber | green | red | pink | ocean | <name>
+ICON_SET=minimal       # none | minimal | <name>
+MESSAGE_SET=agent      # agent | roast | coach | <name>
+```
+
+**Built-in components:**
+
+| Colors (`config/colors/`) | |
+|--------------------------|--|
+| `none` | Strips all color — plain text output |
+| `amber` | Warm gold — readable in dark terminals |
+| `green` | Terminal green — classic hacker aesthetic |
+| `red` | Threat red — high-stakes feel |
+| `pink` | Soft magenta — warm and approachable |
+| `ocean` | Deep blue — calm, professional |
+
+| Icons (`config/icons/`) | |
+|------------------------|--|
+| `none` | Strips all icons — pure text output |
+| `minimal` | ASCII only: `+` `x` `!` `~` `*` — universal, CI-safe |
+
+| Messages (`config/messages/`) | |
+|-----------------------------|--|
+| `agent` | Terse, factual, actionable — no metaphor, no wit. For AI consumption. |
+
+**Message sets can suggest defaults.** A message set file can include:
+```bash
+THEME_DEFAULT_ICON_SET="none"
+THEME_DEFAULT_COLOR_SCHEME="none"
+```
+These apply only when the user hasn't explicitly set `ICON_SET` or `COLOR_SCHEME`. The `agent` message set does this — it strips icons and colors automatically when used, unless you override.
+
+**Creating custom components:**
+
+A `.colors` file defines only the 6 color vars. A `.icons` file defines only the icon/indicator vars. A `.msgs` file defines only the message vars. Drop them in the corresponding directory under `config/` or `~/.config/burnrate/`:
+
+```
+~/.config/burnrate/
+├── colors/mybrand.colors
+├── icons/nerdfont.icons
+└── messages/snarky.msgs
+```
+
+---
+
 ## Variable reference
 
 Every theme file must define all of the following. Missing variables fall back to the default (glacial) theme values — which is fine, but probably not what you intended.
@@ -434,9 +509,9 @@ THEME_STARTUP_3=""
 
 The fastest way to create a theme is to clone one you like and replace the messages. The structure, variable order, and comments are already there.
 
-**Using the CLI (if implemented):**
+**Using the CLI:**
 ```bash
-burnrate theme clone glacial mytheme
+burnrate themes clone glacial mytheme
 # creates ~/.config/burnrate/themes/mytheme.theme
 # as a copy of glacial.theme with THEME_NAME/AUTHOR updated
 # then open in your $EDITOR

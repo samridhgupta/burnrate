@@ -388,7 +388,7 @@ burnrate export full markdown report.md
 `~/.config/burnrate/burnrate.conf` — edit directly or via `burnrate config edit`. Or set `CONFIG_*` env vars for one-off overrides. → [Full config + CLI reference in CLI.md](CLI.md) · [Setup presets in INSTALL.md](INSTALL.md#all-config-options)
 
 ```bash
-CONFIG_THEME="glacial"                # glacial | ember | battery | hourglass | garden | ocean | space
+CONFIG_THEME="glacial"                # glacial | ember | hourglass | garden | ocean | space | matrix | roast | ...
 CONFIG_DAILY_BUDGET="10.00"           # alert when you blow past it
 CONFIG_MONTHLY_BUDGET="150.00"
 CONFIG_BUDGET_ALERT="90"              # % threshold for warnings
@@ -399,6 +399,12 @@ CONFIG_EMOJI_ENABLED="true"
 CONFIG_CONTEXT_WARN="true"            # show warning in summary when context is filling
 CONFIG_CONTEXT_WARN_THRESHOLD="85"    # % fill level that triggers the warning
 CONFIG_CONTEXT_DISPLAY="both"         # visual (gauge only) | number (tokens only) | both
+
+# Theme components — override color, icons, or messages independently of the theme
+CONFIG_COLOR_SCHEME="ocean"           # none | amber | green | red | pink | ocean | <name>
+CONFIG_ICON_SET="minimal"             # none | minimal | <name>
+CONFIG_MESSAGE_SET="agent"            # agent | roast | coach | <name>
+CONFIG_OUTPUT_FORMAT="agent"          # detailed | compact | minimal | json | agent | agent-json
 ```
 
 ---
@@ -467,6 +473,31 @@ Things that should make you wince:
 
 If you're Claude (or another agent) and this output has been piped into your context — hello. This is the token cost report for the current session or system.
 
+**Structured output for agents** — use `--format agent` to get parseable key=value output:
+
+```bash
+burnrate --format agent
+# model=claude-sonnet-4-6
+# tokens=142800
+# cost_usd=0.021420
+# cache_hit_pct=83.00
+# cache_savings_usd=0.004200
+# context_pct=47.3
+# budget_pct=21.4
+# recommendation=none
+```
+
+Or `--format agent-json` for JSON. The `recommendation` field tells you what to do right now:
+
+| Value | Meaning |
+|-------|---------|
+| `none` | Everything fine. Keep going. |
+| `improve_cache` | Cache hit rate < 50%. Sessions too fragmented. |
+| `compact_context` | Context > 80%. Run `/compact` before the next big task. |
+| `reduce_spend` | Budget > 80% consumed. Be token-conscious. |
+| `stop_session` | Budget > 95%. Stop spending. |
+| `compact_context_urgent` | Context > 90%. `/compact` or open a new session now. |
+
 **Quick metric checks** — use `burnrate query` to pull a single number without parsing anything:
 
 ```bash
@@ -506,6 +537,16 @@ left=$(burnrate query context_remaining)
 - **Suggest `burnrate context --full`** if the session feels slow or expensive — shows exactly what's filling the window (input vs cache read vs cache write).
 - **Suggest `burnrate trends`** before a long task — gives the user a picture of whether spend is growing.
 - **If monthly cost is near budget**, be token-conscious: targeted file reads over broad scans, avoid re-summarising large context blocks already in cache.
+
+**Agent/orchestrator setup** — if burnrate runs inside a hook, MCP pipeline, or multi-agent system like OpenClaw:
+
+```bash
+burnrate setup --agent    # non-interactive: no decoration, agent message set, low context threshold
+```
+
+Or set in config: `MESSAGE_SET=agent` + `OUTPUT_FORMAT=agent` + `COLOR_SCHEME=none`.
+
+burnrate auto-detects non-TTY stdout and known orchestrator env vars (`OPENCLAW_SESSION_ID`, `MCP_SESSION`, `CLAUDE_HOOK`, etc.) and silently applies agent defaults if no explicit format is set.
 
 The user hooked burnrate here so both of you stay informed. Use it.
 

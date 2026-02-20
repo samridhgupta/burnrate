@@ -32,6 +32,11 @@ SETUP_HOOK="ask"          # yes | no | ask
 SETUP_CONTEXT_WARN="true"
 SETUP_CONTEXT_THRESHOLD="85"
 SETUP_CONTEXT_DISPLAY="both"
+# Theme component overrides (set by agent preset or individual flags)
+SETUP_MESSAGE_SET=""
+SETUP_COLOR_SCHEME=""
+SETUP_ICON_SET=""
+SETUP_OUTPUT_FORMAT=""
 
 # ============================================================================
 # Presets
@@ -106,6 +111,27 @@ _apply_preset() {
             SETUP_QUICK_MODE=true
             SETUP_NONINTERACTIVE=true
             ;;
+        agent|openclaw|multiagent|orchestrator)
+            # 🤖  Agent — structured output, no decoration, aggressive context warn
+            # Optimized for use inside Claude Code hooks, OpenClaw, or multi-agent pipelines.
+            SETUP_THEME="glacial"
+            SETUP_ANIMATIONS="false"
+            SETUP_ANIMATION_SPEED="instant"
+            SETUP_ANIMATION_STYLE="minimal"
+            SETUP_EMOJI="false"
+            SETUP_COLORS="never"
+            SETUP_HOOK="yes"
+            SETUP_CONTEXT_WARN="true"
+            SETUP_CONTEXT_THRESHOLD="70"
+            SETUP_CONTEXT_DISPLAY="number"
+            SETUP_QUICK_MODE=true
+            SETUP_NONINTERACTIVE=true
+            # Agent-specific config overrides (written to burnrate.conf)
+            SETUP_MESSAGE_SET="agent"
+            SETUP_COLOR_SCHEME="none"
+            SETUP_ICON_SET="none"
+            SETUP_OUTPUT_FORMAT="agent"
+            ;;
         *)
             echo "Unknown preset: $preset" >&2
             echo "Available presets:" >&2
@@ -113,6 +139,7 @@ _apply_preset() {
             echo "  glacier     (alias: medium)   — balanced defaults" >&2
             echo "  iceberg     (alias: minimal)  — no animations/emoji, bare stats" >&2
             echo "  permafrost  (alias: ci)       — non-interactive, CI/script safe" >&2
+            echo "  agent       (alias: openclaw) — structured output, multi-agent/hook use" >&2
             exit 1
             ;;
     esac
@@ -148,6 +175,7 @@ _parse_setup_args() {
             --glacier|--medium|--default)   _apply_preset glacier     ;;
             --iceberg|--minimal|--min)      _apply_preset iceberg     ;;
             --permafrost|--ci|--script)     _apply_preset permafrost  ;;
+            --agent|--openclaw|--multiagent|--orchestrator) _apply_preset agent ;;
             --preset=*)                     _apply_preset "${arg#--preset=}" ;;
 
             # ── Theme ────────────────────────────────────────────────────────
@@ -189,8 +217,9 @@ burnrate setup [OPTIONS]
   --glacier       ❄️   Balanced defaults, hook recommended (medium)
   --iceberg       🏔   Lean — no animations, no emoji (minimal)
   --permafrost    🪨   CI/script safe — no color, no emoji, no hook
+  --agent         🤖  Multi-agent/OpenClaw — structured output, low context threshold
 
-  --preset=NAME   Named: arctic | glacier | iceberg | permafrost
+  --preset=NAME   Named: arctic | glacier | iceberg | permafrost | agent
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   Individual flags (mix with preset or standalone)
@@ -779,7 +808,12 @@ setup_save() {
 THEME=$SETUP_THEME
 COLORS_ENABLED=$SETUP_COLORS
 EMOJI_ENABLED=$SETUP_EMOJI
-OUTPUT_FORMAT=detailed
+OUTPUT_FORMAT=${SETUP_OUTPUT_FORMAT:-detailed}
+
+# ── Theme components (3-system split: override color/icon/message independently)
+COLOR_SCHEME=${SETUP_COLOR_SCHEME:-}
+ICON_SET=${SETUP_ICON_SET:-}
+MESSAGE_SET=${SETUP_MESSAGE_SET:-}
 
 # ── Animations ───────────────────────────────────────────────────────────────
 ANIMATIONS_ENABLED=$SETUP_ANIMATIONS

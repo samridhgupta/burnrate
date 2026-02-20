@@ -288,9 +288,18 @@ check_config() {
     _info "Theme:         ${CONFIG_THEME}"
     _info "Colors:        ${CONFIG_COLORS_ENABLED}"
     _info "Animations:    ${CONFIG_ANIMATIONS_ENABLED}"
+    _info "Output format: ${CONFIG_OUTPUT_FORMAT:-detailed}"
     _info "Daily budget:  \$${CONFIG_DAILY_BUDGET}"
     _info "Monthly budget: \$${CONFIG_MONTHLY_BUDGET}"
     _info "Cost decimals: ${CONFIG_COST_DECIMALS}"
+
+    # Theme component overrides
+    local _cs="${CONFIG_COLOR_SCHEME:-<theme default>}"
+    local _is="${CONFIG_ICON_SET:-<theme default>}"
+    local _ms="${CONFIG_MESSAGE_SET:-<theme default>}"
+    _info "Color scheme:  ${_cs}"
+    _info "Icon set:      ${_is}"
+    _info "Message set:   ${_ms}"
     echo ""
 
     # Validate values
@@ -304,6 +313,39 @@ check_config() {
         _pass "Monthly budget set: \$${CONFIG_MONTHLY_BUDGET}"
     else
         _warn "No monthly budget set (set CONFIG_MONTHLY_BUDGET to track spending)"
+    fi
+
+    # Check component files exist if explicitly set
+    local _lib_dir
+    _lib_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    local _proj_dir
+    _proj_dir="$(dirname "$_lib_dir")"
+
+    if [[ -n "${CONFIG_COLOR_SCHEME:-}" && "$CONFIG_COLOR_SCHEME" != "none" ]]; then
+        if ls "$_proj_dir"/config/colors/"${CONFIG_COLOR_SCHEME}".colors &>/dev/null \
+        || ls "$HOME"/.config/burnrate/colors/"${CONFIG_COLOR_SCHEME}".colors &>/dev/null; then
+            _pass "Color scheme '${CONFIG_COLOR_SCHEME}' found"
+        else
+            _fail "Color scheme '${CONFIG_COLOR_SCHEME}' not found (check config/colors/)"
+        fi
+    fi
+
+    if [[ -n "${CONFIG_ICON_SET:-}" && "$CONFIG_ICON_SET" != "none" ]]; then
+        if ls "$_proj_dir"/config/icons/"${CONFIG_ICON_SET}".icons &>/dev/null \
+        || ls "$HOME"/.config/burnrate/icons/"${CONFIG_ICON_SET}".icons &>/dev/null; then
+            _pass "Icon set '${CONFIG_ICON_SET}' found"
+        else
+            _fail "Icon set '${CONFIG_ICON_SET}' not found (check config/icons/)"
+        fi
+    fi
+
+    if [[ -n "${CONFIG_MESSAGE_SET:-}" ]]; then
+        if ls "$_proj_dir"/config/messages/"${CONFIG_MESSAGE_SET}".msgs &>/dev/null \
+        || ls "$HOME"/.config/burnrate/messages/"${CONFIG_MESSAGE_SET}".msgs &>/dev/null; then
+            _pass "Message set '${CONFIG_MESSAGE_SET}' found"
+        else
+            _fail "Message set '${CONFIG_MESSAGE_SET}' not found (check config/messages/)"
+        fi
     fi
 }
 

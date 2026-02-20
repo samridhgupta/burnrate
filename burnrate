@@ -43,6 +43,7 @@ source "$LIB_DIR/historical.sh"
 source "$LIB_DIR/charts.sh"
 source "$LIB_DIR/export.sh"
 source "$LIB_DIR/session.sh"
+source "$LIB_DIR/agent.sh"
 
 # ============================================================================
 # Help & Usage
@@ -85,22 +86,28 @@ EXPORT:
     Example: burnrate export summary markdown report.md
 
 OPTIONS:
-    --theme <name>   Use specific theme
-    --format <fmt>   Output format (detailed|compact|minimal|json)
-    --no-color       Disable colors
-    --no-emoji       Disable emoji
-    --no-anim        Disable animations
-    --debug          Enable debug logging
-    --quiet          Minimal output
+    --theme <name>      Use specific theme
+    --colors <scheme>   Override color scheme (none|amber|green|red|pink|ocean|<name>)
+    --icons <set>       Override icon set (none|minimal|<name>)
+    --messages <set>    Override message set (agent|roast|coach|<name>)
+    --format <fmt>      Output format (detailed|compact|minimal|json|agent|agent-json)
+    --no-color          Disable colors (same as --colors none)
+    --no-emoji          Disable emoji
+    --no-anim           Disable animations
+    --debug             Enable debug logging
+    --quiet             Minimal output
 
 EXAMPLES:
-    burnrate                    # Today's summary
-    burnrate show               # Detailed report
-    burnrate budget             # Budget status
-    burnrate themes             # List themes
-    burnrate preview ember      # Preview ember theme
-    burnrate --theme ember      # Use ember theme
-    burnrate --format json      # JSON output
+    burnrate                           # Today's summary
+    burnrate show                      # Detailed report
+    burnrate budget                    # Budget status
+    burnrate themes                    # List themes
+    burnrate preview ember             # Preview ember theme
+    burnrate --theme ember             # Use ember theme
+    burnrate --format json             # JSON output
+    burnrate --format agent            # Agent-readable key=value output
+    burnrate --messages agent          # Use agent message set (terse, factual)
+    burnrate --colors none --icons minimal   # Strip colors, ASCII icons only
 
 CONFIGURATION:
     Config file: ~/.config/burnrate/burnrate.conf
@@ -131,6 +138,11 @@ show_version() {
 
 # Show today's summary (default command)
 cmd_summary() {
+    # Agent format: emit structured output and exit
+    case "${CONFIG_OUTPUT_FORMAT:-}" in
+        agent|agent-json) cmd_agent_summary; return $? ;;
+    esac
+
     show_banner
 
     # Disclaimer: only in non-TTY (piped/scripted) — banner covers it in terminals
@@ -174,6 +186,11 @@ cmd_summary() {
 
 # Show detailed report
 cmd_show() {
+    # Agent format: structured summary covers the same data
+    case "${CONFIG_OUTPUT_FORMAT:-}" in
+        agent|agent-json) cmd_agent_summary; return $? ;;
+    esac
+
     show_banner
 
     # Disclaimer only in non-TTY — banner covers it in terminals
@@ -198,6 +215,11 @@ cmd_show() {
 
 # Check budget status
 cmd_budget() {
+    # Agent format: structured summary includes budget_pct
+    case "${CONFIG_OUTPUT_FORMAT:-}" in
+        agent|agent-json) cmd_agent_summary; return $? ;;
+    esac
+
     if [[ "$CONFIG_SHOW_DISCLAIMER" == "true" ]] && [[ ! -t 1 ]]; then
         echo "⚠️  ZERO TOKENS USED - Pure script, reads local files only"
         echo ""
@@ -514,6 +536,11 @@ _ctx_rec() {
 
 # Show context window usage gauge and recommendation
 cmd_context() {
+    # Agent format: structured summary includes context_pct + recommendation
+    case "${CONFIG_OUTPUT_FORMAT:-}" in
+        agent|agent-json) cmd_agent_summary; return $? ;;
+    esac
+
     local full_mode=false
     [[ "${1:-}" == "--full" ]] && full_mode=true
 
@@ -724,12 +751,25 @@ parse_args() {
                 CONFIG_THEME="$2"
                 shift 2
                 ;;
+            --colors|--colour-scheme|--color-scheme)
+                CONFIG_COLOR_SCHEME="$2"
+                shift 2
+                ;;
+            --icons|--icon-set)
+                CONFIG_ICON_SET="$2"
+                shift 2
+                ;;
+            --messages|--message-set)
+                CONFIG_MESSAGE_SET="$2"
+                shift 2
+                ;;
             --format)
                 CONFIG_OUTPUT_FORMAT="$2"
                 shift 2
                 ;;
             --no-color|--no-colour)
                 CONFIG_COLORS_ENABLED=false
+                CONFIG_COLOR_SCHEME="none"
                 shift
                 ;;
             --no-emoji)
@@ -816,10 +856,13 @@ main() {
     # Load configuration
     load_config
 
+    # Detect agent/orchestrator context (may override format/messages/colors)
+    detect_agent_context
+
     # Validate configuration
     validate_config
 
-    # Load theme
+    # Load theme (with 3-system overlay: theme → messages → icons → colors)
     load_theme "$CONFIG_THEME"
 
     # Parse arguments and run command

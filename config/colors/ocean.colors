@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# Color scheme: ocean — deep blue palette
+
+THEME_PRIMARY='\033[1;34m'      # Bright blue (open ocean)
+THEME_SUCCESS='\033[0;36m'      # Cyan (clear water)
+THEME_WARNING='\033[0;33m'      # Yellow (storm warning)
+THEME_ERROR='\033[0;31m'        # Red (danger at sea)
+THEME_INFO='\033[0;34m'         # Blue (deep water)
+THEME_DIM='\033[2;34m'          # Dim blue (the deep)

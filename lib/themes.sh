@@ -21,6 +21,46 @@ get_theme_paths() {
     printf '%s\n' "${theme_dirs[@]}"
 }
 
+# Component directories searched for color/icon/message component files
+get_component_paths() {
+    local component_type="$1"   # colors | icons | messages
+    local paths=(
+        "${XDG_CONFIG_HOME:-$HOME/.config}/burnrate/${component_type}"  # User components
+        "$LIB_DIR/../config/${component_type}"                           # Bundled components
+    )
+    printf '%s\n' "${paths[@]}"
+}
+
+# Find a component file by name (colors/icons/messages)
+# Searches: component dirs, then theme dirs (themes can double as components)
+find_component() {
+    local component_type="$1"   # colors | icons | messages
+    local component_name="$2"   # e.g. "amber", "none", "agent"
+
+    # Try dedicated component directories first
+    local cdir
+    while IFS= read -r cdir; do
+        [[ ! -d "$cdir" ]] && continue
+        local f
+        # Match: name.colors / name.icons / name.msgs / name.theme
+        for f in "$cdir/${component_name}.${component_type%s}" \
+                  "$cdir/${component_name}.msgs" \
+                  "$cdir/${component_name}.${component_type}" \
+                  "$cdir/${component_name}.theme"; do
+            [[ -f "$f" ]] && echo "$f" && return 0
+        done
+    done < <(get_component_paths "$component_type")
+
+    # Fallback: search theme dirs (a theme file can act as any component)
+    local f
+    if f=$(find_theme "$component_name" 2>/dev/null); then
+        echo "$f"
+        return 0
+    fi
+
+    return 1
+}
+
 # Find theme file by name (searches top level and one level of subdirectories)
 find_theme() {
     local theme_name="$1"
@@ -54,23 +94,67 @@ find_theme() {
 # Theme Loading
 # ============================================================================
 
-# Load theme file
+# Load theme file — then apply optional component overlays in priority order:
+#   base theme → message set → icon set → color scheme
+#
+# Each overlay only sets the vars it defines; others from the base theme persist.
+# A message set may declare THEME_DEFAULT_ICON_SET / THEME_DEFAULT_COLOR_SCHEME
+# as suggestions — used only when the user hasn't explicitly set those components.
 load_theme() {
     local theme_name="${1:-$CONFIG_THEME}"
     local theme_file
 
     log_debug "Loading theme: $theme_name"
 
-    # Find theme file
+    # ── Step 1: Base theme ────────────────────────────────────────────────────
     if ! theme_file=$(find_theme "$theme_name"); then
         log_error "Failed to load theme: $theme_name"
         return 1
     fi
-
-    # Source theme file
     source "$theme_file"
+    log_debug "Base theme loaded: $THEME_DISPLAY_NAME"
 
-    log_debug "Theme loaded: $THEME_DISPLAY_NAME ($theme_file)"
+    # ── Step 2: Message set overlay ───────────────────────────────────────────
+    local msg_set="${CONFIG_MESSAGE_SET:-}"
+    if [[ -n "$msg_set" ]]; then
+        local msg_file
+        if msg_file=$(find_component "messages" "$msg_set" 2>/dev/null); then
+            source "$msg_file"
+            log_debug "Message set applied: $msg_set ($msg_file)"
+            # Capture any suggestions the message set exposes
+            # (THEME_DEFAULT_ICON_SET / THEME_DEFAULT_COLOR_SCHEME set by the file)
+        else
+            log_debug "Message set not found: $msg_set — using base theme messages"
+        fi
+    fi
+
+    # ── Step 3: Icon set overlay ──────────────────────────────────────────────
+    # Resolve: explicit CONFIG_ICON_SET > message set's suggestion > nothing
+    local icon_set="${CONFIG_ICON_SET:-${THEME_DEFAULT_ICON_SET:-}}"
+    if [[ -n "$icon_set" ]]; then
+        local icon_file
+        if icon_file=$(find_component "icons" "$icon_set" 2>/dev/null); then
+            source "$icon_file"
+            log_debug "Icon set applied: $icon_set ($icon_file)"
+        else
+            log_debug "Icon set not found: $icon_set — using base theme icons"
+        fi
+    fi
+
+    # ── Step 4: Color scheme overlay ──────────────────────────────────────────
+    # Resolve: explicit CONFIG_COLOR_SCHEME > message set's suggestion > nothing
+    local color_scheme="${CONFIG_COLOR_SCHEME:-${THEME_DEFAULT_COLOR_SCHEME:-}}"
+    if [[ -n "$color_scheme" ]]; then
+        local color_file
+        if color_file=$(find_component "colors" "$color_scheme" 2>/dev/null); then
+            source "$color_file"
+            log_debug "Color scheme applied: $color_scheme ($color_file)"
+        else
+            log_debug "Color scheme not found: $color_scheme — using base theme colors"
+        fi
+    fi
+
+    log_debug "Theme resolution complete: $THEME_DISPLAY_NAME + msg=${msg_set:-base} + icons=${icon_set:-base} + colors=${color_scheme:-base}"
     return 0
 }
 

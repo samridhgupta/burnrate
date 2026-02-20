@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# Color scheme: green — terminal green, suits matrix/techy contexts
+
+THEME_PRIMARY='\033[1;32m'      # Bright green (active terminal)
+THEME_SUCCESS='\033[0;32m'      # Green (nominal)
+THEME_WARNING='\033[0;33m'      # Yellow (elevated)
+THEME_ERROR='\033[0;31m'        # Red (fault)
+THEME_INFO='\033[0;36m'         # Cyan (info)
+THEME_DIM='\033[2;32m'          # Dim green (idle)

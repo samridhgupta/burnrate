@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# Color scheme: none — disables all ANSI color codes
+# Use: COLOR_SCHEME=none  or  burnrate --colors none
+
+THEME_PRIMARY=''
+THEME_SUCCESS=''
+THEME_WARNING=''
+THEME_ERROR=''
+THEME_INFO=''
+THEME_DIM=''

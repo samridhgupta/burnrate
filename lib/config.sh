@@ -79,6 +79,12 @@ set_config_defaults() {
     CONFIG_CONTEXT_WARN_THRESHOLD="${CONFIG_CONTEXT_WARN_THRESHOLD:-85}"
     CONFIG_CONTEXT_DISPLAY="${CONFIG_CONTEXT_DISPLAY:-both}"  # visual | number | both
 
+    # Theme component overrides (3-system split)
+    # Each is optional — empty string means "use the base theme's value"
+    CONFIG_COLOR_SCHEME="${CONFIG_COLOR_SCHEME:-}"    # none | amber | green | red | pink | <name>
+    CONFIG_ICON_SET="${CONFIG_ICON_SET:-}"             # none | minimal | <name>
+    CONFIG_MESSAGE_SET="${CONFIG_MESSAGE_SET:-}"       # agent | roast | coach | <name>
+
     log_debug "Configuration defaults set"
 }
 
@@ -164,9 +170,10 @@ validate_config() {
 
     # Validate enums
     case "$CONFIG_OUTPUT_FORMAT" in
-        compact|detailed|minimal|json) ;;
+        compact|detailed|minimal|json|agent|agent-json) ;;
         *) die_config "Invalid output format: $CONFIG_OUTPUT_FORMAT" ;;
     esac
+
 
     case "$CONFIG_ANIMATION_SPEED" in
         slow|normal|fast|instant) ;;
@@ -195,8 +202,14 @@ generate_config_example() {
 # DISPLAY
 # ============================================================================
 
-# Theme: glacial, ember, battery, hourglass, garden, ocean, space
+# Theme: glacial, ember, hourglass, garden, ocean, space, matrix, skynet, roast, kawaii, zen, coach, forge
 THEME=glacial
+
+# Theme component overrides — each independently overrides one axis of the theme
+# Leave empty to use the base theme's value
+COLOR_SCHEME=         # none | amber | green | red | pink (or custom name)
+ICON_SET=             # none | minimal (or custom name)
+MESSAGE_SET=          # agent | roast | coach (or any theme name for its messages)
 
 # Enable colored output (true/false/auto)
 COLORS_ENABLED=auto
@@ -204,7 +217,7 @@ COLORS_ENABLED=auto
 # Show emoji (true/false)
 EMOJI_ENABLED=true
 
-# Output format: detailed, compact, minimal, json
+# Output format: detailed, compact, minimal, json, agent, agent-json
 OUTPUT_FORMAT=detailed
 
 # ============================================================================
@@ -311,10 +324,15 @@ show_config() {
     echo ""
 
     echo -e "  ${b}Display${r}"
-    printf "  ${d}%-12s${r}  %s\n" "Theme"   "$CONFIG_THEME"
-    printf "  ${d}%-12s${r}  %s\n" "Colors"  "$CONFIG_COLORS_ENABLED"
-    printf "  ${d}%-12s${r}  %s\n" "Emoji"   "$CONFIG_EMOJI_ENABLED"
-    printf "  ${d}%-12s${r}  %s\n" "Format"  "$CONFIG_OUTPUT_FORMAT"
+    printf "  ${d}%-14s${r}  %s\n" "Theme"        "$CONFIG_THEME"
+    printf "  ${d}%-14s${r}  %s\n" "Colors"       "$CONFIG_COLORS_ENABLED"
+    printf "  ${d}%-14s${r}  %s\n" "Emoji"        "$CONFIG_EMOJI_ENABLED"
+    printf "  ${d}%-14s${r}  %s\n" "Format"       "$CONFIG_OUTPUT_FORMAT"
+    echo ""
+    echo -e "  ${b}Theme Components${r}"
+    printf "  ${d}%-14s${r}  %s\n" "Color scheme" "${CONFIG_COLOR_SCHEME:-(from theme)}"
+    printf "  ${d}%-14s${r}  %s\n" "Icon set"     "${CONFIG_ICON_SET:-(from theme)}"
+    printf "  ${d}%-14s${r}  %s\n" "Message set"  "${CONFIG_MESSAGE_SET:-(from theme)}"
     echo ""
 
     echo -e "  ${b}Animation${r}"

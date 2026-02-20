@@ -53,8 +53,11 @@ These flags work with any command:
 | Flag | Values | Default | Description |
 |------|--------|---------|-------------|
 | `--theme <name>` | any theme name | config value | Override theme for this run only |
-| `--format <fmt>` | `detailed` `compact` `minimal` `json` | `detailed` | Override output format |
-| `--no-color` | — | — | Disable colors for this run |
+| `--format <fmt>` | `detailed` `compact` `minimal` `json` `agent` `agent-json` | `detailed` | Override output format |
+| `--colors <scheme>` | `none` `amber` `green` `red` `pink` `ocean` `<name>` | theme default | Override color scheme independently of theme |
+| `--icons <set>` | `none` `minimal` `<name>` | theme default | Override icon set independently of theme |
+| `--messages <set>` | `agent` `roast` `coach` `<name>` | theme default | Override message set independently of theme |
+| `--no-color` | — | — | Disable colors (same as `--colors none`) |
 | `--no-emoji` | — | — | Disable emoji for this run |
 | `--no-anim` | — | — | Disable animations for this run |
 | `--debug` | — | — | Enable debug logging |
@@ -62,11 +65,16 @@ These flags work with any command:
 
 **One-off theme or format examples:**
 ```bash
-burnrate --theme ember                 # ember theme, default command
-burnrate show --theme ocean            # ocean theme, detailed report
-burnrate --format json                 # json output, default command
-burnrate budget --format compact       # compact budget view
-burnrate --no-color --no-emoji today   # plain text, no decoration
+burnrate --theme ember                         # ember theme, default command
+burnrate show --theme ocean                    # ocean theme, detailed report
+burnrate --format json                         # json output, default command
+burnrate budget --format compact               # compact budget view
+burnrate --no-color --no-emoji today           # plain text, no decoration
+burnrate --format agent                        # structured key=value for agent consumption
+burnrate --format agent-json                   # structured JSON for pipelines
+burnrate --messages agent                      # agent messages on any theme
+burnrate --colors ocean --icons minimal        # ocean colors + ASCII icons, keep theme messages
+burnrate --theme roast --colors none           # roast voice, strip all color
 ```
 
 ---
@@ -84,7 +92,35 @@ Format: `KEY=value` — no spaces around `=`, no `CONFIG_` prefix in the file.
 | `THEME` | theme name | `glacial` | Active theme |
 | `COLORS_ENABLED` | `true` `false` `auto` | `auto` | ANSI colors (`auto` = detect terminal) |
 | `EMOJI_ENABLED` | `true` `false` | `true` | Unicode emoji in output |
-| `OUTPUT_FORMAT` | `detailed` `compact` `minimal` `json` | `detailed` | Default output format |
+| `OUTPUT_FORMAT` | `detailed` `compact` `minimal` `json` `agent` `agent-json` | `detailed` | Default output format |
+
+### Theme components
+
+Override color, icons, or messages independently — without changing the theme.
+
+| Key | Values | Default | Description |
+|-----|--------|---------|-------------|
+| `COLOR_SCHEME` | `none` `amber` `green` `red` `pink` `ocean` `<name>` | _(theme default)_ | Color palette override |
+| `ICON_SET` | `none` `minimal` `<name>` | _(theme default)_ | Icon set override |
+| `MESSAGE_SET` | `agent` `roast` `coach` `<name>` | _(theme default)_ | Message set override |
+
+**How it works:** each component is loaded on top of the base theme. Later layers only overwrite vars they define. A message set can also suggest default icon/color schemes via `THEME_DEFAULT_ICON_SET` and `THEME_DEFAULT_COLOR_SCHEME` — these apply when you haven't explicitly set the component. The `agent` message set does this (strips icons and colors by default).
+
+**Examples:**
+```bash
+# Config file
+COLOR_SCHEME=ocean          # ocean colors on any theme
+ICON_SET=minimal            # ASCII-only icons
+MESSAGE_SET=agent           # terse factual messages
+OUTPUT_FORMAT=agent         # key=value output
+
+# Agent/orchestrator config (written by: burnrate setup --agent)
+MESSAGE_SET=agent
+COLOR_SCHEME=none
+ICON_SET=none
+OUTPUT_FORMAT=agent
+CONTEXT_WARN_THRESHOLD=70
+```
 
 ### Animations
 
@@ -253,12 +289,13 @@ burnrate export history json history.json 2024-01-01 2024-01-31
 | `--glacier` | `--medium` | Balanced defaults, hook yes, threshold 85% |
 | `--iceberg` | `--minimal` | No animations/emoji, no hook, threshold 90%, number display |
 | `--permafrost` | `--ci` | No color/emoji/anim/hook, threshold 100%, fully non-interactive |
+| `--agent` | `--openclaw` | Structured output, agent messages, no decoration, hook yes, threshold 70% |
 
 ### Individual flags
 
 | Flag | Description |
 |------|-------------|
-| `--preset=NAME` | Apply a named preset (`arctic`, `glacier`, `iceberg`, `permafrost`) |
+| `--preset=NAME` | Apply a named preset (`arctic`, `glacier`, `iceberg`, `permafrost`, `agent`) |
 | `--theme=NAME` | Set default theme |
 | `--hook` | Install Claude Code Stop hook |
 | `--no-hook` | Skip hook installation |
@@ -284,6 +321,7 @@ burnrate setup                           # interactive wizard
 burnrate setup --arctic                  # max features, no prompts
 burnrate setup --glacier --theme ocean   # medium preset, ocean theme
 burnrate setup --ci                      # CI/CD install, no interaction
+burnrate setup --agent                   # agent/orchestrator preset — structured output
 burnrate setup --hook-only               # just add the hook
 burnrate setup --theme=ember --no-hook   # set theme, skip hook
 ```
@@ -349,23 +387,56 @@ burnrate config show      # prints current active values
 
 ## For agents
 
-If you're running burnrate in an automated context:
+If you're running burnrate inside a Claude Code hook, MCP pipeline, OpenClaw, or any multi-agent system:
+
+**Structured output — one call, all metrics:**
+```bash
+burnrate --format agent
+# model=claude-sonnet-4-6
+# tokens=142800
+# cost_usd=0.021420
+# cache_hit_pct=83.00
+# cache_savings_usd=0.004200
+# context_pct=47.3
+# budget_pct=21.4
+# recommendation=none
+```
 
 ```bash
-# Get all key metrics in one pass
-cat <<'EOF'
+burnrate --format agent-json   # same fields as JSON
+```
+
+**`recommendation` values:**
+
+| Value | Action |
+|-------|--------|
+| `none` | Continue normally |
+| `improve_cache` | Cache < 50% — sessions too fragmented |
+| `compact_context` | Context > 80% — run `/compact` before next big task |
+| `reduce_spend` | Budget > 80% — be token-conscious |
+| `stop_session` | Budget > 95% — stop spending |
+| `compact_context_urgent` | Context > 90% — `/compact` or new session now |
+
+**Single-value queries (no parsing needed):**
+```bash
 cost=$(burnrate query cost)
 cache_rate=$(burnrate query cache_rate)
 context_pct=$(burnrate query context_pct)
+context_remaining=$(burnrate query context_remaining)
 monthly=$(burnrate query monthly_cost)
-EOF
+```
 
-# Machine-readable export
-burnrate export full json | jq '.summary.total_cost'
+**Setup for agent context:**
+```bash
+burnrate setup --agent    # non-interactive: agent messages, no decoration, 70% context warn
+```
 
-# Non-interactive CI run
-burnrate setup --ci --no-hook
-burnrate export summary json summary.json
+burnrate auto-detects non-TTY stdout and known orchestrator env vars (`OPENCLAW_SESSION_ID`, `MCP_SESSION`, `CLAUDE_HOOK`, `AGENT_ORCHESTRATOR`, etc.) and applies agent defaults silently.
+
+**Machine-readable export:**
+```bash
+burnrate export summary json         # export to stdout
+burnrate export full json out.json   # export to file
 ```
 
 Zero tokens consumed. Reads local files only. No network calls.

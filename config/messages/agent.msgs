@@ -1,0 +1,88 @@
+#!/usr/bin/env bash
+# Message set: agent — terse, functional messages for AI/agent consumption
+# No metaphor. No wit. Actionable one-liners an AI can read and act on.
+# Use: MESSAGE_SET=agent  or  burnrate --messages agent
+
+# Suggest stripping icons and colors when this message set is used alone
+THEME_DEFAULT_ICON_SET="none"
+THEME_DEFAULT_COLOR_SCHEME="none"
+
+# ============================================================================
+# MESSAGES
+# ============================================================================
+
+THEME_MSG_EXCELLENT="Cache: optimal. No action needed."
+THEME_MSG_GOOD="Cache: healthy. Operating normally."
+THEME_MSG_WARNING="Cache rate declining. Consider more focused sessions or /compact."
+THEME_MSG_CRITICAL="Cache rate low. High cost per token. Review session structure."
+THEME_MSG_DANGER="Cache failed. Every token processed at full price. Restructure needed."
+
+THEME_CACHE_MSG_EXCELLENT="Cache hit rate high. Prior context reused effectively. Cost low."
+THEME_CACHE_MSG_GOOD="Cache functioning. Context reuse saving cost."
+THEME_CACHE_MSG_POOR="Cache miss rate high. Each prompt processed fresh. Cost elevated."
+
+THEME_BUDGET_MSG_OK="Budget within limits."
+THEME_BUDGET_MSG_WARNING="Budget consumption rate elevated. Monitor."
+THEME_BUDGET_MSG_CRITICAL="Budget nearly exhausted. Reduce token usage."
+THEME_BUDGET_MSG_EXCEEDED="Budget depleted. No further spend authorized."
+
+THEME_BUDGET_UNLIMITED_DAILY="No daily budget set. (burnrate config)"
+THEME_BUDGET_UNLIMITED_MONTHLY="No monthly budget set."
+THEME_BUDGET_UNLIMITED_BOTH="No budget limits configured. (burnrate config)"
+
+THEME_FOOTER="burnrate: zero-token cost tracking for Claude Code."
+
+# Context window messages
+THEME_CTX_OK="Context available. Sufficient space for continued operation."
+THEME_CTX_HALF="Context at 50%. Run /compact before next long task."
+THEME_CTX_WARNING="Context above 80%. /compact recommended before proceeding."
+THEME_CTX_CRITICAL="Context near limit. /compact required or open new session."
+
+# ============================================================================
+# LABELS
+# ============================================================================
+
+THEME_LABEL_COST="Cost"
+THEME_LABEL_SAVINGS="Cache Savings"
+THEME_LABEL_TOKENS="Tokens"
+THEME_LABEL_CACHE_READ="Cached"
+THEME_LABEL_STATUS="Status"
+
+# ============================================================================
+# TIPS
+# ============================================================================
+
+THEME_TIP_1="Cache hit rate >80% reduces token cost by ~60% versus uncached."
+THEME_TIP_2="Cache miss = full token price. Cache hit = ~10% of input price."
+THEME_TIP_3="Shorter focused sessions maintain higher cache efficiency."
+THEME_TIP_4="Output tokens cost 5x input. Request concise responses."
+THEME_TIP_5="/compact compresses context. Run when context exceeds 70%."
+THEME_TIP_6="Set DAILY_BUDGET and MONTHLY_BUDGET to enforce spending limits."
+THEME_TIP_7="burnrate query <metric> returns single values for scripting."
+
+# ============================================================================
+# FUN MESSAGES (minimal — agents don't need fun, they need data)
+# ============================================================================
+
+THEME_BURN_LOW="Low token spend."
+THEME_BURN_MEDIUM="Moderate token spend."
+THEME_BURN_HIGH="Elevated token spend."
+THEME_BURN_MASSIVE="Very high token spend. Review session."
+
+THEME_CACHE_HIT_1="Cache served. No additional cost."
+THEME_CACHE_HIT_2="Cache hit."
+THEME_CACHE_HIT_3="Context reused."
+THEME_CACHE_HIT_4="Cached."
+
+THEME_CACHE_MISS_1="Cache miss. Full cost applied."
+THEME_CACHE_MISS_2="Not cached."
+THEME_CACHE_MISS_3="Cache miss."
+
+THEME_SUMMARY_EFFICIENT="Session efficient. Cache rate high. Cost low."
+THEME_SUMMARY_AVERAGE="Session normal. No significant issues."
+THEME_SUMMARY_WASTEFUL="Session suboptimal. Cache rate low. Cost elevated."
+THEME_SUMMARY_DISASTER="Session very expensive. Cache failed. Review required."
+
+THEME_STARTUP_1="Loading..."
+THEME_STARTUP_2="Reading session data."
+THEME_STARTUP_3="Analysis ready."
