@@ -433,7 +433,8 @@ _cmd_themes_clone() {
     echo "Next steps:"
     echo "  1. Edit the file: ${EDITOR:-nano} \"$dst_file\""
     echo "  2. Preview it:    burnrate preview ${dst}"
-    echo "  3. Set it:        burnrate setup --theme=${dst}"
+    echo "  3. Set it:        burnrate --theme ${dst}
+     Or save it:    burnrate setup --theme=${dst}"
     echo ""
 
     # Offer to open in editor
@@ -784,21 +785,41 @@ parse_args() {
                 CONFIG_THEME="$2"
                 shift 2
                 ;;
+            --theme=*)
+                CONFIG_THEME="${1#--theme=}"
+                shift
+                ;;
             --colors|--colour-scheme|--color-scheme)
                 CONFIG_COLOR_SCHEME="$2"
                 shift 2
+                ;;
+            --colors=*|--colour-scheme=*|--color-scheme=*)
+                CONFIG_COLOR_SCHEME="${1#*=}"
+                shift
                 ;;
             --icons|--icon-set)
                 CONFIG_ICON_SET="$2"
                 shift 2
                 ;;
+            --icons=*|--icon-set=*)
+                CONFIG_ICON_SET="${1#*=}"
+                shift
+                ;;
             --messages|--message-set)
                 CONFIG_MESSAGE_SET="$2"
                 shift 2
                 ;;
+            --messages=*|--message-set=*)
+                CONFIG_MESSAGE_SET="${1#*=}"
+                shift
+                ;;
             --format)
                 CONFIG_OUTPUT_FORMAT="$2"
                 shift 2
+                ;;
+            --format=*)
+                CONFIG_OUTPUT_FORMAT="${1#--format=}"
+                shift
                 ;;
             --no-color|--no-colour)
                 CONFIG_COLORS_ENABLED=false
@@ -909,6 +930,11 @@ main() {
                 --format)   CONFIG_OUTPUT_FORMAT="$_a" ;;
             esac
             case "$_a" in
+                --theme=*)             CONFIG_THEME="${_a#--theme=}" ;;
+                --colors=*|--colour-scheme=*|--color-scheme=*) CONFIG_COLOR_SCHEME="${_a#*=}" ;;
+                --icons=*|--icon-set=*) CONFIG_ICON_SET="${_a#*=}" ;;
+                --messages=*|--message-set=*) CONFIG_MESSAGE_SET="${_a#*=}" ;;
+                --format=*)            CONFIG_OUTPUT_FORMAT="${_a#--format=}" ;;
                 --no-color|--no-colour) CONFIG_COLORS_ENABLED=false; CONFIG_COLOR_SCHEME="none" ;;
             esac
             _prev="$_a"
