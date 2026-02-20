@@ -1,0 +1,140 @@
+#!/usr/bin/env bash
+# Space Theme - Mission Fuel
+# "Finite fuel. Infinite void. Cache or drift."
+
+# ============================================================================
+# THEME METADATA
+# ============================================================================
+
+THEME_NAME="space"
+THEME_DISPLAY_NAME="Space"
+THEME_EMOJI="🚀"
+THEME_DESCRIPTION="Spacecraft on a mission — every token burns fuel, cache is solar power"
+THEME_AUTHOR="burnrate"
+THEME_VERSION="1.0.0"
+
+# ============================================================================
+# COLORS (Deep Space Palette)
+# ============================================================================
+
+THEME_PRIMARY='\033[1;35m'       # Bright magenta (nebula)
+THEME_SUCCESS='\033[0;36m'       # Cyan (solar panels active)
+THEME_WARNING='\033[0;33m'       # Yellow (caution signal)
+THEME_ERROR='\033[0;31m'         # Red (hull breach)
+THEME_INFO='\033[0;34m'          # Blue (deep space)
+THEME_DIM='\033[2;35m'           # Dim magenta (distant star)
+
+# ============================================================================
+# STATUS INDICATORS (Mission fuel levels)
+# ============================================================================
+
+THEME_STATUS_EXCELLENT="🛸"      # 90-100% - Mission optimal
+THEME_STATUS_GOOD="🚀"           # 75-89%  - Cruising altitude
+THEME_STATUS_WARNING="🛰️ "        # 50-74%  - Conserve fuel
+THEME_STATUS_CRITICAL="🌑"       # 25-49%  - Reserve tanks only
+THEME_STATUS_DANGER="☠️ "         # 0-24%   - Running on fumes in the void
+
+# Budget status
+THEME_BUDGET_SAFE="🛸"           # Safe — full mission payload
+THEME_BUDGET_WARNING="⚠️ "        # Warning — watch the fuel gauge
+THEME_BUDGET_CRITICAL="🆘"       # Critical — emergency beacon
+THEME_BUDGET_EXCEEDED="💀"       # Exceeded — lost in space
+
+# Cache efficiency
+THEME_CACHE_EXCELLENT="☀️ "       # Cache = solar panels at peak
+THEME_CACHE_GOOD="🛸"            # Flying on solar power
+THEME_CACHE_POOR="🌑"            # Dark side of the moon
+
+# ============================================================================
+# ICONS
+# ============================================================================
+
+THEME_ICON_LOADING="🚀"
+THEME_ICON_SUCCESS="🛸"
+THEME_ICON_ERROR="💀"
+THEME_ICON_WARNING="🆘"
+THEME_ICON_INFO="📡"
+THEME_ICON_COST="⛽"
+THEME_ICON_TOKENS="🌌"
+THEME_ICON_CACHE="☀️"
+THEME_ICON_BUDGET="🚀"
+
+# ============================================================================
+# MESSAGES
+# ============================================================================
+
+THEME_MSG_EXCELLENT="Mission optimal — solar panels fully deployed 🛸"
+THEME_MSG_GOOD="Cruising altitude — fuel consumption nominal 🚀"
+THEME_MSG_WARNING="Fuel conservation mode. The void is patient. 🛰️"
+THEME_MSG_CRITICAL="Reserve tanks engaged. Mission at risk. 🌑"
+THEME_MSG_DANGER="Running on fumes in the infinite void. This was preventable. ☠️"
+
+THEME_CACHE_MSG_EXCELLENT="Solar panels at peak — mission running on free energy ☀️"
+THEME_CACHE_MSG_GOOD="Harvesting the deep cache — fuel to spare 🛸"
+THEME_CACHE_MSG_POOR="Solar panels offline! Burning chemical fuel for every token 🌑"
+
+THEME_BUDGET_MSG_OK="Fuel reserves within mission parameters 🚀"
+THEME_BUDGET_MSG_WARNING="Fuel burn exceeding projected trajectory ⚠️"
+THEME_BUDGET_MSG_CRITICAL="Emergency fuel protocols engaged — budget nearly depleted 🆘"
+THEME_BUDGET_MSG_EXCEEDED="Mission aborted. Fuel is zero. The void is permanent. 💀"
+
+THEME_BUDGET_UNLIMITED_DAILY="🚀 Unlimited daily — infinite fuel? In this economy? (set limits: burnrate config)"
+THEME_BUDGET_UNLIMITED_MONTHLY="🌌 Unlimited monthly — you've claimed the whole galaxy as your budget!"
+THEME_BUDGET_UNLIMITED_BOTH="☠️  No limits set — drifting in the void with no fuel gauge. (burnrate config)"
+
+THEME_FOOTER="Finite fuel. Infinite void. Cache or drift. 🚀"
+
+# Context window messages
+THEME_CTX_OK="Mission computer has plenty of memory — context clear 🛸"
+THEME_CTX_HALF="Memory banks half full. Run /compact before the next deep-space maneuver. 🛰️"
+THEME_CTX_WARNING="Mission computer filling fast! /compact before systems overload. 🆘"
+THEME_CTX_CRITICAL="Memory overflow imminent! /compact or reboot with a new mission. 💀"
+
+# ============================================================================
+# LABELS
+# ============================================================================
+
+THEME_LABEL_COST="Fuel Burned"
+THEME_LABEL_SAVINGS="Solar Harvested"
+THEME_LABEL_TOKENS="Propellant Used"
+THEME_LABEL_CACHE_READ="SOLAR POWERED!"
+THEME_LABEL_STATUS="Mission Status"
+
+# ============================================================================
+# TIPS
+# ============================================================================
+
+THEME_TIP_1="💡 Cache = solar power. Infinite (nearly), free, weightless."
+THEME_TIP_2="💡 High cache rate = mission running on renewable energy"
+THEME_TIP_3="💡 Short targeted queries use less fuel per maneuver"
+THEME_TIP_4="💡 Output tokens cost 5x — request data packets, not monologues"
+THEME_TIP_5="💡 /compact = jettisoning non-essential cargo. The ship flies lighter."
+THEME_TIP_6="💡 In space, fuel is everything. Set a budget. Know your range."
+THEME_TIP_7="💡 The void doesn't care about your budget. But your wallet does. 🚀"
+
+# ============================================================================
+# FUN MESSAGES
+# ============================================================================
+
+THEME_BURN_LOW="Minor thruster correction 🛰️"
+THEME_BURN_MEDIUM="Standard orbital burn 🚀"
+THEME_BURN_HIGH="Full burn! Fuel consumption elevated 🌌"
+THEME_BURN_MASSIVE="MISSION ABORT — ALL FUEL EXPENDED ☠️"
+
+THEME_CACHE_HIT_1="Solar array deployed — free propulsion 🌟"
+THEME_CACHE_HIT_2="Cache hit! Zero fuel burned ☀️"
+THEME_CACHE_HIT_3="Gravity assist — no fuel required 🛸"
+THEME_CACHE_HIT_4="Running on pure cache energy 🌌"
+
+THEME_CACHE_MISS_1="Had to burn fuel for that one 🚀"
+THEME_CACHE_MISS_2="Solar panels failed — back to chemical burn 🌑"
+THEME_CACHE_MISS_3="Cache miss! That cost propellant we didn't have to spend ⛽"
+
+THEME_SUMMARY_EFFICIENT="Mission efficiency: stellar. Fuel to spare. 🛸"
+THEME_SUMMARY_AVERAGE="Nominal mission. Fuel in range. Nothing alarming. 🚀"
+THEME_SUMMARY_WASTEFUL="Excessive burn detected. Someone didn't plan the trajectory. 🛰️"
+THEME_SUMMARY_DISASTER="The ship is adrift. Mission control is not happy. ☠️"
+
+THEME_STARTUP_1="Mission computer online... 🚀"
+THEME_STARTUP_2="Calculating fuel consumption from last mission 🛸"
+THEME_STARTUP_3="Deep space cost analysis: T-minus accountability 🌌"

@@ -1,0 +1,140 @@
+#!/usr/bin/env bash
+# Hourglass Theme - Time as Currency
+# "Tokens are time. Cache freezes the sand. Waste neither."
+
+# ============================================================================
+# THEME METADATA
+# ============================================================================
+
+THEME_NAME="hourglass"
+THEME_DISPLAY_NAME="Hourglass"
+THEME_EMOJI="⏳"
+THEME_DESCRIPTION="Sand falling — every uncached token is a grain of time lost"
+THEME_AUTHOR="burnrate"
+THEME_VERSION="1.0.0"
+
+# ============================================================================
+# COLORS (Sand & Time Palette)
+# ============================================================================
+
+THEME_PRIMARY='\033[1;33m'       # Bright gold (sand)
+THEME_SUCCESS='\033[0;32m'       # Green (time well spent)
+THEME_WARNING='\033[0;33m'       # Yellow (sand flowing)
+THEME_ERROR='\033[0;31m'         # Red (time nearly gone)
+THEME_INFO='\033[0;36m'          # Cyan (clarity)
+THEME_DIM='\033[2;33m'           # Dim gold (distant past)
+
+# ============================================================================
+# STATUS INDICATORS (Sand levels)
+# ============================================================================
+
+THEME_STATUS_EXCELLENT="⏰"      # 90-100% - Clock fully wound
+THEME_STATUS_GOOD="⏳"           # 75-89%  - Upper chamber mostly full
+THEME_STATUS_WARNING="🕰️ "       # 50-74%  - Half empty (it's half empty)
+THEME_STATUS_CRITICAL="⌛"       # 25-49%  - Last quarter
+THEME_STATUS_DANGER="💨"         # 0-24%   - Final grains
+
+# Budget status
+THEME_BUDGET_SAFE="⏰"           # Safe — time on your side
+THEME_BUDGET_WARNING="⏳"        # Warning — sand flowing faster
+THEME_BUDGET_CRITICAL="⌛"       # Critical — last grains
+THEME_BUDGET_EXCEEDED="💨"       # Exceeded — time's up
+
+# Cache efficiency
+THEME_CACHE_EXCELLENT="🧊"       # Cache = frozen sand (time preserved)
+THEME_CACHE_GOOD="⏳"            # Slowing the flow
+THEME_CACHE_POOR="💨"            # Sand in free fall
+
+# ============================================================================
+# ICONS
+# ============================================================================
+
+THEME_ICON_LOADING="⏳"
+THEME_ICON_SUCCESS="⏰"
+THEME_ICON_ERROR="💨"
+THEME_ICON_WARNING="⌛"
+THEME_ICON_INFO="ℹ️"
+THEME_ICON_COST="⌛"
+THEME_ICON_TOKENS="🏖️"
+THEME_ICON_CACHE="🧊"
+THEME_ICON_BUDGET="⏰"
+
+# ============================================================================
+# MESSAGES
+# ============================================================================
+
+THEME_MSG_EXCELLENT="Time aplenty — the upper chamber is full ⏰"
+THEME_MSG_GOOD="Sands flowing steadily — time is on your side ⏳"
+THEME_MSG_WARNING="Half the glass is empty. It's half empty. 🕰️"
+THEME_MSG_CRITICAL="Last quarter — the sand is nearly gone ⌛"
+THEME_MSG_DANGER="Final grains. Time has run out. You did this. 💨"
+
+THEME_CACHE_MSG_EXCELLENT="Sand frozen in time — perfect cache rate 🧊"
+THEME_CACHE_MSG_GOOD="Time well preserved — cache holding strong ⏳"
+THEME_CACHE_MSG_POOR="Sand in free fall! Cache nothing, pay for everything 💨"
+
+THEME_BUDGET_MSG_OK="Time budget healthy — sand flowing at a sustainable pace ⏰"
+THEME_BUDGET_MSG_WARNING="Grains falling faster than the plan allows ⏳"
+THEME_BUDGET_MSG_CRITICAL="Last grains — budget nearly exhausted ⌛"
+THEME_BUDGET_MSG_EXCEEDED="Time's up. Budget is an empty hourglass. 💨"
+
+THEME_BUDGET_UNLIMITED_DAILY="💨 Unlimited daily — as if time were infinite! (set limits: burnrate config)"
+THEME_BUDGET_UNLIMITED_MONTHLY="⌛ Unlimited monthly — someone forgot that sand is finite!"
+THEME_BUDGET_UNLIMITED_BOTH="⏳ No limits set — living like time is free. It isn't. (burnrate config)"
+
+THEME_FOOTER="Tokens are time. Cache freezes the sand. Waste neither. ⏳"
+
+# Context window messages
+THEME_CTX_OK="Plenty of sand in the upper chamber — context has room ⏰"
+THEME_CTX_HALF="Context half-emptied. Consider /compact to flip the glass. ⏳"
+THEME_CTX_WARNING="Sand running low on context! Run /compact before the last grain. ⌛"
+THEME_CTX_CRITICAL="Final grains of context! /compact now or flip to a new session. 💨"
+
+# ============================================================================
+# LABELS
+# ============================================================================
+
+THEME_LABEL_COST="Time Spent"
+THEME_LABEL_SAVINGS="Time Preserved"
+THEME_LABEL_TOKENS="Grains Used"
+THEME_LABEL_CACHE_READ="TIME FROZEN!"
+THEME_LABEL_STATUS="Time Remaining"
+
+# ============================================================================
+# TIPS
+# ============================================================================
+
+THEME_TIP_1="💡 Cache hit = sand preserved. Hit rate above 80% means you're spending time wisely."
+THEME_TIP_2="💡 Every cache miss is a grain of sand that falls and doesn't come back"
+THEME_TIP_3="💡 Short sessions with clear goals waste less time and money"
+THEME_TIP_4="💡 Output tokens cost 5x input — don't ask for long answers"
+THEME_TIP_5="💡 /compact resets the context — like flipping the hourglass"
+THEME_TIP_6="💡 A budget is just a finite number of grains. Know yours."
+THEME_TIP_7="💡 Time flies when you're burning tokens. burnrate measures it. ⏳"
+
+# ============================================================================
+# FUN MESSAGES
+# ============================================================================
+
+THEME_BURN_LOW="Barely a handful of grains ⏳"
+THEME_BURN_MEDIUM="A steady stream today ⌛"
+THEME_BURN_HIGH="Sand pouring fast! 💨"
+THEME_BURN_MASSIVE="HOURGLASS SHATTERED — TIME IS MEANINGLESS 💥"
+
+THEME_CACHE_HIT_1="Grains frozen in time — not a token wasted 🧊"
+THEME_CACHE_HIT_2="Cache hit! Sand preserved. ⏰"
+THEME_CACHE_HIT_3="Time stands still when you cache well 🧊"
+THEME_CACHE_HIT_4="Sand suspended — excellent efficiency ⏳"
+
+THEME_CACHE_MISS_1="There goes another handful 💨"
+THEME_CACHE_MISS_2="Sand lost to the floor ⌛"
+THEME_CACHE_MISS_3="Cache miss. Time wasted. Philosophy awaits. 💨"
+
+THEME_SUMMARY_EFFICIENT="Time master — barely a grain wasted today ⏰"
+THEME_SUMMARY_AVERAGE="Reasonable. Not philosophical. Not ruinous. ⏳"
+THEME_SUMMARY_WASTEFUL="You burned through a lot of sand today. Was it worth it? ⌛"
+THEME_SUMMARY_DISASTER="The hourglass is empty. The bill is not. 💨"
+
+THEME_STARTUP_1="Time is loading... ⏳"
+THEME_STARTUP_2="Measuring the grains of yesterday ⌛"
+THEME_STARTUP_3="Hourglass monitoring system: every token counts ⏰"

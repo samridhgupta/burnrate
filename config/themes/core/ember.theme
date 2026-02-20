@@ -1,0 +1,140 @@
+#!/usr/bin/env bash
+# Ember Theme - Token Burning
+# "Every prompt fans the flame. Cache before it's all ash."
+
+# ============================================================================
+# THEME METADATA
+# ============================================================================
+
+THEME_NAME="ember"
+THEME_DISPLAY_NAME="Ember"
+THEME_EMOJI="🔥"
+THEME_DESCRIPTION="Burning fuel — every uncached token fans the flame"
+THEME_AUTHOR="burnrate"
+THEME_VERSION="1.0.0"
+
+# ============================================================================
+# COLORS (Fire Palette)
+# ============================================================================
+
+THEME_PRIMARY='\033[1;33m'       # Bright yellow (flame)
+THEME_SUCCESS='\033[0;32m'       # Green (contained fire)
+THEME_WARNING='\033[0;33m'       # Yellow (spreading)
+THEME_ERROR='\033[0;31m'         # Red (out of control)
+THEME_INFO='\033[0;91m'          # Bright red (alert)
+THEME_DIM='\033[2;33m'           # Dim yellow (dying embers)
+
+# ============================================================================
+# STATUS INDICATORS (Fire intensity levels)
+# ============================================================================
+
+THEME_STATUS_EXCELLENT="🧯"      # 90-100% - Extinguisher ready (controlled)
+THEME_STATUS_GOOD="🕯️ "          # 75-89%  - Candle flame (contained)
+THEME_STATUS_WARNING="🔥"        # 50-74%  - Open fire (watch it)
+THEME_STATUS_CRITICAL="🌋"       # 25-49%  - Volcanic (out of hand)
+THEME_STATUS_DANGER="☄️ "         # 0-24%   - Meteor strike (total burnout)
+
+# Budget status
+THEME_BUDGET_SAFE="🪵"           # Safe — logs to burn
+THEME_BUDGET_WARNING="🌡️ "       # Warning — temperature rising
+THEME_BUDGET_CRITICAL="🚒"       # Critical — call the fire department
+THEME_BUDGET_EXCEEDED="💥"       # Exceeded — total combustion
+
+# Cache efficiency
+THEME_CACHE_EXCELLENT="🧊"       # Cache is an ice block on the fire
+THEME_CACHE_GOOD="🕯️ "           # Small controlled flame
+THEME_CACHE_POOR="🔥"            # Wildfire mode
+
+# ============================================================================
+# ICONS
+# ============================================================================
+
+THEME_ICON_LOADING="🔥"
+THEME_ICON_SUCCESS="✨"
+THEME_ICON_ERROR="💥"
+THEME_ICON_WARNING="🌡️"
+THEME_ICON_INFO="ℹ️"
+THEME_ICON_COST="🔥"
+THEME_ICON_TOKENS="🪵"
+THEME_ICON_CACHE="🧊"
+THEME_ICON_BUDGET="🚒"
+
+# ============================================================================
+# MESSAGES
+# ============================================================================
+
+THEME_MSG_EXCELLENT="Cold embers — barely a flicker. Cache game strong."
+THEME_MSG_GOOD="Candle flame — burning clean 🕯️"
+THEME_MSG_WARNING="Fire spreading... cache before it jumps the break 🔥"
+THEME_MSG_CRITICAL="Wildfire conditions! Every prompt a new spark 🌋"
+THEME_MSG_DANGER="Total combustion. Nothing left to burn. ☄️"
+
+THEME_CACHE_MSG_EXCELLENT="Ice cold cache — the fire never started 🧊"
+THEME_CACHE_MSG_GOOD="Controlled burn — fire contained 🕯️"
+THEME_CACHE_MSG_POOR="Cache drought! Feeding raw tokens to an open flame 🔥"
+
+THEME_BUDGET_MSG_OK="Fuel reserves healthy — keep the fire manageable 🪵"
+THEME_BUDGET_MSG_WARNING="Temperature rising. Fuel burning faster than planned 🌡️"
+THEME_BUDGET_MSG_CRITICAL="Fire department on standby. Budget nearly torched 🚒"
+THEME_BUDGET_MSG_EXCEEDED="Total loss. The budget is ash. 💥"
+
+THEME_BUDGET_UNLIMITED_DAILY="🔥 Unlimited daily — you're playing with fire!"
+THEME_BUDGET_UNLIMITED_MONTHLY="🌋 Unlimited monthly — living in a volcano!"
+THEME_BUDGET_UNLIMITED_BOTH="☄️  No limits set — you are the wildfire. (set limits: burnrate config)"
+
+THEME_FOOTER="Every token fans the flame. Cache before it's all ash. 🔥"
+
+# Context window messages
+THEME_CTX_OK="Plenty of fuel to work with — fire is under control 🕯️"
+THEME_CTX_HALF="Context half consumed. Think about /compact before the next burn. 🔥"
+THEME_CTX_WARNING="Context burning fast! /compact before the whole thing goes up. 🌋"
+THEME_CTX_CRITICAL="Context near total combustion! /compact now or open a fresh fire. 💥"
+
+# ============================================================================
+# LABELS
+# ============================================================================
+
+THEME_LABEL_COST="Fuel Burned"
+THEME_LABEL_SAVINGS="Fire Suppressed"
+THEME_LABEL_TOKENS="Token Kindling"
+THEME_LABEL_CACHE_READ="CACHE EXTINGUISHED!"
+THEME_LABEL_STATUS="Burn Status"
+
+# ============================================================================
+# TIPS
+# ============================================================================
+
+THEME_TIP_1="💡 High cache rate = fire suppression system working"
+THEME_TIP_2="💡 Every uncached token adds kindling to the pile"
+THEME_TIP_3="💡 Short prompts burn cleaner than long ones"
+THEME_TIP_4="💡 Keep context focused — a contained flame is efficient"
+THEME_TIP_5="💡 Cache your context: it's the ice bucket challenge for your wallet"
+THEME_TIP_6="💡 Output tokens cost 5x input — don't ask for essays"
+THEME_TIP_7="💡 A good cache hit rate: the fire that doesn't spread 🧊"
+
+# ============================================================================
+# FUN MESSAGES
+# ============================================================================
+
+THEME_BURN_LOW="Just a match strike 🕯️"
+THEME_BURN_MEDIUM="Campfire range 🔥"
+THEME_BURN_HIGH="That's a bonfire! 🌋"
+THEME_BURN_MASSIVE="WILDFIRE ALERT! ☄️"
+
+THEME_CACHE_HIT_1="Ice blocked the flame — zero tokens burned 🧊"
+THEME_CACHE_HIT_2="Cache hit! Fire suppressed 🧯"
+THEME_CACHE_HIT_3="Firebreak held! 🌿"
+THEME_CACHE_HIT_4="Fire department thanks you 🚒"
+
+THEME_CACHE_MISS_1="Oops, fuel to the fire 🔥"
+THEME_CACHE_MISS_2="That one lit up bright 🌋"
+THEME_CACHE_MISS_3="Cache miss! Someone's getting a hot invoice 🌡️"
+
+THEME_SUMMARY_EFFICIENT="Barely a flicker today — you're a fire marshal 🧯"
+THEME_SUMMARY_AVERAGE="Manageable burn — nothing's out of control yet 🔥"
+THEME_SUMMARY_WASTEFUL="That was a four-alarm session. Hope it was worth it 🚒"
+THEME_SUMMARY_DISASTER="Someone call the fire marshal. And maybe an accountant. ☄️"
+
+THEME_STARTUP_1="Lighting the ember tracker... 🔥"
+THEME_STARTUP_2="Igniting cost analysis system 🪵"
+THEME_STARTUP_3="Firing up the token furnace — let's see the damage 🌡️"

@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# Color scheme: red — threat-level red, suits skynet/critical-alert contexts
+
+THEME_PRIMARY='\033[1;31m'      # Bright red (threat active)
+THEME_SUCCESS='\033[0;36m'      # Cyan (nominal ops)
+THEME_WARNING='\033[0;33m'      # Yellow (anomaly)
+THEME_ERROR='\033[0;31m'        # Red (critical)
+THEME_INFO='\033[0;36m'         # Cyan (report)
+THEME_DIM='\033[2;31m'          # Dim red (standby)

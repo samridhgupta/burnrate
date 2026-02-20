@@ -1,0 +1,140 @@
+#!/usr/bin/env bash
+# Garden Theme - Growing Carefully
+# "Tend your tokens like a garden. Cache is composting — waste nothing."
+
+# ============================================================================
+# THEME METADATA
+# ============================================================================
+
+THEME_NAME="garden"
+THEME_DISPLAY_NAME="Garden"
+THEME_EMOJI="🌱"
+THEME_DESCRIPTION="Tending a garden — grow carefully, waste nothing, compost your context"
+THEME_AUTHOR="burnrate"
+THEME_VERSION="1.0.0"
+
+# ============================================================================
+# COLORS (Garden Palette)
+# ============================================================================
+
+THEME_PRIMARY='\033[1;32m'       # Bright green (thriving)
+THEME_SUCCESS='\033[0;32m'       # Green (healthy growth)
+THEME_WARNING='\033[0;33m'       # Yellow (wilting)
+THEME_ERROR='\033[0;31m'         # Red (dying)
+THEME_INFO='\033[0;36m'          # Cyan (morning dew)
+THEME_DIM='\033[2;32m'           # Dim green (dormant)
+
+# ============================================================================
+# STATUS INDICATORS (Plant health levels)
+# ============================================================================
+
+THEME_STATUS_EXCELLENT="🌸"      # 90-100% - In full bloom
+THEME_STATUS_GOOD="🌿"           # 75-89%  - Healthy and growing
+THEME_STATUS_WARNING="🍂"        # 50-74%  - Leaves yellowing
+THEME_STATUS_CRITICAL="🥀"       # 25-49%  - Wilting fast
+THEME_STATUS_DANGER="💀"         # 0-24%   - Dead. It's dead.
+
+# Budget status
+THEME_BUDGET_SAFE="🌻"           # Safe — sunflower happy
+THEME_BUDGET_WARNING="🍂"        # Warning — autumn coming early
+THEME_BUDGET_CRITICAL="🥀"       # Critical — wilting
+THEME_BUDGET_EXCEEDED="💀"       # Exceeded — the garden is dead
+
+# Cache efficiency
+THEME_CACHE_EXCELLENT="🌸"       # Cache = compost working perfectly
+THEME_CACHE_GOOD="🌿"            # Cache = healthy growth
+THEME_CACHE_POOR="🔥"            # Cache = drought conditions
+
+# ============================================================================
+# ICONS
+# ============================================================================
+
+THEME_ICON_LOADING="🌱"
+THEME_ICON_SUCCESS="🌸"
+THEME_ICON_ERROR="💀"
+THEME_ICON_WARNING="🍂"
+THEME_ICON_INFO="🌿"
+THEME_ICON_COST="💧"
+THEME_ICON_TOKENS="🌱"
+THEME_ICON_CACHE="♻️"
+THEME_ICON_BUDGET="🌻"
+
+# ============================================================================
+# MESSAGES
+# ============================================================================
+
+THEME_MSG_EXCELLENT="In full bloom — the garden is thriving 🌸"
+THEME_MSG_GOOD="Healthy growth — well-tended tokens 🌿"
+THEME_MSG_WARNING="Leaves are yellowing. Time to check the compost (cache) 🍂"
+THEME_MSG_CRITICAL="Wilting fast. The garden needs attention 🥀"
+THEME_MSG_DANGER="The garden is dead. Nothing left but weeds and regret. 💀"
+
+THEME_CACHE_MSG_EXCELLENT="Compost rich — every nutrient recycled 🌸"
+THEME_CACHE_MSG_GOOD="Garden composting well — nutrients in the cycle 🌿"
+THEME_CACHE_MSG_POOR="Drought conditions! No recycling, no savings, no shade 🔥"
+
+THEME_BUDGET_MSG_OK="Soil nutrients healthy — garden growing within means 🌻"
+THEME_BUDGET_MSG_WARNING="Soil depleting faster than the rain can replenish 🍂"
+THEME_BUDGET_MSG_CRITICAL="Nutrients nearly exhausted — emergency watering needed 🥀"
+THEME_BUDGET_MSG_EXCEEDED="Garden dead. The soil is spent. 💀"
+
+THEME_BUDGET_UNLIMITED_DAILY="🌊 Unlimited daily — watering with a firehose! (set limits: burnrate config)"
+THEME_BUDGET_UNLIMITED_MONTHLY="🌍 Unlimited monthly — your garden grows into someone else's plot!"
+THEME_BUDGET_UNLIMITED_BOTH="♾️  No limits set — you're farming the whole continent. (burnrate config)"
+
+THEME_FOOTER="Tend your tokens like a garden. Cache is compost — waste nothing. 🌱"
+
+# Context window messages
+THEME_CTX_OK="Plenty of growing room — context garden has space 🌱"
+THEME_CTX_HALF="Garden half grown. Consider /compact before the next planting season. 🌿"
+THEME_CTX_WARNING="Context crowding out! Run /compact before it's overgrown. 🍂"
+THEME_CTX_CRITICAL="Context garden full to the walls! /compact now or start a new plot. 🥀"
+
+# ============================================================================
+# LABELS
+# ============================================================================
+
+THEME_LABEL_COST="Water Used"
+THEME_LABEL_SAVINGS="Nutrients Saved"
+THEME_LABEL_TOKENS="Seeds Planted"
+THEME_LABEL_CACHE_READ="COMPOSTED!"
+THEME_LABEL_STATUS="Garden Health"
+
+# ============================================================================
+# TIPS
+# ============================================================================
+
+THEME_TIP_1="💡 Cache is compost — recycle your context, feed the garden"
+THEME_TIP_2="💡 High cache rate = nutrient-rich soil. Low = barren ground."
+THEME_TIP_3="💡 Small focused sessions are like raised beds — controlled, efficient"
+THEME_TIP_4="💡 Output tokens cost 5x — ask for concise answers, not dissertations"
+THEME_TIP_5="💡 /compact is like pruning — cut back to grow stronger"
+THEME_TIP_6="💡 Set a budget: even gardens have finite soil 🌱"
+THEME_TIP_7="💡 The best garden is a well-composted one. Cache everything. ♻️"
+
+# ============================================================================
+# FUN MESSAGES
+# ============================================================================
+
+THEME_BURN_LOW="Just a seedling today 🌱"
+THEME_BURN_MEDIUM="A full day of planting 🌿"
+THEME_BURN_HIGH="The whole row turned over 🍂"
+THEME_BURN_MASSIVE="THE FROST CAME EARLY — EVERYTHING IS DEAD 💀"
+
+THEME_CACHE_HIT_1="Composted! Not a nutrient wasted ♻️"
+THEME_CACHE_HIT_2="Cache bloom — context recycled perfectly 🌸"
+THEME_CACHE_HIT_3="Green fingers! 🌿"
+THEME_CACHE_HIT_4="The compost heap delivered 🌱"
+
+THEME_CACHE_MISS_1="Nutrients straight to landfill 🍂"
+THEME_CACHE_MISS_2="Watered the weeds again 💧"
+THEME_CACHE_MISS_3="Cache miss! The garden pays for it in water bills 🌵"
+
+THEME_SUMMARY_EFFICIENT="The garden is thriving — masterful cultivation today 🌸"
+THEME_SUMMARY_AVERAGE="Garden looks okay. Could use more compost. 🌿"
+THEME_SUMMARY_WASTEFUL="The flower beds are trampled. Something happened here. 🍂"
+THEME_SUMMARY_DISASTER="The garden is ash. The slugs won. 💀"
+
+THEME_STARTUP_1="Tending the garden... 🌱"
+THEME_STARTUP_2="Composting yesterday's tokens ♻️"
+THEME_STARTUP_3="Garden monitoring system: let's see what grew overnight 🌸"

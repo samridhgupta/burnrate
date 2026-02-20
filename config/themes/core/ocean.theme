@@ -1,0 +1,140 @@
+#!/usr/bin/env bash
+# Ocean Theme - Rising Tide
+# "Each token is a drop. Every uncached prompt raises the tide."
+
+# ============================================================================
+# THEME METADATA
+# ============================================================================
+
+THEME_NAME="ocean"
+THEME_DISPLAY_NAME="Ocean"
+THEME_EMOJI="🌊"
+THEME_DESCRIPTION="Rising tide — every uncached token adds another wave to your bill"
+THEME_AUTHOR="burnrate"
+THEME_VERSION="1.0.0"
+
+# ============================================================================
+# COLORS (Ocean Depth Palette)
+# ============================================================================
+
+THEME_PRIMARY='\033[1;34m'       # Bright blue (open ocean)
+THEME_SUCCESS='\033[0;36m'       # Cyan (clear water)
+THEME_WARNING='\033[0;33m'       # Yellow (storm warning)
+THEME_ERROR='\033[0;31m'         # Red (danger at sea)
+THEME_INFO='\033[0;34m'          # Blue (deep water)
+THEME_DIM='\033[2;34m'           # Dim blue (the deep)
+
+# ============================================================================
+# STATUS INDICATORS (Sea conditions)
+# ============================================================================
+
+THEME_STATUS_EXCELLENT="⚓"      # 90-100% - Calm harbor, anchored well
+THEME_STATUS_GOOD="🏄"           # 75-89%  - Light swell, surfable
+THEME_STATUS_WARNING="🌊"        # 50-74%  - Choppy water
+THEME_STATUS_CRITICAL="⛈️ "       # 25-49%  - Storm conditions
+THEME_STATUS_DANGER="🌀"         # 0-24%   - Maelstrom
+
+# Budget status
+THEME_BUDGET_SAFE="⚓"           # Safe — anchored
+THEME_BUDGET_WARNING="🌊"        # Warning — waves rising
+THEME_BUDGET_CRITICAL="⛈️"        # Critical — storm ahead
+THEME_BUDGET_EXCEEDED="🌀"       # Exceeded — lost at sea
+
+# Cache efficiency
+THEME_CACHE_EXCELLENT="⚓"       # Cache = deep anchor
+THEME_CACHE_GOOD="🏄"            # Riding the current
+THEME_CACHE_POOR="🌀"            # Getting pulled under
+
+# ============================================================================
+# ICONS
+# ============================================================================
+
+THEME_ICON_LOADING="🌊"
+THEME_ICON_SUCCESS="⚓"
+THEME_ICON_ERROR="🌀"
+THEME_ICON_WARNING="⛈️"
+THEME_ICON_INFO="🐚"
+THEME_ICON_COST="🌊"
+THEME_ICON_TOKENS="💧"
+THEME_ICON_CACHE="⚓"
+THEME_ICON_BUDGET="🚢"
+
+# ============================================================================
+# MESSAGES
+# ============================================================================
+
+THEME_MSG_EXCELLENT="Calm harbor — cache anchors the tide ⚓"
+THEME_MSG_GOOD="Light swell — riding the current well 🏄"
+THEME_MSG_WARNING="Choppy water ahead. Cache or get soaked. 🌊"
+THEME_MSG_CRITICAL="Storm conditions! Every prompt a new wave ⛈️"
+THEME_MSG_DANGER="Maelstrom. All hands on deck. 🌀"
+
+THEME_CACHE_MSG_EXCELLENT="Deep anchor holds — tide can't move this cache ⚓"
+THEME_CACHE_MSG_GOOD="Current recycled — riding the deep stream 🏄"
+THEME_CACHE_MSG_POOR="No anchor! Every prompt is a fresh wave 🌀"
+
+THEME_BUDGET_MSG_OK="Tide within the harbor walls — budget holding steady 🚢"
+THEME_BUDGET_MSG_WARNING="Tide rising faster than forecast 🌊"
+THEME_BUDGET_MSG_CRITICAL="Storm surge incoming — budget nearly swamped ⛈️"
+THEME_BUDGET_MSG_EXCEEDED="The harbor flooded. Budget lost at sea. 🌀"
+
+THEME_BUDGET_UNLIMITED_DAILY="🌊 Unlimited daily — the tide doesn't respect budgets! (set limits: burnrate config)"
+THEME_BUDGET_UNLIMITED_MONTHLY="🌍 Unlimited monthly — you've claimed the whole ocean!"
+THEME_BUDGET_UNLIMITED_BOTH="🌀 No limits set — open water, no lighthouse, no map. (burnrate config)"
+
+THEME_FOOTER="Each token is a drop. Every uncached prompt raises the tide. 🌊"
+
+# Context window messages
+THEME_CTX_OK="Open water — plenty of context left to navigate ⚓"
+THEME_CTX_HALF="Context at mid-tide. Run /compact before the current gets strong. 🌊"
+THEME_CTX_WARNING="Tide rising fast on context! /compact before you're swamped. ⛈️"
+THEME_CTX_CRITICAL="Context maelstrom! /compact immediately or open fresh waters. 🌀"
+
+# ============================================================================
+# LABELS
+# ============================================================================
+
+THEME_LABEL_COST="Tide Level"
+THEME_LABEL_SAVINGS="Waves Calmed"
+THEME_LABEL_TOKENS="Drops Spent"
+THEME_LABEL_CACHE_READ="TIDE ANCHORED!"
+THEME_LABEL_STATUS="Sea Conditions"
+
+# ============================================================================
+# TIPS
+# ============================================================================
+
+THEME_TIP_1="💡 Cache is your anchor — it keeps the tide from rising"
+THEME_TIP_2="💡 High cache rate = calm harbor. Low = open ocean swells."
+THEME_TIP_3="💡 Short focused dives beat long surface swims"
+THEME_TIP_4="💡 Output tokens cost 5x — don't ask for novels, ask for depth"
+THEME_TIP_5="💡 /compact is like dropping anchor — resets the current"
+THEME_TIP_6="💡 The deep current is free — cache reads are the ocean floor"
+THEME_TIP_7="💡 Every drop adds to the tide. Cache the drops. 💧"
+
+# ============================================================================
+# FUN MESSAGES
+# ============================================================================
+
+THEME_BURN_LOW="Just a ripple on the surface 💧"
+THEME_BURN_MEDIUM="A decent swell today 🌊"
+THEME_BURN_HIGH="Rough seas — you got splashed ⛈️"
+THEME_BURN_MASSIVE="FULL MAELSTROM — ABANDON SHIP 🌀"
+
+THEME_CACHE_HIT_1="Anchored! Tide held at bay ⚓"
+THEME_CACHE_HIT_2="Deep current caught — 0 new tokens needed 🏄"
+THEME_CACHE_HIT_3="Calm harbor achieved 🌊"
+THEME_CACHE_HIT_4="Reading the tides perfectly ⚓"
+
+THEME_CACHE_MISS_1="Wave broke through 🌊"
+THEME_CACHE_MISS_2="Got soaked on that one ⛈️"
+THEME_CACHE_MISS_3="Cache miss! Another drop in an expensive ocean 💧"
+
+THEME_SUMMARY_EFFICIENT="Smooth sailing today — the harbor held all day ⚓"
+THEME_SUMMARY_AVERAGE="Moderate seas. Survivable. Barely. 🌊"
+THEME_SUMMARY_WASTEFUL="It was rough out there. The boat is wet. 🐟"
+THEME_SUMMARY_DISASTER="The ship is at the bottom. A lighthouse would have helped. 🌀"
+
+THEME_STARTUP_1="Checking the tides... 🌊"
+THEME_STARTUP_2="Depth-charting your token ocean 💧"
+THEME_STARTUP_3="Ocean monitoring system: let's see how high the tide got ⚓"

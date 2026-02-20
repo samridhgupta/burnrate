@@ -42,6 +42,8 @@ source "$LIB_DIR/budget.sh"
 source "$LIB_DIR/historical.sh"
 source "$LIB_DIR/charts.sh"
 source "$LIB_DIR/export.sh"
+source "$LIB_DIR/session.sh"
+source "$LIB_DIR/agent.sh"
 
 # ============================================================================
 # Help & Usage
@@ -64,9 +66,11 @@ COMMANDS:
     budget           Check budget status and alerts
     export           Export data (json/csv/markdown)
     themes           List available themes
+    themes clone <s> <t>  Clone a theme for customization
     preview <theme>  Preview a theme
     setup            Run interactive setup wizard
     config           Show current configuration
+    context          Show context window usage + recommendation
     query <metric>   Single raw metric — for scripting/agents (no formatting)
     doctor           Full health check (28 assertions)
     version          Show version information
@@ -82,29 +86,37 @@ EXPORT:
     Example: burnrate export summary markdown report.md
 
 OPTIONS:
-    --theme <name>   Use specific theme
-    --format <fmt>   Output format (detailed|compact|minimal|json)
-    --no-color       Disable colors
-    --no-emoji       Disable emoji
-    --no-anim        Disable animations
-    --debug          Enable debug logging
-    --quiet          Minimal output
+    --theme <name>      Use specific theme
+    --colors <scheme>   Override color scheme (none|amber|green|red|pink|ocean|<name>)
+    --icons <set>       Override icon set (none|minimal|<name>)
+    --messages <set>    Override message set (agent|roast|coach|<name>)
+    --format <fmt>      Output format (detailed|compact|minimal|json|agent|agent-json)
+    --no-color          Disable colors (same as --colors none)
+    --no-emoji          Disable emoji
+    --no-anim           Disable animations
+    --debug             Enable debug logging
+    --quiet             Minimal output
 
 EXAMPLES:
-    burnrate                    # Today's summary
-    burnrate show               # Detailed report
-    burnrate budget             # Budget status
-    burnrate themes             # List themes
-    burnrate preview ember      # Preview ember theme
-    burnrate --theme ember      # Use ember theme
-    burnrate --format json      # JSON output
+    burnrate                           # Today's summary
+    burnrate show                      # Detailed report
+    burnrate budget                    # Budget status
+    burnrate themes                    # List themes
+    burnrate preview ember             # Preview ember theme
+    burnrate --theme ember             # Use ember theme
+    burnrate --format json             # JSON output
+    burnrate --format agent            # Agent-readable key=value output
+    burnrate --messages agent          # Use agent message set (terse, factual)
+    burnrate --colors none --icons minimal   # Strip colors, ASCII icons only
 
 CONFIGURATION:
     Config file: ~/.config/burnrate/burnrate.conf
     See: burnrate config
 
 THEMES:
-    Bundled themes: glacial, ember, battery, hourglass, garden, ocean, space
+    Bundled themes: glacial, ember, hourglass, garden, ocean, space,
+                    matrix, zen, roast, skynet, kawaii, forge, coach
+    (battery: deprecated — use forge, matrix, or ember instead)
     User themes: ~/.config/burnrate/themes/
     Create: copy example from config/themes/ and customize
 
@@ -126,6 +138,11 @@ show_version() {
 
 # Show today's summary (default command)
 cmd_summary() {
+    # Agent format: emit structured output and exit
+    case "${CONFIG_OUTPUT_FORMAT:-}" in
+        agent|agent-json) cmd_agent_summary; return $? ;;
+    esac
+
     show_banner
 
     # Disclaimer: only in non-TTY (piped/scripted) — banner covers it in terminals
@@ -141,14 +158,41 @@ cmd_summary() {
 
     show_summary "$CONFIG_STATS_FILE"
 
+    # Context window auto-warn (if enabled and data available)
+    if [[ "${CONFIG_CONTEXT_WARN:-true}" == "true" ]]; then
+        local ctx
+        if ctx=$(get_session_context 2>/dev/null); then
+            local ctx_pct ctx_pct_int
+            ctx_pct=$(echo "$ctx" | cut -d'|' -f3)
+            ctx_pct_int=$(echo "$ctx_pct" | awk '{printf "%d", $1+0}')
+            local threshold="${CONFIG_CONTEXT_WARN_THRESHOLD:-85}"
+            if (( ctx_pct_int >= threshold )); then
+                local used window
+                used=$(echo "$ctx"   | cut -d'|' -f1)
+                window=$(echo "$ctx" | cut -d'|' -f2)
+                echo ""
+                printf "  \033[0;33m⚠️  Context: %s%% full (%s / %s tokens)\033[0m\n" \
+                    "$ctx_pct" "$used" "$window"
+                echo -e "  \033[2mRun: burnrate context  |  Or: /compact in Claude\033[0m"
+            fi
+        fi
+    fi
+
     echo ""
     if [[ "$CONFIG_SHOW_DISCLAIMER" == "true" ]]; then
-        echo -e "\033[2m${THEME_FOOTER}\033[0m"
+        local _dim="${THEME_DIM-\033[2m}" _r=""
+        [[ -n "$_dim" ]] && _r="\033[0m"
+        echo -e "${_dim}${THEME_FOOTER}${_r}"
     fi
 }
 
 # Show detailed report
 cmd_show() {
+    # Agent format: structured summary covers the same data
+    case "${CONFIG_OUTPUT_FORMAT:-}" in
+        agent|agent-json) cmd_agent_summary; return $? ;;
+    esac
+
     show_banner
 
     # Disclaimer only in non-TTY — banner covers it in terminals
@@ -173,6 +217,11 @@ cmd_show() {
 
 # Check budget status
 cmd_budget() {
+    # Agent format: structured summary includes budget_pct
+    case "${CONFIG_OUTPUT_FORMAT:-}" in
+        agent|agent-json) cmd_agent_summary; return $? ;;
+    esac
+
     if [[ "$CONFIG_SHOW_DISCLAIMER" == "true" ]] && [[ ! -t 1 ]]; then
         echo "⚠️  ZERO TOKENS USED - Pure script, reads local files only"
         echo ""
@@ -289,9 +338,111 @@ cmd_export() {
 
 # List themes
 cmd_themes() {
-    echo "🎨 Available Themes"
+    local subcmd="${1:-list}"
+    case "$subcmd" in
+        list|"")
+            echo "🎨 Available Themes"
+            echo ""
+            list_themes detailed
+            ;;
+        clone)
+            local src="${2:-}"
+            local dst="${3:-}"
+            if [[ -z "$src" || -z "$dst" ]]; then
+                die_usage "Usage: burnrate themes clone <source> <target>\nExample: burnrate themes clone glacial mytheme"
+            fi
+            _cmd_themes_clone "$src" "$dst"
+            ;;
+        *)
+            # treat as legacy: `burnrate themes` with no subcommand
+            echo "🎨 Available Themes"
+            echo ""
+            list_themes detailed
+            ;;
+    esac
+}
+
+_cmd_themes_clone() {
+    local src="$1" dst="$2"
+
+    # Find source theme file
+    local src_file=""
+    local builtin_dir
+    # Resolve bundled themes dir relative to script
+    if [[ -d "$SCRIPT_DIR/config/themes" ]]; then
+        builtin_dir="$SCRIPT_DIR/config/themes"
+    elif [[ -d "$SCRIPT_DIR/../share/burnrate/themes" ]]; then
+        builtin_dir="$(cd "$SCRIPT_DIR/../share/burnrate/themes" && pwd)"
+    fi
+
+    # Check user themes first (flat), then builtin (flat + one level subdirs)
+    local user_themes_dir="${XDG_CONFIG_HOME:-$HOME/.config}/burnrate/themes"
+    local candidate
+
+    # User themes (flat only)
+    if [[ -f "$user_themes_dir/${src}.theme" ]]; then
+        src_file="$user_themes_dir/${src}.theme"
+    fi
+
+    # Builtin: top-level then subdirs
+    if [[ -z "$src_file" && -n "${builtin_dir:-}" ]]; then
+        if [[ -f "$builtin_dir/${src}.theme" ]]; then
+            src_file="$builtin_dir/${src}.theme"
+        else
+            # Search one level of category subdirs
+            while IFS= read -r candidate; do
+                if [[ "$(basename "$candidate" .theme)" == "$src" ]]; then
+                    src_file="$candidate"
+                    break
+                fi
+            done < <(find "$builtin_dir" -mindepth 2 -maxdepth 2 -name "*.theme" 2>/dev/null)
+        fi
+    fi
+
+    if [[ -z "$src_file" ]]; then
+        echo "Error: theme '${src}' not found." >&2
+        echo "Run 'burnrate themes' to see available themes." >&2
+        exit 1
+    fi
+
+    # Validate destination name
+    if [[ ! "$dst" =~ ^[a-z0-9_-]+$ ]]; then
+        echo "Error: target name must be lowercase alphanumeric with hyphens/underscores only." >&2
+        exit 1
+    fi
+
+    # Create user themes dir and destination file
+    mkdir -p "$user_themes_dir"
+    local dst_file="$user_themes_dir/${dst}.theme"
+
+    if [[ -f "$dst_file" ]]; then
+        echo "Error: theme '${dst}' already exists at: $dst_file" >&2
+        echo "Delete it first or choose a different name." >&2
+        exit 1
+    fi
+
+    # Copy and update metadata
+    sed \
+        -e "s/^THEME_NAME=.*/THEME_NAME=\"${dst}\"/" \
+        -e "s/^THEME_AUTHOR=.*/THEME_AUTHOR=\"\"/" \
+        "$src_file" > "$dst_file"
+
+    echo "Theme cloned: ${src} → ${dst}"
+    echo "File: $dst_file"
     echo ""
-    list_themes detailed
+    echo "Next steps:"
+    echo "  1. Edit the file: ${EDITOR:-nano} \"$dst_file\""
+    echo "  2. Preview it:    burnrate preview ${dst}"
+    echo "  3. Set it:        burnrate setup --theme=${dst}"
+    echo ""
+
+    # Offer to open in editor
+    if [[ -n "${EDITOR:-}" ]]; then
+        read -r -p "Open in \$EDITOR now? [Y/n] " yn
+        case "${yn:-y}" in
+            [Yy]*) ${EDITOR} "$dst_file" ;;
+        esac
+    fi
 }
 
 # Preview theme
@@ -305,20 +456,166 @@ cmd_preview() {
     preview_theme "$theme_name"
 }
 
-# Show configuration
+# Show or edit configuration
 cmd_config() {
-    show_config
+    local subcmd="${1:-show}"
+    case "$subcmd" in
+        edit)
+            local config_file
+            if config_file=$(find_config_file 2>/dev/null); then
+                ${EDITOR:-${VISUAL:-nano}} "$config_file"
+            else
+                local default_conf="${XDG_CONFIG_HOME:-$HOME/.config}/burnrate/burnrate.conf"
+                echo "No config file found. Creating default at: $default_conf"
+                echo "Run 'burnrate setup' to configure interactively."
+                echo ""
+                mkdir -p "$(dirname "$default_conf")"
+                generate_config_example > "$default_conf"
+                ${EDITOR:-${VISUAL:-nano}} "$default_conf"
+            fi
+            ;;
+        show|"")
+            show_config
+            ;;
+        *)
+            die_usage "Unknown config subcommand: $subcmd\nUsage: burnrate config [show|edit]"
+            ;;
+    esac
 }
 
-# Run setup wizard
+# Run setup wizard (with optional preset/flag args)
 cmd_setup() {
     source "$LIB_DIR/setup.sh"
-    run_setup
+    run_setup "$@"
 }
 
 cmd_doctor() {
     source "$LIB_DIR/doctor.sh"
     run_doctor "$@"
+}
+
+# ============================================================================
+# Context Window Command
+# ============================================================================
+
+# _ctx_gauge <pct_int> — render a 30-char fill bar
+_ctx_gauge() {
+    local pct="$1"
+    local width=30
+    local filled=$(( pct * width / 100 ))
+    (( filled > width )) && filled=$width
+
+    local bar=""
+    local i=0
+    while (( i < filled )); do bar="${bar}█"; (( i++ )); done
+    while (( i < width ));  do bar="${bar}░"; (( i++ )); done
+    echo "$bar"
+}
+
+# _ctx_color <pct_int> — ANSI color for fill level
+_ctx_color() {
+    local pct="$1"
+    if   (( pct >= 90 )); then printf '\033[0;31m'   # red
+    elif (( pct >= 75 )); then printf '\033[0;33m'   # yellow
+    elif (( pct >= 50 )); then printf '\033[0;36m'   # cyan
+    else                       printf '\033[0;32m'   # green
+    fi
+}
+
+# _ctx_rec <pct_int> — themed recommendation string
+_ctx_rec() {
+    local pct="$1"
+    if   (( pct >= 90 )); then
+        echo "${THEME_CTX_CRITICAL:-Context nearly full! Run /compact or start a new session. 🚨}"
+    elif (( pct >= 75 )); then
+        echo "${THEME_CTX_WARNING:-Context getting full. Run /compact before the next heavy task. ⚠️}"
+    elif (( pct >= 50 )); then
+        echo "${THEME_CTX_HALF:-Context half used. Consider /compact for long conversations. 💧}"
+    else
+        echo "${THEME_CTX_OK:-Context clear — plenty of room. ❄️}"
+    fi
+}
+
+# Show context window usage gauge and recommendation
+cmd_context() {
+    # Agent format: structured summary includes context_pct + recommendation
+    case "${CONFIG_OUTPUT_FORMAT:-}" in
+        agent|agent-json) cmd_agent_summary; return $? ;;
+    esac
+
+    local full_mode=false
+    [[ "${1:-}" == "--full" ]] && full_mode=true
+
+    local ctx_data
+    if ! ctx_data=$(get_session_context 2>/dev/null); then
+        echo "No session data found." >&2
+        echo "Run a Claude Code session first, then check again." >&2
+        exit 1
+    fi
+
+    local used window pct model inp cw cr out
+    used=$(echo "$ctx_data"   | cut -d'|' -f1)
+    window=$(echo "$ctx_data" | cut -d'|' -f2)
+    pct=$(echo "$ctx_data"    | cut -d'|' -f3)
+    model=$(echo "$ctx_data"  | cut -d'|' -f4)
+    inp=$(echo "$ctx_data"    | cut -d'|' -f5)
+    cw=$(echo "$ctx_data"     | cut -d'|' -f6)
+    cr=$(echo "$ctx_data"     | cut -d'|' -f7)
+    out=$(echo "$ctx_data"    | cut -d'|' -f8)
+
+    local pct_int
+    pct_int=$(echo "$pct" | awk '{printf "%d", $1+0}')
+
+    local color reset='\033[0m'
+    color=$(_ctx_color "$pct_int")
+
+    local friendly_model
+    friendly_model=$(get_friendly_model_name "$model")
+
+    local gauge
+    gauge=$(_ctx_gauge "$pct_int")
+
+    local rec
+    rec=$(_ctx_rec "$pct_int")
+
+    # Format token numbers with commas (portable)
+    _fmt_tok() { printf "%'d" "$1" 2>/dev/null || echo "$1"; }
+
+    echo ""
+    _themed_hr
+    echo -e "  🧠 Context Window"
+    _themed_hr
+    echo ""
+
+    # Gauge line (CONFIG_CONTEXT_DISPLAY: visual | number | both)
+    local display="${CONFIG_CONTEXT_DISPLAY:-both}"
+
+    if [[ "$display" == "visual" || "$display" == "both" ]]; then
+        printf "  %b[%s]%b  %s%%\n" "$color" "$gauge" "$reset" "$pct"
+    fi
+
+    if [[ "$display" == "number" || "$display" == "both" ]]; then
+        printf "  %b%s%b / %s tokens used\n" \
+            "$color" "$(_fmt_tok "$used")" "$reset" "$(_fmt_tok "$window")"
+    fi
+
+    echo ""
+    echo -e "  ${rec}"
+
+    if [[ "$full_mode" == "true" ]]; then
+        echo ""
+        echo -e "  \033[2mBreakdown (last turn)\033[0m"
+        printf "  %-26s %s\n" "Input tokens:"          "$(_fmt_tok "$inp")"
+        printf "  %-26s %s\n" "Cache created (write):" "$(_fmt_tok "$cw")"
+        printf "  %-26s %s\n" "Cache hits (read):"     "$(_fmt_tok "$cr")"
+        printf "  %-26s %s\n" "Output tokens:"         "$(_fmt_tok "$out")"
+        echo ""
+        printf "  %-26s %s\n" "Model:" "$friendly_model"
+        printf "  %-26s %s\n" "Context window:"        "$(_fmt_tok "$window")"
+    fi
+
+    echo ""
+    _themed_hr
 }
 
 # Query a single metric — raw output, no formatting, no color
@@ -331,15 +628,22 @@ cmd_query() {
 Usage: burnrate query <metric>
 
 Metrics:
-  cost           Total cost (e.g. 4.21)
-  tokens         Total token count (e.g. 2847392)
-  cache_rate     Cache hit rate 0-100 (e.g. 87.30)
-  cache_savings  Dollar savings from caching (e.g. 29.14)
-  trend          Weekly % change, signed (e.g. -31.4 or N/A)
-  weekly_cost    This week's spend (e.g. 2.11)
-  monthly_cost   This month's spend (e.g. 14.67)
-  last7_cost     Last 7 days spend (e.g. 3.28)
-  model          Current model name (e.g. sonnet)
+  cost             Total cost (e.g. 4.21)
+  tokens           Total token count (e.g. 2847392)
+  cache_rate       Cache hit rate 0-100 (e.g. 87.30)
+  cache_savings    Dollar savings from caching (e.g. 29.14)
+  trend            Weekly % change, signed (e.g. -31.4 or N/A)
+  weekly_cost      This week's spend (e.g. 2.11)
+  monthly_cost     This month's spend (e.g. 14.67)
+  last7_cost       Last 7 days spend (e.g. 3.28)
+  model            Current model name (e.g. sonnet)
+  context_tokens   Tokens used in current session context (e.g. 156312)
+  context_pct      Context fill % 0-100 (e.g. 78.2)
+  context_remaining Tokens remaining in context window (e.g. 43688)
+  recommendation   Action code: none | improve_cache | compact_context | reduce_spend | stop_session | compact_context_urgent
+  budget_pct       Daily budget consumed % (0 if no budget set)
+  daily_cost       Today's spend (e.g. 2.14)
+  savings          Cache savings USD (e.g. 29.14)
 EOF
         exit 1
     fi
@@ -396,6 +700,51 @@ EOF
         model)
             echo "$breakdown" | grep '"model_friendly"' | cut -d'"' -f4
             ;;
+        context_tokens)
+            local ctx
+            ctx=$(get_session_context 2>/dev/null) || { echo "N/A"; exit 0; }
+            echo "$ctx" | cut -d'|' -f1
+            ;;
+        context_pct)
+            local ctx
+            ctx=$(get_session_context 2>/dev/null) || { echo "N/A"; exit 0; }
+            echo "$ctx" | cut -d'|' -f3
+            ;;
+        context_remaining)
+            local ctx
+            ctx=$(get_session_context 2>/dev/null) || { echo "N/A"; exit 0; }
+            local used window
+            used=$(echo "$ctx"   | cut -d'|' -f1)
+            window=$(echo "$ctx" | cut -d'|' -f2)
+            echo $(( window - used ))
+            ;;
+        recommendation)
+            get_recommendation 2>/dev/null || echo "none"
+            ;;
+        budget_pct)
+            local daily_budget daily_spent bpct
+            daily_budget=$(echo "${CONFIG_DAILY_BUDGET:-0}" | tr -d '$, ')
+            if [[ $(echo "$daily_budget > 0" | bc 2>/dev/null) == "1" ]]; then
+                daily_spent=$(get_daily_cost 2>/dev/null || echo "0")
+                daily_spent=$(echo "$daily_spent" | tr -d '$, ')
+                bpct=$(echo "scale=1; ($daily_spent / $daily_budget) * 100" | bc 2>/dev/null || echo "0")
+                _q_norm "$bpct"
+            else
+                echo "0"
+            fi
+            ;;
+        daily_cost)
+            local dv
+            dv=$(get_daily_cost 2>/dev/null || echo "0")
+            dv=$(echo "$dv" | tr -d '$, ')
+            _q_norm "$dv"
+            ;;
+        savings)
+            model=$(echo "$breakdown" | grep '"model"' | tail -1 | cut -d'"' -f4)
+            local sv2
+            sv2=$(get_cache_savings "$CONFIG_STATS_FILE" "$model" 2>/dev/null)
+            _q_norm "$sv2"
+            ;;
         *)
             echo "error: unknown metric '$metric'" >&2
             echo "Run 'burnrate query' to see available metrics." >&2
@@ -424,7 +773,7 @@ parse_args() {
                 show_version
                 exit 0
                 ;;
-            show|budget|history|week|month|trends|export|themes|preview|config|setup|doctor|query)
+            show|budget|history|week|month|trends|export|themes|preview|config|setup|doctor|query|context)
                 command="$1"
                 shift
                 args=("$@")
@@ -435,12 +784,25 @@ parse_args() {
                 CONFIG_THEME="$2"
                 shift 2
                 ;;
+            --colors|--colour-scheme|--color-scheme)
+                CONFIG_COLOR_SCHEME="$2"
+                shift 2
+                ;;
+            --icons|--icon-set)
+                CONFIG_ICON_SET="$2"
+                shift 2
+                ;;
+            --messages|--message-set)
+                CONFIG_MESSAGE_SET="$2"
+                shift 2
+                ;;
             --format)
                 CONFIG_OUTPUT_FORMAT="$2"
                 shift 2
                 ;;
             --no-color|--no-colour)
                 CONFIG_COLORS_ENABLED=false
+                CONFIG_COLOR_SCHEME="none"
                 shift
                 ;;
             --no-emoji)
@@ -506,6 +868,9 @@ parse_args() {
         query)
             cmd_query "${args[@]+"${args[@]}"}"
             ;;
+        context)
+            cmd_context "${args[@]+"${args[@]}"}"
+            ;;
         "")
             # Default: show summary
             cmd_summary
@@ -524,10 +889,33 @@ main() {
     # Load configuration
     load_config
 
+    # Detect agent/orchestrator context (may override format/messages/colors)
+    detect_agent_context
+
     # Validate configuration
     validate_config
 
-    # Load theme
+    # Load theme (with 3-system overlay: theme → messages → icons → colors)
+    # Pre-scan CLI for flags that affect theme loading (--theme, --colors, --icons, --messages, --no-color)
+    # Full parsing happens later in parse_args; this is a targeted first pass.
+    _prescan_theme_flags() {
+        local _prev=""
+        for _a in "$@"; do
+            case "$_prev" in
+                --theme)    CONFIG_THEME="$_a" ;;
+                --colors|--colour-scheme|--color-scheme) CONFIG_COLOR_SCHEME="$_a" ;;
+                --icons|--icon-set)   CONFIG_ICON_SET="$_a" ;;
+                --messages|--message-set) CONFIG_MESSAGE_SET="$_a" ;;
+                --format)   CONFIG_OUTPUT_FORMAT="$_a" ;;
+            esac
+            case "$_a" in
+                --no-color|--no-colour) CONFIG_COLORS_ENABLED=false; CONFIG_COLOR_SCHEME="none" ;;
+            esac
+            _prev="$_a"
+        done
+    }
+    _prescan_theme_flags "$@"
+
     load_theme "$CONFIG_THEME"
 
     # Parse arguments and run command

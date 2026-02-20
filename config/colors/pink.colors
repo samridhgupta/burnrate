@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# Color scheme: pink — soft magenta/pink, suits kawaii/warm contexts
+
+THEME_PRIMARY='\033[1;35m'      # Bright magenta (vibrant)
+THEME_SUCCESS='\033[0;32m'      # Green (happy)
+THEME_WARNING='\033[0;33m'      # Yellow (worried)
+THEME_ERROR='\033[0;31m'        # Red (oh no)
+THEME_INFO='\033[0;36m'         # Cyan (friendly)
+THEME_DIM='\033[2;35m'          # Dim pink (gentle)
