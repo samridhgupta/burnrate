@@ -640,6 +640,10 @@ Metrics:
   context_tokens   Tokens used in current session context (e.g. 156312)
   context_pct      Context fill % 0-100 (e.g. 78.2)
   context_remaining Tokens remaining in context window (e.g. 43688)
+  recommendation   Action code: none | improve_cache | compact_context | reduce_spend | stop_session | compact_context_urgent
+  budget_pct       Daily budget consumed % (0 if no budget set)
+  daily_cost       Today's spend (e.g. 2.14)
+  savings          Cache savings USD (e.g. 29.14)
 EOF
         exit 1
     fi
@@ -713,6 +717,33 @@ EOF
             used=$(echo "$ctx"   | cut -d'|' -f1)
             window=$(echo "$ctx" | cut -d'|' -f2)
             echo $(( window - used ))
+            ;;
+        recommendation)
+            get_recommendation 2>/dev/null || echo "none"
+            ;;
+        budget_pct)
+            local daily_budget daily_spent bpct
+            daily_budget=$(echo "${CONFIG_DAILY_BUDGET:-0}" | tr -d '$, ')
+            if [[ $(echo "$daily_budget > 0" | bc 2>/dev/null) == "1" ]]; then
+                daily_spent=$(get_daily_cost 2>/dev/null || echo "0")
+                daily_spent=$(echo "$daily_spent" | tr -d '$, ')
+                bpct=$(echo "scale=1; ($daily_spent / $daily_budget) * 100" | bc 2>/dev/null || echo "0")
+                _q_norm "$bpct"
+            else
+                echo "0"
+            fi
+            ;;
+        daily_cost)
+            local dv
+            dv=$(get_daily_cost 2>/dev/null || echo "0")
+            dv=$(echo "$dv" | tr -d '$, ')
+            _q_norm "$dv"
+            ;;
+        savings)
+            model=$(echo "$breakdown" | grep '"model"' | tail -1 | cut -d'"' -f4)
+            local sv2
+            sv2=$(get_cache_savings "$CONFIG_STATS_FILE" "$model" 2>/dev/null)
+            _q_norm "$sv2"
             ;;
         *)
             echo "error: unknown metric '$metric'" >&2

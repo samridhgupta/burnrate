@@ -2,6 +2,10 @@
 # lib/colors.sh - Color and theme foundation for burnrate
 # Provides color utilities and base theme system
 
+# Source guard (prevent double-sourcing)
+[[ -n "${BURNRATE_COLORS_LOADED:-}" ]] && return 0
+readonly BURNRATE_COLORS_LOADED=1
+
 # Source dependencies
 _LIB_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$_LIB_DIR/core.sh"

@@ -1,6 +1,8 @@
 # burnrate CLI Reference
 
 > Complete command and configuration reference. Every flag, every option, every metric. No guessing.
+>
+> Agent/orchestrator integration → **[AGENT.md](AGENT.md)**
 
 ---
 
@@ -218,6 +220,10 @@ SHOW_DISCLAIMER=false
 | `context_tokens` | Tokens in current session context | `156312` |
 | `context_pct` | Context fill % 0–100 | `78.2` |
 | `context_remaining` | Tokens remaining in context window | `43688` |
+| `recommendation` | Action code from recommendation engine | `compact_context` |
+| `budget_pct` | Daily budget consumed % (0 if no budget set) | `82.4` |
+| `daily_cost` | Today's spend (USD) | `2.14` |
+| `savings` | Cache savings USD today | `1830.37` |
 
 **In scripts:**
 ```bash

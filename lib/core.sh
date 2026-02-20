@@ -9,7 +9,7 @@ readonly BURNRATE_CORE_LOADED=1
 set -euo pipefail
 
 # Version and metadata
-readonly BURNRATE_VERSION="0.1.0-alpha"
+readonly BURNRATE_VERSION="0.8.0"
 readonly BURNRATE_NAME="burnrate"
 readonly BURNRATE_DESCRIPTION="Track your Claude token burn"
 

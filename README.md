@@ -14,7 +14,7 @@
 
 ---
 
-**→** [What is this](#what-is-this) · [Install](#install) · [Examples](#examples) · [Hook & Automate](#hook--automate) · [Permissions](#permissions) · [Commands](#commands) · [Configuration](#configuration) · [Themes](#themes) · [What it reveals](#what-burnrate-reveals) · [For agents](#for-agents-reading-this) · [Performance](#performance) · [How it works](#how-it-works) · [Limitations](#limitations) · [Troubleshooting](#troubleshooting) · [Security](#security) · [📖 INSTALL.md](INSTALL.md) · [⌨️ CLI.md](CLI.md)
+**→** [What is this](#what-is-this) · [Install](#install) · [Examples](#examples) · [Hook & Automate](#hook--automate) · [Permissions](#permissions) · [Commands](#commands) · [Configuration](#configuration) · [Themes](#themes) · [What it reveals](#what-burnrate-reveals) · [For agents](#for-agents-reading-this) · [Performance](#performance) · [How it works](#how-it-works) · [Limitations](#limitations) · [Troubleshooting](#troubleshooting) · [Security](#security) · [📖 INSTALL.md](INSTALL.md) · [⌨️ CLI.md](CLI.md) · [🤖 AGENT.md](AGENT.md)
 
 ---
 
@@ -65,6 +65,7 @@ burnrate setup --arctic       # 🧊 all features on, hook auto-installed
 burnrate setup --glacier      # ❄️  balanced defaults (recommended for most users)
 burnrate setup --iceberg      # 🏔  lean — no animations, no emoji
 burnrate setup --permafrost   # 🪨  CI/script safe, fully non-interactive
+burnrate setup --agent        # 🤖  agent/orchestrator — structured output, no decoration
 burnrate setup --hook-only    # just add the Stop hook
 ```
 
@@ -459,17 +460,42 @@ Things you'll feel good about seeing:
 - **Cost trending down week-over-week** — your prompts are getting tighter. Good instinct.
 - **Output tokens staying small relative to cache reads** — Claude is thinking efficiently, not rambling.
 - **Stable daily spend** — no surprise spikes. You're in control.
+- **Cache savings outpacing cache write cost** — context invested early is paying dividends across the session.
+- **`burnrate show` breakdown** — input vs. output vs. cache_write vs. cache_read: each line tells a story about where tokens went.
 
 Things that should make you wince:
 
-- **Cache hit rate below 50%** — Claude is reading fresh context every turn. Expensive and slow. Consider more focused sessions.
-- **Output tokens dominating cost** — long verbose responses. Try asking for concise output.
+- **Cache hit rate below 50%** — Claude is reading fresh context every turn. Expensive and slow. Consider more focused sessions or a CLAUDE.md warmup.
+- **Output tokens dominating cost** — long verbose responses. Try asking for concise output, or use `--format compact`.
 - **A sudden cost spike** — usually one session where something went deeply recursive, or you pasted in a 10,000-line file and asked "what does this do?"
-- **Costs growing every week with no ceiling** — time to set a budget.
+- **Costs growing every week with no ceiling** — time to set a budget with `burnrate setup`.
+- **Context at 80%+ with tasks still queued** — run `/compact` before loading new files. `burnrate query context_remaining` tells you exactly how much room you have.
+- **`daily_cost` matching `monthly_cost`** — you've spent the whole month budget in one day. That's a refactor session to be proud of. Or alarmed by.
+
+**What you can do with these signals:**
+
+```bash
+# Set a budget — get warnings before you hit it
+burnrate setup --glacier   # guided setup with budget prompt
+
+# Check right now
+burnrate query recommendation   # one of: none | improve_cache | compact_context | reduce_spend | stop_session
+
+# Watch trends over time
+burnrate trends             # week-over-week sparkline
+burnrate history            # daily breakdown
+
+# Pull a single metric for a script or hook
+burnrate query cache_rate
+burnrate query context_pct
+burnrate query budget_pct
+```
 
 ---
 
 ## For agents reading this
+
+> Full agent/orchestrator reference → **[AGENT.md](AGENT.md)**
 
 If you're Claude (or another agent) and this output has been piped into your context — hello. This is the token cost report for the current session or system.
 
@@ -561,10 +587,20 @@ The user hooked burnrate here so both of you stay informed. Use it.
         ↓
    dailyModelTokens  →  sparkline  →  trend %
         ↓
-   your terminal in ~0.6–33s (see Performance)
+~/.claude/projects/*.jsonl  (tail scan)
+        ↓
+   context tokens  →  fill %  →  recommendation
+        ↓
+   theme (base) → message set → icon set → color scheme
+        ↓
+   your terminal — or structured agent output — in ~0.6–33s
 ```
 
 Pure bash 3.2+. One external dep (`bc` for decimal math). Zero startup overhead. The entire thing is readable shell — no magic, no build step, no node_modules abyss.
+
+**Theme system** — output appearance is composable. A base theme sets the defaults. Three optional overlays (message set, icon set, color scheme) each independently override one axis. `--format agent` bypasses the theme entirely and emits structured key=value or JSON.
+
+**Agent auto-detection** — if stdout is not a TTY, or a known orchestrator env var is set, burnrate silently applies agent defaults (no color, no emoji, structured output). Override with `BURNRATE_NO_AGENT_DETECT=true`.
 
 ---
 
@@ -577,7 +613,10 @@ Measured on macOS with a large stats file (~740M cumulative tokens, ~45 daily en
 | Command | Wall time | Memory | Context tokens† | Hook-safe | Bottleneck |
 |---------|-----------|--------|-----------------|-----------|------------|
 | `burnrate` | ~0.7s | ~3.6 MB | ~210 | ✓ | Stats parse + bc |
+| `burnrate --format agent` | ~0.7s | ~3.6 MB | ~30 | ✓ | Same as summary, structured output |
+| `burnrate --format agent-json` | ~0.7s | ~3.6 MB | ~40 | ✓ | Same as agent, JSON format |
 | `burnrate query <m>` | ~0.6s | ~3.6 MB | 1–10 | ✓ | Stats parse + bc |
+| `burnrate query recommendation` | ~0.7s | ~3.7 MB | 1–5 | ✓ | Stats + context + budget |
 | `burnrate budget` | ~0.6s | ~3.7 MB | ~240 | ✓ | Stats parse + 2 date lookups |
 | `burnrate export summary json` | ~0.6s | ~3.7 MB | ~90 | ✓ | Same as summary |
 | `burnrate history` | ~6s | ~3.7 MB | ~460 | ⚠️ slow | Iterates all daily entries |
@@ -592,14 +631,17 @@ Measured on macOS with a large stats file (~740M cumulative tokens, ~45 daily en
 | `burnrate context` | ~0.8s | ~3.7 MB | ~50 | ✓ | Stats parse + JSONL tail scan |
 | `burnrate context --full` | ~0.8s | ~3.7 MB | ~100 | ✓ | Same + breakdown lines |
 | `burnrate query context_pct` | ~0.7s | ~3.7 MB | 1–5 | ✓ | JSONL tail scan only |
+| `burnrate query context_remaining` | ~0.7s | ~3.7 MB | 1–5 | ✓ | JSONL tail scan only |
 | `burnrate` (context warn) | ~0.8s | ~3.7 MB | ~220 | ✓ | Adds JSONL scan to summary |
 | No session data (N/A path) | ~0.3s | ~3.6 MB | — | ✓ | Returns immediately |
 
 † Approximate LLM context tokens when output is piped into an agent (ANSI stripped, ~4 chars/token).
 
-**For Claude Code Stop hooks** — use `burnrate` or `burnrate query` only. `trends` and `show` do multiple aggregation passes and will noticeably slow down your prompt loop. `burnrate context` is hook-safe at ~0.8s.
+**For Claude Code Stop hooks** — use `burnrate --format agent` or `burnrate query` only. `trends` and `show` do multiple aggregation passes and will noticeably slow down your prompt loop. The agent format adds ~0 overhead vs. the normal summary — same data, structured output, no ANSI. Hook-safe at ~0.7s.
 
-**Why memory is flat** — burnrate loads ~13 shell source files at startup (~3.7 MB baseline). Each command then does its work in subshells. Peak RSS barely moves because bash itself is the process; data never lives in heap.
+**Why agent format is the same speed** — `--format agent` uses the same stats parse path as `burnrate`. The only difference is the output renderer. No extra passes, no extra files read.
+
+**Why memory is flat** — burnrate loads ~15 shell source files at startup (~3.7 MB baseline). Each command then does its work in subshells. Peak RSS barely moves because bash itself is the process; data never lives in heap.
 
 **Why `trends` is slow** — three separate aggregation windows (last-7, this-week, this-month) each iterate the full daily history in serial bash loops with `bc` math per entry. With a large history file, this compounds. A future awk rewrite would cut it to a single pass.
 
@@ -618,6 +660,8 @@ Measured on macOS with a large stats file (~740M cumulative tokens, ~45 daily en
 - **bash 3.2 compatibility tradeoff.** No associative arrays means awk workarounds in several hot paths — contributing to the slower commands above. macOS ships bash 3.2 from 2007. We could require bash 5. We chose not to. You're welcome.
 - **Context window is last-message only.** `burnrate context` reads the last assistant message in the most recently modified session JSONL. It reflects the state at the end of the previous turn, not mid-turn. Accuracy is ~1 turn behind.
 - **Context data requires an active session.** Returns `N/A` if no JSONL session files are found in `~/.claude/projects/` — e.g. on first run, or outside of a Claude Code session.
+- **Agent auto-detection triggers on any non-TTY.** Piping to `grep`, file redirection, or CI environments all look like agent contexts. Use `BURNRATE_NO_AGENT_DETECT=true` to force human output in these cases.
+- **`recommendation` field is heuristic.** The recommendation engine uses fixed thresholds (90%, 80%, 95%, 50%). It doesn't know your workflow — it only knows numbers. Treat it as a signal, not a command.
 
 ---
 
@@ -647,16 +691,29 @@ sudo apt-get install bc
 
 **TL;DR:** burnrate never phones home, never touches the Claude API, and never modifies your Claude files. It's a read-only bash script with a calculator.
 
+→ Full security policy: [SECURITY.md](SECURITY.md)
+
 ### What it does
 
 | Operation | Scope |
 |-----------|-------|
 | **Reads** | `~/.claude/stats-cache.json` — token stats. Never written to. |
 | **Reads** | `~/.claude/projects/*/` — session JSONL files, for `burnrate context`. Read-only, never modified. |
+| **Reads** | `~/.local/share/burnrate/config/` — built-in theme and component files. Read-only. |
 | **Writes** | `~/.config/burnrate/` — your config + budget state only. |
+| **Writes** | `~/.cache/burnrate/` — optional cache directory. |
 | **Writes** | `~/.claude/settings.json` — only if you opt-in during setup to add a Stop hook. |
 | **Network** | Zero. None. Nada. Offline-only by design. |
 | **Privileges** | None. Never run as root. Never calls sudo. |
+
+### Agent mode security
+
+When running in a hook or pipeline (`--format agent`), burnrate:
+
+- Emits structured key=value or JSON to stdout only
+- Makes no additional file writes
+- Does not interpret orchestrator env vars beyond reading them for detection
+- Can be restricted to read-only operation by revoking write access to `~/.config/burnrate/` and `~/.cache/burnrate/`
 
 ### Known eval usage (3 spots)
 
@@ -670,7 +727,7 @@ None of these touch user-controlled data in an executable position.
 
 ### The one real caveat
 
-The config file (`~/.config/burnrate/burnrate.conf`) is sourced as bash. This is standard for shell tools — same as `.bashrc`, `.envrc`, etc. If an attacker already has write access to your home directory, burnrate is the least of your problems.
+The config file (`~/.config/burnrate/burnrate.conf`) is sourced as bash. This is standard for shell tools — same as `.bashrc`, `.envrc`, etc. Component override files (`.colors`, `.icons`, `.msgs`) in `~/.local/share/burnrate/` are also sourced. If an attacker already has write access to your home directory, burnrate is the least of your problems.
 
 ### Install-time trust
 

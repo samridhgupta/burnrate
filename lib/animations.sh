@@ -2,6 +2,10 @@
 # lib/animations.sh - ASCII animation system for burnrate
 # Simple, composable animations that adapt to config
 
+# Source guard (prevent double-sourcing)
+[[ -n "${BURNRATE_ANIMATIONS_LOADED:-}" ]] && return 0
+readonly BURNRATE_ANIMATIONS_LOADED=1
+
 # Source dependencies
 LIB_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$LIB_DIR/core.sh"

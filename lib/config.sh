@@ -174,6 +174,26 @@ validate_config() {
         *) die_config "Invalid output format: $CONFIG_OUTPUT_FORMAT" ;;
     esac
 
+    # Theme component overrides — accept built-in names or any non-empty custom name
+    # Empty string means "use theme default" (valid)
+    if [[ -n "${CONFIG_COLOR_SCHEME:-}" ]]; then
+        case "$CONFIG_COLOR_SCHEME" in
+            none|amber|green|red|pink|ocean|*) ;;  # any value accepted — custom names allowed
+        esac
+    fi
+
+    if [[ -n "${CONFIG_ICON_SET:-}" ]]; then
+        case "$CONFIG_ICON_SET" in
+            none|minimal|*) ;;  # any value accepted — custom names allowed
+        esac
+    fi
+
+    if [[ -n "${CONFIG_MESSAGE_SET:-}" ]]; then
+        case "$CONFIG_MESSAGE_SET" in
+            agent|roast|coach|zen|*) ;;  # any value accepted — custom names allowed
+        esac
+    fi
+
 
     case "$CONFIG_ANIMATION_SPEED" in
         slow|normal|fast|instant) ;;
