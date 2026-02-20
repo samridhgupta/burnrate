@@ -402,7 +402,7 @@ EOF
 # Step 1: Check prerequisites
 setup_prerequisites() {
     setup_header
-    setup_step 1 6 "Checking Prerequisites"
+    setup_step 1 7 "Checking Prerequisites"
 
     echo "Checking if Claude Code is installed..."
     echo ""
@@ -447,7 +447,7 @@ setup_theme() {
     fi
 
     setup_header
-    setup_step 2 6 "Choose Your Theme"
+    setup_step 2 7 "Choose Your Theme"
 
     cat <<'EOF'
 Themes give burnrate personality and style!
@@ -488,7 +488,7 @@ setup_animations() {
     fi
 
     setup_header
-    setup_step 3 6 "Configure Animations"
+    setup_step 3 7 "Configure Animations"
 
     cat <<'EOF'
 Burnrate can show ASCII animations for a fun experience!
@@ -532,7 +532,7 @@ setup_emoji() {
     fi
 
     setup_header
-    setup_step 4 6 "Configure Emoji"
+    setup_step 4 7 "Configure Emoji"
 
     cat <<'EOF'
 Burnrate uses emoji to make output more visual and fun!
@@ -564,7 +564,7 @@ setup_budgets() {
     fi
 
     setup_header
-    setup_step 5 6 "Configure Budgets (Optional)"
+    setup_step 5 7 "Configure Budgets (Optional)"
 
     cat <<'EOF'
 Set budget limits to get alerts when spending approaches your limits.
@@ -589,10 +589,54 @@ EOF
     read -p "Press Enter to continue..."
 }
 
-# Step 6: Shell profile + Claude Code hook
+# Step 6: Context window warning threshold
+setup_context_warn() {
+    # Skip in quick mode (use defaults: warn=true, threshold=85)
+    if [[ "$SETUP_QUICK_MODE" == "true" ]]; then
+        return 0
+    fi
+
+    setup_header
+    setup_step 6 7 "Context Window Warning (Optional)"
+
+    cat <<'EOF'
+Burnrate can warn you in the summary when your context window is filling up.
+When context fills, Claude sees more tokens per request — costs rise and
+/compact or a new session helps.
+
+Default: warn at 85%  (the ⚠️  line appears in burnrate's output)
+
+EOF
+
+    if ! ask_yn "Enable context window warning?" "y"; then
+        SETUP_CONTEXT_WARN="false"
+        echo ""
+        echo "Context warning disabled."
+        echo ""
+        read -p "Press Enter to continue..."
+        return 0
+    fi
+
+    SETUP_CONTEXT_WARN="true"
+    echo ""
+    echo "At what % fill should the warning appear?"
+    echo "  85 = default  |  75 = earlier heads-up  |  90 = only when urgent"
+    echo ""
+    ask_input "Warn at" "85" SETUP_CONTEXT_THRESHOLD
+
+    echo ""
+    echo "Context window summary:"
+    echo "  Warning:    enabled"
+    echo "  Threshold:  ${SETUP_CONTEXT_THRESHOLD}%"
+
+    echo ""
+    read -p "Press Enter to continue..."
+}
+
+# Step 7: Shell profile + Claude Code hook
 setup_shell_integration() {
     setup_header
-    setup_step 6 6 "Shell Profile + Claude Code Hook (Optional)"
+    setup_step 7 7 "Shell Profile + Claude Code Hook (Optional)"
 
     cat <<'EOF'
 Add burnrate to your shell profile for quick access.
@@ -760,7 +804,7 @@ SNIPPET
 # Step 8: Review configuration
 setup_review() {
     setup_header
-    setup_step 6 6 "Review Configuration"
+    setup_step 7 7 "Review Configuration"
 
     cat <<EOF
 
@@ -774,6 +818,7 @@ Your configuration:
   Daily Budget:       \$${SETUP_DAILY_BUDGET}
   Monthly Budget:     \$${SETUP_MONTHLY_BUDGET}
   Budget Alert:       ${SETUP_BUDGET_ALERT}%
+  Context Warning:    ${SETUP_CONTEXT_WARN} (at ${SETUP_CONTEXT_THRESHOLD}%)
 
 EOF
 
@@ -787,7 +832,7 @@ EOF
 # Step 9: Save configuration
 setup_save() {
     setup_header
-    setup_step 6 6 "Saving Configuration"
+    setup_step 7 7 "Saving Configuration"
 
     local config_dir="${XDG_CONFIG_HOME:-$HOME/.config}/burnrate"
     local config_file="$config_dir/burnrate.conf"
@@ -891,6 +936,7 @@ run_setup() {
     setup_animations
     setup_emoji
     setup_budgets
+    setup_context_warn
     setup_shell_integration
     setup_review
     setup_save
