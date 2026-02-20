@@ -287,6 +287,8 @@ burnrate export history json history.json 2024-01-01 2024-01-31
 
 `burnrate setup [flags]` — use flags to skip the interactive wizard or pre-configure options.
 
+The interactive wizard (no flags) walks through 7 steps: prerequisites → theme → animations → emoji → budgets → **context window warning** → Claude Code hook. Every step has a default — press Enter to accept and move on.
+
 ### Preset shortcuts
 
 | Flag | Alias | What it sets |

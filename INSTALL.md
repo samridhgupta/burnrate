@@ -46,20 +46,26 @@ burnrate setup --arctic       # 🧊 all features on
 burnrate setup --glacier      # ❄️  balanced defaults
 burnrate setup --iceberg      # 🏔  lean, no animations
 burnrate setup --permafrost   # 🪨  CI/script safe, fully non-interactive
+burnrate setup --agent        # 🤖  agent/orchestrator — structured output, no decoration
 ```
+
+The interactive wizard walks through 7 steps: prerequisites → theme → animations → emoji → budgets → **context window warning** → Claude Code hook. Every step has a sensible default — hit Enter through anything you don't want to configure.
 
 ### Presets at a glance
 
-| Feature | `--arctic` | `--glacier` | `--iceberg` | `--permafrost` |
-|---------|-----------|------------|------------|---------------|
-| Animations | ✓ normal | ✓ normal | ✗ | ✗ |
-| Emoji | ✓ | ✓ | ✗ | ✗ |
-| Colors | auto | auto | auto | never |
-| Claude Code hook | auto ✓ | auto ✓ | ✗ | ✗ |
-| Context warn threshold | 75% | 85% | 90% | disabled |
-| Context display | both | both | number only | number only |
-| Budget prompt | ✓ | ✓ | ✗ | ✗ |
-| Interactive prompts | ✗ | ✗ | ✗ | ✗ |
+| Feature | `--arctic` | `--glacier` | `--iceberg` | `--permafrost` | `--agent` |
+|---------|-----------|------------|------------|---------------|-----------|
+| Animations | ✓ normal | ✓ normal | ✗ | ✗ | ✗ |
+| Emoji | ✓ | ✓ | ✗ | ✗ | ✗ |
+| Colors | auto | auto | auto | never | never |
+| Icons | theme | theme | theme | theme | none |
+| Messages | theme | theme | theme | theme | agent |
+| Output format | detailed | detailed | detailed | detailed | agent |
+| Claude Code hook | auto ✓ | auto ✓ | ✗ | ✗ | ✓ |
+| Context warn threshold | 75% | 85% | 90% | disabled | 70% |
+| Context display | both | both | number only | number only | both |
+| Budget prompt | ✓ | ✓ | ✗ | ✗ | ✗ |
+| Interactive prompts | ✗ | ✗ | ✗ | ✗ | ✗ |
 
 ### Aliases
 
@@ -71,6 +77,7 @@ Each preset has a short alias and a longer descriptive name — they're identica
 | `--glacier` | `--medium` | `--default` |
 | `--iceberg` | `--minimal` | `--min` |
 | `--permafrost` | `--ci` | `--script` |
+| `--agent` | `--openclaw` | `--multiagent` `--orchestrator` |
 
 ```bash
 burnrate setup --full       # same as --arctic

@@ -340,8 +340,9 @@ burnrate config edit     # Open config file in $EDITOR
 burnrate themes          # List themes
 burnrate preview <t>     # Preview a theme
 burnrate doctor          # Full health check (28 assertions)
-burnrate setup           # Interactive setup wizard
+burnrate setup           # Interactive setup wizard (7 steps, all skippable)
 burnrate setup --arctic  # All features on, no prompts (or --glacier / --iceberg / --permafrost)
+burnrate setup --agent   # Agent/orchestrator preset — structured output, no decoration
 burnrate setup --hook-only  # Just install the Claude Code Stop hook
 ```
 
