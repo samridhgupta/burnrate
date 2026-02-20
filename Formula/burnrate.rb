@@ -1,10 +1,10 @@
 class Burnrate < Formula
   desc "Track Claude Code token costs with zero API calls"
   homepage "https://github.com/samridhgupta/burnrate"
-  url "https://github.com/samridhgupta/burnrate/archive/refs/tags/v0.8.0.tar.gz"
-  sha256 "2358ec8eb2233d2842059ba1aabb56ec6aa483e9ab5fd93acf88525cd826fbc3"
+  url "https://github.com/samridhgupta/burnrate/archive/refs/tags/v0.8.1.tar.gz"
+  sha256 "1b9b25ea93488d2f48daca89e1c9c3ff62ed821975ee60f6d2427f0cceba900b"
   license "MIT"
-  version "0.8.0"
+  version "0.8.1"
 
   # Runtime dependency — used for all floating-point arithmetic
   depends_on "bc"
