@@ -33,10 +33,10 @@ Burnrate reads `~/.claude/stats-cache.json` — the local file Claude Code write
 
 ## Install
 
-**Homebrew** (macOS / Linux — recommended)
+<!-- **Homebrew** (macOS / Linux — recommended)
 ```bash
 brew tap samridhgupta/burnrate https://github.com/samridhgupta/burnrate && brew install burnrate
-```
+``` -->
 
 **curl one-liner**
 ```bash
